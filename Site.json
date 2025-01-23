@@ -1,0 +1,379 @@
+{
+    "tools": [
+        {
+            "name": "Cube",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(1) > a",
+            "function": "Create 3D Cube object"
+        },
+        {
+            "name": "Sphere",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(3)",
+            "function": "Create 3D Sphere object"
+        },
+        {
+            "name": "Cylinder",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(5)",
+            "function": "Create 3D Cylinder object"
+        },
+        {
+            "name": "Icosahedron",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(7)",
+            "function": "Create 3D Icosahedron object"
+        },
+        {
+            "name": "Plane",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(9)",
+            "function": "Create 2D Plane"
+        },
+        {
+            "name": "L-shape",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(11)",
+            "function": "Create 3D L-shape object"
+        },
+        {
+            "name": "Torus",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(2)",
+            "function": "Create 3D Torus object"
+        },
+        {
+            "name": "Cone",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(4)",
+            "function": "Create 3D Cone object"
+        },
+        {
+            "name": "Torus-knot",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(6)",
+            "function": "Create 3D Torus-knot object"
+        },
+        {
+            "name": "Octahedron",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(8)",
+            "function": "Create 3D Octahedron object"
+        },
+        {
+            "name": "Capsule",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(10)",
+            "function": "Create 3D Capsule object"
+        },
+        {
+            "name": "Star",
+            "selector": "#headerToolbarMenu > div > div:nth-child(1) > div > div > div:nth-child(12)",
+            "function": "Create 3D Star object"
+        },
+        {
+            "name": "Shape Generator",
+            "selector": "#headerToolbarMenu > div > div:nth-child(2) > div > div > div:nth-child(1)",
+            "function": "Dropdown that allows user to generate either Screw & Nut, a spiral, a gear or text."
+        },
+        {
+            "name": "Screw & Nut generator",
+            "selector": "#headerToolbarMenu > div > div:nth-child(2) > div > div > div:nth-child(2)",
+            "function": "Allows user to insert screw and nut objects"
+        },
+        {
+            "name": "Spiral generator",
+            "selector": "#headerToolbarMenu > div > div:nth-child(2) > div > div > div:nth-child(3)",
+            "function": "Allows user to insert spiral object"
+        },
+        {
+            "name": "Gear generator",
+            "selector": "#headerToolbarMenu > div > div:nth-child(2) > div > div > div:nth-child(4)",
+            "function": "Allows user to insert gear object"
+        },
+        {
+            "name": "Text generator",
+            "selector": "#headerToolbarMenu > div > div:nth-child(2) > div > div > div:nth-child(5)",
+            "function": "Allows user to insert text object"
+        },
+        {
+            "name": "Drawing",
+            "selector": "#headerToolbarMenu > div > div:nth-child(3)",
+            "function": "Dropdown from which user can choose to start a freehand drawing or 3D Sketch"
+        },
+        {
+            "name": "Freehand",
+            "selector": "#headerToolbarMenu > div > div:nth-child(3) > div > div > div:nth-child(1) > a",
+            "function": "Start freehand drawing. Allows you to freely draw and customize the 3D model"
+        },
+        {
+            "name": "3D Sketch",
+            "selector": "#headerToolbarMenu > div > div:nth-child(3) > div > div > div:nth-child(2)",
+            "function": "Start 3D Sketch. It serves as a tool that builds a frame that you can later fill up with the help of other tools."
+        },
+        {
+            "name": "Move",
+            "selector": "#headerToolbarMenu > div > div:nth-child(4) > div",
+            "function": "Allows user to move existing objects"
+        },
+        {
+            "name": "Rotate",
+            "selector": "#headerToolbarMenu > div > div:nth-child(5) > div",
+            "function": "Allows user to rotate existing objects"
+        },
+        {
+            "name": "Scale",
+            "selector": "#headerToolbarMenu > div > div:nth-child(6)",
+            "function": "Allows user to shrink or enlarge object"
+        },
+        {
+            "name": "Deform",
+            "selector": "#headerToolbarMenu > div > div:nth-child(7)",
+            "function": "Dropdown offering object deforming options: skew, taper, twist, bend, inflate and flatten."
+        },
+        {
+            "name": "Skew",
+            "selector": "#headerToolbarMenu > div > div:nth-child(7) > div > div > div:nth-child(1) > a",
+            "function": "Allows user to deform object by skewing it"
+        },
+        {
+            "name": "Taper",
+            "selector": "#headerToolbarMenu > div > div:nth-child(7) > div > div > div:nth-child(2)",
+            "function": "Allows user to deform object by tapering it"
+        },
+        {
+            "name": "Twist",
+            "selector": "#headerToolbarMenu > div > div:nth-child(7) > div > div > div:nth-child(3)",
+            "function": "Allows user to deform object by twisting it"
+        },
+        {
+            "name": "Bend",
+            "selector": "#headerToolbarMenu > div > div:nth-child(7) > div > div > div:nth-child(4)",
+            "function": "Allows user to deform object by bending it. You’ll find here another Advanced Option called Dynamic Origin - it basically forces the model to wraps itself in an attempt to create a perfect circle."
+        },
+        {
+            "name": "Inflate",
+            "selector": "#headerToolbarMenu > div > div:nth-child(7) > div > div > div:nth-child(5)",
+            "function": "Allows user to deform object by inflating it"
+        },
+        {
+            "name": "Flatten",
+            "selector": "#headerToolbarMenu > div > div:nth-child(7) > div > div > div:nth-child(6)",
+            "function": "Allows user to deform object by flattening it"
+        },
+        {
+            "name": "Extrusion",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(1)",
+            "function": "Allows user to Extrude face or sketch"
+        },
+        {
+            "name": "Inset",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(2)",
+            "function": "The Inset tool splits polygons (or faces, if they are selected) and smaller versions of it."
+        },
+        {
+            "name": "Add Thickness",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(3)",
+            "function": "Add Thickness allows you to add volume to your models, and its basic usage is to add thickness to open figures (such as containers)"
+        },
+        {
+            "name": "Chamfer",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(4)",
+            "function": "Allows user to Chamfer edges of object"
+        },
+        {
+            "name": "Fillet",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(5)",
+            "function": "Allows user to Fillet edges of object"
+        },
+        {
+            "name": "Round Object",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(7)",
+            "function": "Round Object is somewhat similar to Chamfer, but it’s not restricted to rounding just the edges of a figure, but the figure as a whole. By increasing the level of Smoothness your figure will become more and more rounded. The advanced option called Linear allows you to simply smooth the surface by adding detail to the figure without changing its shape."
+        },
+        {
+            "name": "Simplify Object",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(8)",
+            "function": "Simplify object works by directly deleting polygons from the figure. For example when using this tool on a simple sphere, it turns into something cruder. "
+        },
+        {
+            "name": "Resolution",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(9)",
+            "function": "Allows you to change the resolution of a selected 3D Model (or its Polygon). There is only one slider to this tool, and by moving it, you’ll either increase or decrease the number of segments that the figure consists of. Models with more segments can be modeled in a more precise manner - this tool is perfect for adding and removing the complexity, and in contrast to the Simplify Object tool, the Resolution does not change the geometry of the model."
+        },
+        {
+            "name": "Edit Details",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(11)",
+            "function": "Allows you to manually increase the level of detail of the figure, by splitting existing faces into smaller ones. You can do it either by clicking on the figure to add Vertices or by dragging an existing edge to its neighboring face to create a new edge there."
+        },
+        {
+            "name": "Cut With Plane",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(12)",
+            "function": "Cut object with intersection of Plane"
+        },
+        {
+            "name": "Cut with Profile",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div > div > div:nth-child(13)",
+            "function": "Allows you to engrave unique shapes on your figure. To use this successfully, you need to draw a 3D Sketch first, and then use the tool to engrave said sketch onto the model."
+        },
+        {
+            "name": "Modify",
+            "selector": "#headerToolbarMenu > div > div:nth-child(8) > div",
+            "function": "Dropdown with object modification options: Extrusion, Inset, Add Thickness, Chamfer, Fillet, Round Object, Simplify Object, Resolution, Edit Details, Cut With Plane and Cut with Profile."
+        },
+        {
+            "name": "Stitch & Scoop",
+            "selector": "#headerToolbarMenu > div > div:nth-child(9) > div",
+            "function": "Stitch & Scoop is a boolean tool that allows the union, difference, inclusion or intersection of multiple objects to be extracted"
+        },
+        {
+            "name": "Copy Offsets",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div > div > div:nth-child(1)",
+            "function": "Creates a copy of an object with the possibility of setting up a precise distance between the copy and the original. There is an option to set the number of copies that the software will create, in which case the copies will be distributed evenly between the original, and the copy with an offset."
+        },
+        {
+            "name": "Fill Polygons",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div > div > div:nth-child(2)",
+            "function": "The Fill Polygons tool fills up profiles, and patches up all the hollow spaces in polygons. "
+        },
+        {
+            "name": "Revolve",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div > div > div:nth-child(3)",
+            "function": "The revolve tool uses a shape or a profile as a base and revolves it, creating a solid 3D model."
+        },
+        {
+            "name": "Bridge",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div > div > div:nth-child(4)",
+            "function": "The Bridge tool creates a connection between two sets of edges or faces by 'bridging' them."
+        },
+        {
+            "name": "Loft",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div > div > div:nth-child(5)",
+            "function": "The Loft tool creates a smooth, often complex surface by blending between two or more cross-sectional profiles (curves or sketches)."
+        },
+        {
+            "name": "Follow Path",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div > div > div:nth-child(6)",
+            "function": "Follow path turns existing sketches (an outline and a path) into 3D models"
+        },
+        {
+            "name": "Magic Fix",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div > div > div:nth-child(8)",
+            "function": "Allows you to rebuild your objects by replacing all flat surfaces with cubes. By manipulating the Block Density you’re able to choose into how many cubes each Face will be split into - the bigger the density, the smaller the individual blocks and more detailed the overall shape."
+        },
+        {
+            "name": "Magic Path",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div > div > div:nth-child(9)",
+            "function": "A tool that rebuilds your objects by removing small, unprintable details. It’s a good practice to use this tool before printing"
+        },
+        {
+            "name": "Tools",
+            "selector": "#headerToolbarMenu > div > div:nth-child(10) > div",
+            "function": "A dropdown which allows user to choose different tools: magic path, magic fix, follow path, revolve, loft, bridge, fill polygons and copy offsets."
+        },
+        {
+            "name": "Utilities",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div",
+            "function": "A dropdown which allows the user to choose from different utility options: align, snap, measurements, dimensions, mirror, combine, split, geom clean and flip normals."
+        },
+        {
+            "name": "Sculpting",
+            "selector": "#headerToolbarMenu > div > div:nth-child(12) > div",
+            "function": "Sculpting is a tool you can use to add the most minute details and finishing touches to your designs. Sculpting works in a completely different way from other tools - here you don’t manipulate the object directly by changing the settings of the tool, but by using different brushes directly onto the object itself to invoke a change."
+        },
+        {
+            "name": "Image to 3D",
+            "selector": "#headerToolbarMenu > div > div:nth-child(13) > div",
+            "function": "The Image to 3D tool allows you to convert any picture into a 3D model."
+        },
+        {
+            "name": "3D print",
+            "selector": "#headerToolbarMenu > div > div:nth-child(14) > div",
+            "function": "The option to 3D Print your design. This tool will slice the object, and generate a GCode in preparation for 3D printing."
+        },
+        {
+            "name": "Animation",
+            "selector": "#headerToolbarMenu > div > div:nth-child(15) > div",
+            "function": "The Animation tool allows you to record everything you do in the software. Each action becomes a separate slider on the timeline, so you can later overlap and stack them together, to make it look like multiple changes were added to a model at the same time. When all is set, you can download the animation in the GIF format."
+        },
+        {
+            "name": "Render",
+            "selector": "#headerToolbarMenu > div > div:nth-child(16) > div",
+            "function": "The Render dropdown gives access to other render tools such as Render Image and Texture Baking."
+        },
+        {
+            "name": "Render Image",
+            "selector": "#headerToolbarMenu > div > div:nth-child(16) > div > div > div:nth-child(1)",
+            "function": "The render image tool allows the object to be rendered as an image"
+        },
+        {
+            "name": "Texture Baking",
+            "selector": "#headerToolbarMenu > div > div:nth-child(16) > div > div > div:nth-child(2)",
+            "function": "The texture baking tool allows you to create a texture that can then be used in rendering"
+        },
+        {
+            "name": "Projections",
+            "selector": "#headerToolbarMenu > div > div:nth-child(17) > div",
+            "function": "The Projections tool is used to transfer or project geometry (such as points, lines, edges, or faces) from one part of the model to another, often onto a different plane, surface, or sketch."
+        },
+        {
+            "name": "Tutorials",
+            "selector": "#headerToolbarMenu > div > div:nth-child(18) > div",
+            "function": "The tutorials dropdown gives the user access to the following tools: record tutorial, play tutorial, my library and interactive tutorials."
+        },
+        {
+            "name": "Record Tutorial",
+            "selector": "#headerToolbarMenu > div > div:nth-child(18) > div > div > div:nth-child(1) > a",
+            "function": "The record tutorial tool allows the user to record a tutorial of themselves making an object"
+        },
+        {
+            "name": "Play Tutorial",
+            "selector": "#headerToolbarMenu > div > div:nth-child(18) > div > div > div:nth-child(2)",
+            "function": "The play tutorial tool allows the user to play one of their tutorials they have filmed"
+        },
+        {
+            "name": "My Library",
+            "selector": "#headerToolbarMenu > div > div:nth-child(18) > div > div > div:nth-child(3)",
+            "function": "The My Library tool opens up a separate tab where the user can view previously made tutorials"
+        },
+        {
+            "name": "Interactive Tutorials",
+            "selector": "#headerToolbarMenu > div > div:nth-child(18) > div > div > div:nth-child(4)",
+            "function": "The Interactive Tutorials tool opens up a separate tab and allows the user to watch other interactive tutorials made by other members of the community"
+        },
+        {
+            "name": "Align",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(1)",
+            "function": "The Align tool can be used to align one object to another. There are options to choose to what exactly do you want to align your figure - you can align 3D models to other figures in the grid, or the grid itself, select which part of the figure should be aligned and even set precise offset (distance) between the aligned objects."
+        },
+        {
+            "name": "Snap",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(2)",
+            "function": "The Snap tool allows you to immediately move selected shape to any place on the grid or onto any model. There is also an option to set the offset between the model and the point you want to snap it to. "
+        },
+        {
+            "name": "Measurements",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(3)",
+            "function": "Measurements serve as a simple measuring tool - you can use it to measure lengths, distances, and angles.You can also use it to resize them, by selecting a specific length or an angle and changing its value in the bottom-left part of the screen."
+        },
+        {
+            "name": "Dimensions",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(4)",
+            "function": "The tool Dimensions can be used to add physical measurements to the grid. You can create them based on length, angle, and even create arcs. What stands out about this tool, is the fact that you can use the generated guides as points of reference to which you can snap objects to."
+        },
+        {
+            "name": "Mirror",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(5)",
+            "function": "The Mirror tool creates a mirrored copy of a figure."
+        },
+        {
+            "name": "Combine",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(6)",
+            "function": "The Merge Objects tool allows you to connect objects without changing their geometry. It works correctly when the shapes you want to merge do not overlap each other."
+        },
+        {
+            "name": "Split",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(7)",
+            "function": "The Split option allows you to split selected parts of the model and create a separate shape out of them. You won’t see the change in the mesh itself, but then you look at the scene panel you’ll see that the split part became a separate object, which you can now model independently. "
+        },
+        {
+            "name": "Geom Clean",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(9)",
+            "function": "This tool helps clean the geometry of a shape by removing certain vertices"
+        },
+        {
+            "name": "Flip Normals",
+            "selector": "#headerToolbarMenu > div > div:nth-child(11) > div > div > div:nth-child(10)",
+            "function": "The Flip tool allows you to turn a selected face or polygon inside-out."
+        }
+    ]
+}

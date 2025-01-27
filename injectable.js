@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Smart Toolbox with Visible Dropdown Text
+// @name         Smart Toolbox with Functionality Retained
 // @namespace    http://tampermonkey.net/
-// @version      2.4
-// @description  clone toolbar buttons into a smart toolbox, ensure dropdown item text is visible from the start
+// @version      2.6
+// @description  clone toolbar buttons into a smart toolbox, retain functionality for cloned buttons
 // @author       You
 // @match        https://www.selfcad.com/app/*
 // @grant        none
@@ -49,30 +49,55 @@
         // function to clone and move child elements into the smart toolbox
         const toggleSmartToolbox = () => {
             if (smartToolbox.style.display === "none") {
-                // clear previous content
-                smartToolbox.innerHTML = "";
+                smartToolbox.innerHTML = ""; // clear previous content
 
-                // process all child elements of the target toolbar
+                // loop through children of the target toolbar
                 Array.from(targetDiv.children).forEach((child) => {
-                    const clonedChild = child.cloneNode(true); // deep clone the child element
-
-                    // if the child contains subchildren with "dropdown-item" classes, extract them
-                    const dropdownItems = clonedChild.querySelectorAll('[class^="dropdown-item"]');
+                    const dropdownItems = child.querySelectorAll('[class^="dropdown-item"]');
                     if (dropdownItems.length > 0) {
                         dropdownItems.forEach((dropdownItem) => {
-                            const clonedDropdownItem = dropdownItem.cloneNode(true); // deep clone each dropdown item
+                            const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
 
-                            // ensure the text is visible from the start
+                            // style the text to ensure visibility and set color
                             const textElement = clonedDropdownItem.querySelector('[rv-text="btn.labelText"]');
                             if (textElement) {
-                                textElement.style.color = "black"; // make text visible
+                                textElement.style.color = "rgb(117, 117, 117)"; // set text color
+                                textElement.style.textAlign = "center"; // align text
                             }
 
-                            clonedDropdownItem.style.marginBottom = "5px"; // add spacing between buttons
+                            // reorganize layout to match normal buttons
+                            const imageElement = clonedDropdownItem.querySelector('[class^="pull-left selfcad"]');
+                            const textSpan = clonedDropdownItem.querySelector(".inner");
+                            if (imageElement && textSpan) {
+                                // move image above text
+                                clonedDropdownItem.style.display = "flex";
+                                clonedDropdownItem.style.flexDirection = "column";
+                                clonedDropdownItem.style.alignItems = "center";
+                                clonedDropdownItem.style.border = "1px solid #ccc";
+                                clonedDropdownItem.style.padding = "10px";
+                                clonedDropdownItem.style.marginBottom = "10px";
+                                clonedDropdownItem.style.borderRadius = "4px";
+                                clonedDropdownItem.style.backgroundColor = "#f9f9f9";
+
+                                imageElement.style.marginBottom = "5px"; // add spacing below image
+                                textSpan.style.marginTop = "5px"; // add spacing above text
+                            }
+
+                            // copy functionality from the original dropdown item
+                            clonedDropdownItem.addEventListener("click", () => {
+                                dropdownItem.click(); // trigger the original button click
+                            });
+
                             smartToolbox.appendChild(clonedDropdownItem);
                         });
                     } else {
-                        // if not a dropdown, add the regular button
+                        const clonedChild = child.cloneNode(true); // clone regular buttons
+
+                        // copy functionality for regular buttons
+                        clonedChild.addEventListener("click", () => {
+                            child.click(); // trigger the original button click
+                        });
+
                         smartToolbox.appendChild(clonedChild);
                     }
                 });
@@ -81,7 +106,7 @@
 
                 // show the smart toolbox and hide the original toolbar
                 smartToolbox.style.display = "block";
-                targetDiv.style.display = "none";
+                targetDiv.style.display = "none"; // hide the original toolbar
             } else {
                 // hide the smart toolbox and show the original toolbar
                 smartToolbox.style.display = "none";

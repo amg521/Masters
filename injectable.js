@@ -1,117 +1,99 @@
 // ==UserScript==
-// @name         Smart Toolbox
+// @name         Smart Toolbox Cloner
 // @namespace    http://tampermonkey.net/
-// @version      0.8
-// @description  Create a smart toolbox for SelfCAD
+// @version      1.9
+// @description  Clone the child elements of a specific div into a smart toolbox on toggle
 // @author       You
 // @match        https://www.selfcad.com/app/*
-// @connect      raw.githubusercontent.com
-// @grant        GM_xmlhttpRequest
+// @grant        none
 // ==/UserScript==
 
-window.onload = function () {
+(function () {
     console.log("Smart Toolbox script has started running.");
 
-    const toolsUrl = "https://raw.githubusercontent.com/amg521/Masters/refs/heads/main/SelfCADMapping.json";
-
-    GM_xmlhttpRequest({
-        method: "GET",
-        url: toolsUrl,
-        onload: (response) => {
-            let toolsData;
-            try {
-                toolsData = JSON.parse(response.responseText);
-                console.log("JSON fetched successfully:", toolsData);
-            } catch (e) {
-                console.error("Error parsing JSON:", e);
-                return;
-            }
-
-            // Locate the default toolbar
-            console.log("Attempting to locate default toolbar...");
-            const defaultToolbar = document.getElementById("toolbarMenu") ||
-                                   document.querySelector("#headerToolbarMenu") ||
-                                   document.querySelector("#headerToolbarMenu > div") ||
-                                   document.getElementById("loadToolsHeaderMenu");
-            console.log("Default Toolbar:", defaultToolbar);
-
-            if (!defaultToolbar) {
-                console.error("Default toolbar not found. Check the selectors or page structure.");
-                return;
-            }
-
-            // Create the Smart Toolbox container
-            const smartToolbox = document.createElement('div');
-            smartToolbox.id = 'smart-toolbox';
-            smartToolbox.style.display = 'none'; // Initially hidden
-
-            // Inherit the styles from the default toolbar
-            smartToolbox.style.position = defaultToolbar.style.position;
-            smartToolbox.style.top = defaultToolbar.style.top;
-            smartToolbox.style.left = defaultToolbar.style.left;
-            smartToolbox.style.width = defaultToolbar.style.width;
-            smartToolbox.style.height = defaultToolbar.style.height;
-            smartToolbox.style.backgroundColor = defaultToolbar.style.backgroundColor;
-            smartToolbox.style.border = defaultToolbar.style.border;
-            smartToolbox.style.zIndex = defaultToolbar.style.zIndex;
-
-            // Populate the Smart Toolbox with tools
-            toolsData.tools.forEach(tool => {
-                console.log(`Adding tool button for: ${tool.name}`);
-
-                const toolButton = document.createElement('button');
-                toolButton.innerText = tool.name;
-
-                // Apply styles from the default toolbar's buttons
-                const defaultButton = defaultToolbar.querySelector('button');
-                if (defaultButton) {
-                    toolButton.style.cssText = defaultButton.style.cssText;
-                }
-
-                // Add hover effect for guidance
-                toolButton.title = tool.function;
-
-                // Add click functionality
-                toolButton.addEventListener('click', () => {
-                    const element = document.querySelector(tool.selector);
-                    if (element) {
-                        console.log(`Clicking on tool: ${tool.name}`);
-                        element.click();
-                    } else {
-                        console.warn(`Tool not found in DOM: ${tool.name}`);
-                    }
-                });
-
-                smartToolbox.appendChild(toolButton);
-            });
-
-            // Append the Smart Toolbox to the default toolbar's parent
-            defaultToolbar.parentNode.appendChild(smartToolbox);
-
-            // Create toggle button
-            const toggleButton = document.createElement('button');
-            toggleButton.innerText = 'Toggle Toolbox';
-            toggleButton.style.position = 'fixed';
-            toggleButton.style.top = '10px';
-            toggleButton.style.right = '10px';
-            toggleButton.style.zIndex = '10001';
-            toggleButton.addEventListener('click', () => {
-                if (smartToolbox.style.display === 'none') {
-                    smartToolbox.style.display = 'block';
-                    defaultToolbar.style.display = 'none';
-                } else {
-                    smartToolbox.style.display = 'none';
-                    defaultToolbar.style.display = 'block';
-                }
-            });
-
-            // Append toggle button to the document body
-            document.body.appendChild(toggleButton);
-
-            console.log("Smart Toolbox and toggle button added to the page.");
-        },
-        onerror: (error) => {
-            console.error("Failed to fetch JSON:", error);
+    // Function to wait for the target div to appear
+    const waitForTargetDiv = () => {
+        const targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
+        if (targetDiv) {
+            console.log("Target div located:", targetDiv);
+            initializeSmartToolbox(targetDiv);
+        } else {
+            console.log("Target div not found. Retrying...");
+            setTimeout(waitForTargetDiv, 500); // Retry every 500ms
         }
-    });
-};
+    };
+
+    // Initialize the smart toolbox
+    const initializeSmartToolbox = (targetDiv) => {
+        console.log("Initializing Smart Toolbox...");
+
+        // Create the Smart Toolbox container
+        const smartToolbox = document.createElement("div");
+        smartToolbox.id = "smart-toolbox";
+        smartToolbox.style.display = "none"; // Initially hidden
+        smartToolbox.style.position = "absolute";
+        smartToolbox.style.top = "10px";
+        smartToolbox.style.left = "10px";
+        smartToolbox.style.backgroundColor = "white";
+        smartToolbox.style.border = "1px solid #ccc";
+        smartToolbox.style.padding = "10px";
+        smartToolbox.style.zIndex = "10000";
+
+        // Append the Smart Toolbox to the document body
+        document.body.appendChild(smartToolbox);
+        console.log("Smart Toolbox container added to the page.");
+
+        // Function to clone and move child elements into the smart toolbox
+        const toggleSmartToolbox = () => {
+            if (smartToolbox.style.display === "none") {
+                // Clone all child elements into the smart toolbox
+                smartToolbox.innerHTML = ""; // Clear previous content
+                Array.from(targetDiv.children).forEach((child) => {
+                    const clonedChild = child.cloneNode(true); // Deep clone the child element
+                    smartToolbox.appendChild(clonedChild);
+                });
+                console.log("Child elements cloned into the smart toolbox.");
+
+                // Show the smart toolbox and hide the original toolbar
+                smartToolbox.style.display = "block";
+                targetDiv.style.display = "none";
+            } else {
+                // Hide the smart toolbox and show the original toolbar
+                smartToolbox.style.display = "none";
+                targetDiv.style.display = "block";
+            }
+        };
+
+        // Create a toggle button for the smart toolbox
+        const toggleButton = document.createElement("button");
+        toggleButton.innerText = "Toggle Toolbox";
+        toggleButton.style.position = "fixed";
+        toggleButton.style.top = "10px";
+        toggleButton.style.right = "10px";
+        toggleButton.style.zIndex = "10001";
+        toggleButton.style.padding = "10px";
+        toggleButton.style.backgroundColor = "#007BFF";
+        toggleButton.style.color = "#FFF";
+        toggleButton.style.border = "none";
+        toggleButton.style.cursor = "pointer";
+        toggleButton.style.borderRadius = "5px";
+
+        // Add a hover effect to the toggle button
+        toggleButton.addEventListener("mouseover", () => {
+            toggleButton.style.backgroundColor = "#0056b3";
+        });
+        toggleButton.addEventListener("mouseout", () => {
+            toggleButton.style.backgroundColor = "#007BFF";
+        });
+
+        // Add toggle functionality
+        toggleButton.addEventListener("click", toggleSmartToolbox);
+
+        // Append the toggle button to the document body
+        document.body.appendChild(toggleButton);
+        console.log("Toggle button added to the page.");
+    };
+
+    // Start waiting for the target div to load
+    waitForTargetDiv();
+})();

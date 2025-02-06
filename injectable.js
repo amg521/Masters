@@ -41,7 +41,7 @@
         smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
         smartToolbox.style.backgroundColor = "white";
         smartToolbox.style.border = "1px solid #ccc";
-        smartToolbox.style.padding = "2px";
+        smartToolbox.style.padding = "2x";
         smartToolbox.style.zIndex = "10000";
         smartToolbox.style.display = "flex";
         smartToolbox.style.flexWrap = "nowrap";
@@ -117,6 +117,7 @@
                                     stackedLabel.style.visibility = "visible";
                                     stackedLabel.style.opacity = "1";
                                     stackedLabel.style.transition = "none"; // remove hover effects
+                                    stackedLabel.style.paddingTop = "6px";
                                 }
 
                                 // Clear cloned dropdown item and append stacked content
@@ -128,7 +129,7 @@
                                 clonedDropdownItem.style.alignItems = "center";
                                 clonedDropdownItem.style.border = "1px solid #ddd"; // match default border
                                 clonedDropdownItem.style.backgroundColor = "#f9f9f9"; // match default background
-                                clonedDropdownItem.style.padding = "8px";
+                                clonedDropdownItem.style.padding = "4px 6px";
                                 clonedDropdownItem.style.margin = "2px"; // ensure spacing between buttons
                                 //clonedDropdownItem.style.borderRadius = "4px";
 

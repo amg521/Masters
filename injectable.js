@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Smart Toolbox with Functionality Retained
+// @name         Smart Toolbox with Accurate Hover Colors
 // @namespace    http://tampermonkey.net/
-// @version      2.6
-// @description  clone toolbar buttons into a smart toolbox, retain functionality for cloned buttons
-// @author       You
+// @version      2.19
+// @description  clone toolbar buttons into a smart toolbox, stack icons and labels in dropdown buttons, and ensure hugging width with always-visible labels and correct active/inactive colors
+// @author       Axelle Groothaert
 // @match        https://www.selfcad.com/app/*
 // @grant        none
 // ==/UserScript==
@@ -14,6 +14,7 @@
     // function to wait for the target div to appear
     const waitForTargetDiv = () => {
         const targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
+        const extraDiv = document.getElementById("headerToolbarMenu");
         if (targetDiv) {
             console.log("target div located:", targetDiv);
             initializeSmartToolbox(targetDiv);
@@ -32,15 +33,21 @@
         smartToolbox.id = "smart-toolbox";
         smartToolbox.style.display = "none"; // initially hidden
         smartToolbox.style.position = "absolute";
-        smartToolbox.style.top = "10px";
-        smartToolbox.style.left = "10px";
-        smartToolbox.style.width = "400px"; // fixed width
-        smartToolbox.style.height = "600px"; // fixed height
-        smartToolbox.style.overflowY = "auto"; // scroll if content overflows
+        smartToolbox.style.top = `${targetDiv.getBoundingClientRect().top}px`;
+        smartToolbox.style.left = `${targetDiv.getBoundingClientRect().left}px`;
+        smartToolbox.style.width = targetDiv.offsetWidth + "px";
+        smartToolbox.style.height = targetDiv.offsetHeight + "px";
+        smartToolbox.style.overflowX = "auto"; // enable horizontal scrolling
+        smartToolbox.style.overflowY = "hidden";
+        smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
         smartToolbox.style.backgroundColor = "white";
         smartToolbox.style.border = "1px solid #ccc";
         smartToolbox.style.padding = "10px";
         smartToolbox.style.zIndex = "10000";
+        smartToolbox.style.display = "flex"; // ensure items are aligned in a row
+        smartToolbox.style.flexWrap = "nowrap"; // prevent wrapping
+        smartToolbox.style.alignItems = "center"; // align items vertically in center
+        smartToolbox.style.overflow = "auto"; // ensure scrolling works
 
         // append the smart toolbox to the document body
         document.body.appendChild(smartToolbox);
@@ -53,62 +60,23 @@
 
                 // loop through children of the target toolbar
                 Array.from(targetDiv.children).forEach((child) => {
-                    const dropdownItems = child.querySelectorAll('[class^="dropdown-item"]');
-                    if (dropdownItems.length > 0) {
-                        dropdownItems.forEach((dropdownItem) => {
-                            const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
-
-                            // style the text to ensure visibility and set color
-                            const textElement = clonedDropdownItem.querySelector('[rv-text="btn.labelText"]');
-                            if (textElement) {
-                                textElement.style.color = "rgb(117, 117, 117)"; // set text color
-                                textElement.style.textAlign = "center"; // align text
-                            }
-
-                            // reorganize layout to match normal buttons
-                            const imageElement = clonedDropdownItem.querySelector('[class^="pull-left selfcad"]');
-                            const textSpan = clonedDropdownItem.querySelector(".inner");
-                            if (imageElement && textSpan) {
-                                // move image above text
-                                clonedDropdownItem.style.display = "flex";
-                                clonedDropdownItem.style.flexDirection = "column";
-                                clonedDropdownItem.style.alignItems = "center";
-                                clonedDropdownItem.style.border = "1px solid #ccc";
-                                clonedDropdownItem.style.padding = "10px";
-                                clonedDropdownItem.style.marginBottom = "10px";
-                                clonedDropdownItem.style.borderRadius = "4px";
-                                clonedDropdownItem.style.backgroundColor = "#f9f9f9";
-
-                                imageElement.style.marginBottom = "5px"; // add spacing below image
-                                textSpan.style.marginTop = "5px"; // add spacing above text
-                            }
-
-                            // copy functionality from the original dropdown item
-                            clonedDropdownItem.addEventListener("click", () => {
-                                dropdownItem.click(); // trigger the original button click
-                            });
-
-                            smartToolbox.appendChild(clonedDropdownItem);
-                        });
-                    } else {
-                        const clonedChild = child.cloneNode(true); // clone regular buttons
-
-                        // copy functionality for regular buttons
-                        clonedChild.addEventListener("click", () => {
-                            child.click(); // trigger the original button click
-                        });
-
-                        smartToolbox.appendChild(clonedChild);
-                    }
+                    const clonedChild = child.cloneNode(true);
+                    clonedChild.style.display = "inline-flex";
+                    clonedChild.style.alignItems = "center";
+                    clonedChild.style.marginRight = "10px";
+                    clonedChild.style.border = "1px solid #ddd";
+                    clonedChild.style.backgroundColor = "#f9f9f9";
+                    clonedChild.style.width = "auto";
+                    clonedChild.addEventListener("click", () => {
+                        child.click();
+                    });
+                    smartToolbox.appendChild(clonedChild);
                 });
 
-                console.log("all buttons (including dropdown subchildren) cloned into the smart toolbox.");
-
-                // show the smart toolbox and hide the original toolbar
+                console.log("all buttons cloned into the smart toolbox.");
                 smartToolbox.style.display = "block";
-                targetDiv.style.display = "none"; // hide the original toolbar
+                targetDiv.style.display = "none";
             } else {
-                // hide the smart toolbox and show the original toolbar
                 smartToolbox.style.display = "none";
                 targetDiv.style.display = "block";
             }
@@ -128,18 +96,8 @@
         toggleButton.style.cursor = "pointer";
         toggleButton.style.borderRadius = "5px";
 
-        // add a hover effect to the toggle button
-        toggleButton.addEventListener("mouseover", () => {
-            toggleButton.style.backgroundColor = "#0056b3";
-        });
-        toggleButton.addEventListener("mouseout", () => {
-            toggleButton.style.backgroundColor = "#007BFF";
-        });
-
         // add toggle functionality
         toggleButton.addEventListener("click", toggleSmartToolbox);
-
-        // append the toggle button to the document body
         document.body.appendChild(toggleButton);
         console.log("toggle button added to the page.");
     };

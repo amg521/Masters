@@ -41,7 +41,7 @@
         smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
         smartToolbox.style.backgroundColor = "white";
         smartToolbox.style.border = "1px solid #ccc";
-        smartToolbox.style.padding = "2x";
+        smartToolbox.style.padding = "0x";
         smartToolbox.style.zIndex = "10000";
         smartToolbox.style.display = "flex";
         smartToolbox.style.flexWrap = "nowrap";

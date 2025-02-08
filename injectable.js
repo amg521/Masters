@@ -14,44 +14,50 @@
     // function to wait for the target div to appear
     const waitForTargetDiv = () => {
         const targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
-        if (targetDiv) {
-            console.log("target div located:", targetDiv);
-            initializeSmartToolbox(targetDiv);
-        } else {
-            console.log("target div not found. retrying...");
+        const toolbar = document.getElementById("headerToolbarMenu");
+
+        if (!targetDiv || !toolbar) {
+            console.log("❌ Target div or toolbar not found. Retrying...");
             setTimeout(waitForTargetDiv, 500); // retry every 500ms
+            return;
         }
+
+        console.log("✅ Target div and toolbar located.");
+        initializeSmartToolbox(targetDiv, toolbar);
     };
 
     // initialize the smart toolbox
-    const initializeSmartToolbox = (targetDiv) => {
-        console.log("initializing smart toolbox...");
+    const initializeSmartToolbox = (targetDiv, toolbar) => {
+        console.log("✅ Initializing smart toolbox...");
+
+        // get toolbar dimensions
+        const rect = toolbar.getBoundingClientRect();
 
         // create the smart toolbox container
         const smartToolbox = document.createElement("div");
         smartToolbox.id = "smart-toolbox";
         smartToolbox.style.display = "none"; // initially hidden
         smartToolbox.style.position = "absolute";
-        smartToolbox.style.top = targetDiv.style.top;
-        smartToolbox.style.left = targetDiv.style.left;
-        smartToolbox.style.width = targetDiv.style.width;
-        smartToolbox.style.height = targetDiv.style.height;
+        smartToolbox.style.top = `${rect.top + window.scrollY}px`;
+        smartToolbox.style.left = `${rect.left + window.scrollX}px`;
+        smartToolbox.style.width = `${rect.width}px`;
+        smartToolbox.style.height = `${rect.height}px`;
+        smartToolbox.style.zIndex = "9999";
         smartToolbox.style.overflowX = "auto"; // enable scrolling
         smartToolbox.style.overflowY = "hidden";
         smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
         smartToolbox.style.backgroundColor = "white";
-        smartToolbox.style.border = "1px solid #ccc";
-        smartToolbox.style.padding = "0x";
-        smartToolbox.style.zIndex = "10000";
+        //smartToolbox.style.border = "1px solid #ccc";
+        smartToolbox.style.padding = "0px";
         smartToolbox.style.display = "flex";
         smartToolbox.style.flexWrap = "nowrap";
         smartToolbox.style.alignItems = "center";
         smartToolbox.style.justifyContent = "flex-start";
-        smartToolbox.style.cursor = "grab"; // indicate draggable behavior
+        smartToolbox.style.cursor = "grab";
 
         // append the smart toolbox to the document body
         document.body.appendChild(smartToolbox);
-        console.log("smart toolbox container added to the page.");
+        console.log("✅ Smart toolbox container added to the page.");
 
         // enable click-and-drag scrolling
         let isDragging = false;
@@ -105,47 +111,42 @@
                                 stackedContainer.style.flexDirection = "column";
                                 stackedContainer.style.alignItems = "center";
 
-                                // Append the icon and label to the stacked container
                                 stackedContainer.appendChild(iconElement.cloneNode(true));
                                 stackedContainer.appendChild(labelElement.cloneNode(true));
 
-                                // Set label color dynamically based on the original dropdown item's state
                                 const stackedLabel = stackedContainer.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
                                 if (stackedLabel) {
                                     const isDisabled = dropdownItem.classList.contains('disabled');
                                     stackedLabel.style.color = isDisabled ? "rgb(158, 158, 158)" : "rgb(140, 187, 226)";
                                     stackedLabel.style.visibility = "visible";
                                     stackedLabel.style.opacity = "1";
-                                    stackedLabel.style.transition = "none"; // remove hover effects
+                                    stackedLabel.style.transition = "none";
                                     stackedLabel.style.paddingTop = "6px";
                                 }
 
-                                // Clear cloned dropdown item and append stacked content
                                 clonedDropdownItem.innerHTML = "";
                                 clonedDropdownItem.appendChild(stackedContainer);
 
                                 clonedDropdownItem.style.display = "flex";
                                 clonedDropdownItem.style.flexDirection = "column";
                                 clonedDropdownItem.style.alignItems = "center";
-                                clonedDropdownItem.style.border = "1px solid #ddd"; // match default border
-                                clonedDropdownItem.style.backgroundColor = "#f9f9f9"; // match default background
+                                clonedDropdownItem.style.border = "1px solid #ddd";
+                                clonedDropdownItem.style.backgroundColor = "#f9f9f9";
                                 clonedDropdownItem.style.padding = "4px 6px";
-                                clonedDropdownItem.style.margin = "2px"; // ensure spacing between buttons
-                                //clonedDropdownItem.style.borderRadius = "4px";
+                                clonedDropdownItem.style.margin = "2px";
 
-                                // copy functionality from the original dropdown item
                                 clonedDropdownItem.addEventListener("click", () => {
-                                    dropdownItem.click(); // trigger the original button click
+                                    dropdownItem.click();
                                 });
 
                                 smartToolbox.appendChild(clonedDropdownItem);
                             }
                         });
                     } else {
-                        const clonedChild = child.cloneNode(true); // clone regular buttons
+                        const clonedChild = child.cloneNode(true);
                         clonedChild.style.border = "1px solid #ddd";
                         clonedChild.style.backgroundColor = "#f9f9f9";
-                        clonedChild.style.margin = "2px"; // spacing between buttons
+                        clonedChild.style.margin = "2px";
 
                         clonedChild.addEventListener("click", () => {
                             child.click();
@@ -155,18 +156,16 @@
                     }
                 });
 
-                console.log("all buttons (including dropdown subchildren) cloned into the smart toolbox.");
+                console.log("✅ All buttons (including dropdown subchildren) cloned into the smart toolbox.");
 
-                // show the smart toolbox and hide the original toolbar
                 smartToolbox.style.display = "flex";
-                targetDiv.style.display = "none"; // hide the original toolbar
+                targetDiv.style.display = "none";
             } else {
                 smartToolbox.style.display = "none";
                 targetDiv.style.display = "block";
             }
         };
 
-        // create a toggle button for the smart toolbox
         const toggleButton = document.createElement("button");
         toggleButton.innerText = "toggle toolbox";
         toggleButton.style.position = "fixed";
@@ -176,9 +175,8 @@
 
         toggleButton.addEventListener("click", toggleSmartToolbox);
         document.body.appendChild(toggleButton);
-        console.log("toggle button added to the page.");
+        console.log("✅ Toggle button added to the page.");
     };
 
-    // start waiting for the target div to load
     waitForTargetDiv();
 })();

@@ -59,6 +59,18 @@
         document.body.appendChild(smartToolbox);
         console.log("✅ Smart toolbox container added to the page.");
 
+        // function to update width on browser resize
+        const updateSmartToolboxSize = () => {
+            const rect = toolbar.getBoundingClientRect();
+            smartToolbox.style.width = `${rect.width}px`;
+            smartToolbox.style.left = `${rect.left + window.scrollX}px`;
+            console.log("✅ Smart toolbox resized!");
+        };
+
+        // Listen for window resize events
+        window.addEventListener("resize", updateSmartToolboxSize);
+        updateSmartToolboxSize(); // Run immediately on initialization
+
         // enable click-and-drag scrolling
         let isDragging = false;
         let startX;
@@ -156,7 +168,7 @@
                     }
                 });
 
-                console.log("✅ All buttons (including dropdown subchildren) cloned into the smart toolbox.");
+                console.log("✅ All buttons cloned into the smart toolbox.");
 
                 smartToolbox.style.display = "flex";
                 targetDiv.style.display = "none";
@@ -175,7 +187,6 @@
 
         toggleButton.addEventListener("click", toggleSmartToolbox);
         document.body.appendChild(toggleButton);
-        console.log("✅ Toggle button added to the page.");
     };
 
     waitForTargetDiv();

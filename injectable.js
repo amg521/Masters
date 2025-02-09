@@ -187,6 +187,22 @@
 
         toggleButton.addEventListener("click", toggleSmartToolbox);
         document.body.appendChild(toggleButton);
+
+        // **🚀 Add MutationObserver to detect updates**
+        const observer = new MutationObserver(() => {
+            console.log("🔄 Detected toolbar update. Syncing Smart Toolbox...");
+
+            observer.disconnect(); // Pause observer to prevent infinite loop
+
+            if (smartToolbox.style.display === "flex") {
+                toggleSmartToolbox(); // Hide the toolbox
+                toggleSmartToolbox(); // Show updated toolbox
+            }
+
+            observer.observe(targetDiv, { childList: true, subtree: true, attributes: true }); // Resume observing
+        });
+
+        observer.observe(targetDiv, { childList: true, subtree: true, attributes: true });
     };
 
     waitForTargetDiv();

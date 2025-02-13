@@ -267,11 +267,11 @@
         }
 
         console.log("Target div and toolbar located.");
-        initializeSmartToolbox(targetDiv, toolbar);
+        createSmartToolbox(targetDiv, toolbar);
     };
 
     // initialize the smart toolbox
-    const initializeSmartToolbox = (targetDiv, toolbar) => {
+    const createSmartToolbox = (targetDiv, toolbar) => {
         console.log("Initializing smart toolbox...");
 
         // get toolbar dimensions

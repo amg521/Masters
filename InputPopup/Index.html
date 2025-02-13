@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Let AI personalize your toolbar</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
 
     body {
       font-family: 'Inter', sans-serif;
+      font-weight: 300;
       background-color: #f0f2f5;
       display: flex;
       justify-content: center;
@@ -39,6 +40,7 @@
 
     p {
       font-size: 16px;
+      font-weight: 400;
       color: #757575;
       margin-top: 4px;
       margin-bottom: 24px;
@@ -48,7 +50,7 @@
       display: block;
       font-size: 16px;
       margin-bottom: 8px;
-      color: #333;
+      color: #464646;
     }
 
     input, select, textarea {
@@ -60,10 +62,26 @@
       border-radius: 8px;
       box-sizing: border-box;
       font-size: 16px;
+      font-weight: 300;
     }
 
+    #build::placeholder,
+textarea#approach::placeholder {
+  font-weight: 300;
+}
+
+
     select {
-      margin-bottom: 24px;
+      margin-bottom: 8px;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      font-weight: 400;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 20px;
+      padding-right: 44px;
     }
 
     .button {
@@ -81,8 +99,13 @@
       justify-content: center;
       align-items: center;
       gap: 8px;
-      margin-top: 4px;
+      margin-top: 24px;
       margin-bottom: 24px;
+    }
+
+    #build::placeholder,
+    textarea#approach::placeholder {
+      color: #B3B3B3;
     }
 
     .button img {
@@ -92,31 +115,57 @@
 
     .checkbox {
       display: flex;
-      align-items: center; /* align checkbox to the left of each option */
-      margin-bottom: 8px;
+      align-items: flex-start;
+      margin-bottom: 24px;
     }
 
     .checkbox input {
-      transform: scale(0.8); /* smaller checkboxes */
-      margin-right: 8px;
+      width: 16px;
+      height: 16px;
+      margin-right: 12px;
+      border-radius: 4px;
+      background-color: #464646;
+      border: 1px solid #464646;
       align-self: flex-start;
     }
 
     .checkbox label {
-      font-size: 14px;
+      font-size: 16px;
       margin: 0;
     }
-    
-    #build, #help{
-      padding-left: 16px;
+
+    .checkbox label span {
+      color: #464646;
+      font-weight: 300;
     }
 
-    
+    .checkbox small {
+      color: #757575;
+      font-size: 16px;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .checkbox input:checked + label span {
+      font-weight: 600;
+    }
+
+    #build, #help {
+      padding-left: 16px;
+      color: #464646;
+    }
 
     textarea#approach {
-      height: 80px; /* updated height */
+      height: 80px;
       font-family: 'Inter', sans-serif;
-      font-size: 16px; /* updated font size */
+      font-size: 16px;
+      padding-left: 16px;
+      margin-bottom: 8px;
+      font-weight: 300;
+    }
+
+    #dynamic-section {
+      margin-top: 12px;
     }
   </style>
 </head>
@@ -148,9 +197,18 @@
       dynamicSection.innerHTML = '';
       if (helpSelect.value.includes('set of approaches')) {
         dynamicSection.innerHTML = `
-          <div class="checkbox"><input type="checkbox" checked /><label>Option 1<br><small>Create hinge parts using basic shapes like cylinders and cubes, then combine them.</small></label></div>
-          <div class="checkbox"><input type="checkbox" /><label>Option 2<br><small>Draw 2D sketches for the hinge leaves and pin, then extrude them into 3D.</small></label></div>
-          <div class="checkbox"><input type="checkbox" /><label>Option 3<br><small>Sculpt and refine the hinge geometry from a basic shape using sculpting tools.</small></label></div>
+          <div class="checkbox">
+            <input type="radio" name="approach" id="option1" checked>
+            <label for="option1"><span>Option 1</span><br><small>Create hinge parts using basic shapes like cylinders and cubes, then combine them.</small></label>
+          </div>
+          <div class="checkbox">
+            <input type="radio" name="approach" id="option2">
+            <label for="option2"><span>Option 2</span><br><small>Draw 2D sketches for the hinge leaves and pin, then extrude them into 3D.</small></label>
+          </div>
+          <div class="checkbox">
+            <input type="radio" name="approach" id="option3">
+            <label for="option3"><span>Option 3</span><br><small>Sculpt and refine the hinge geometry from a basic shape using sculpting tools.</small></label>
+          </div>
         `;
       } else if (helpSelect.value.includes('own approach')) {
         dynamicSection.innerHTML = `
@@ -158,7 +216,22 @@
           <textarea id="approach" placeholder="e.g. Create hinge parts using basic shapes like cylinders and cubes, then combine them."></textarea>
         `;
       }
+      dynamicSection.style.marginBottom = '24px'; // Ensure consistent spacing
     });
+
+    dynamicSection.addEventListener('change', (e) => {
+      if (e.target.type === 'radio') {
+        const radios = dynamicSection.querySelectorAll('input[type="radio"]');
+        radios.forEach(radio => {
+          if (radio !== e.target) {
+            radio.checked = false;
+          }
+        });
+      }
+    });
+
+    // Initialize the form with the first option
+    helpSelect.dispatchEvent(new Event('change'));
   </script>
 </body>
 </html>

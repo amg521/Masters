@@ -133,6 +133,10 @@
                                     stackedLabel.style.opacity = "1";
                                     stackedLabel.style.transition = "none";
                                     stackedLabel.style.paddingTop = "6px";
+
+                                    // Set button name to the text from the inner pull-left element
+                                    const buttonName = stackedLabel.textContent.trim();
+                                    clonedDropdownItem.setAttribute('name', buttonName);
                                 }
 
                                 clonedDropdownItem.innerHTML = "";
@@ -158,6 +162,13 @@
                         clonedChild.style.border = "1px solid #ddd";
                         clonedChild.style.backgroundColor = "#f9f9f9";
                         clonedChild.style.margin = "2px";
+
+                        // Set button name to the text from the inner pull-left element if present
+                        const labelElement = clonedChild.querySelector('.inner.pull-left');
+                        if (labelElement) {
+                            const buttonName = labelElement.textContent.trim();
+                            clonedChild.setAttribute('name', buttonName);
+                        }
 
                         clonedChild.addEventListener("click", () => {
                             child.click();

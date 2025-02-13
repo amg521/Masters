@@ -17,18 +17,18 @@
         const toolbar = document.getElementById("headerToolbarMenu");
 
         if (!targetDiv || !toolbar) {
-            console.log("❌ Target div or toolbar not found. Retrying...");
+            console.log("Target div or toolbar not found. Retrying...");
             setTimeout(waitForTargetDiv, 500); // retry every 500ms
             return;
         }
 
-        console.log("✅ Target div and toolbar located.");
+        console.log("Target div and toolbar located.");
         initializeSmartToolbox(targetDiv, toolbar);
     };
 
     // initialize the smart toolbox
     const initializeSmartToolbox = (targetDiv, toolbar) => {
-        console.log("✅ Initializing smart toolbox...");
+        console.log("Initializing smart toolbox...");
 
         // get toolbar dimensions
         const rect = toolbar.getBoundingClientRect();
@@ -47,7 +47,6 @@
         smartToolbox.style.overflowY = "hidden";
         smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
         smartToolbox.style.backgroundColor = "white";
-        //smartToolbox.style.border = "1px solid #ccc";
         smartToolbox.style.padding = "0px";
         smartToolbox.style.display = "flex";
         smartToolbox.style.flexWrap = "nowrap";
@@ -57,19 +56,19 @@
 
         // append the smart toolbox to the document body
         document.body.appendChild(smartToolbox);
-        console.log("✅ Smart toolbox container added to the page.");
+        console.log("Smart toolbox container added to the page.");
 
         // function to update width on browser resize
         const updateSmartToolboxSize = () => {
             const rect = toolbar.getBoundingClientRect();
             smartToolbox.style.width = `${rect.width}px`;
             smartToolbox.style.left = `${rect.left + window.scrollX}px`;
-            console.log("✅ Smart toolbox resized!");
+            console.log("Smart toolbox resized!");
         };
 
-        // Listen for window resize events
+        // listen for window resize events
         window.addEventListener("resize", updateSmartToolboxSize);
-        updateSmartToolboxSize(); // Run immediately on initialization
+        updateSmartToolboxSize(); // run immediately on initialization
 
         // enable click-and-drag scrolling
         let isDragging = false;
@@ -168,18 +167,20 @@
                     }
                 });
 
-                console.log("✅ All buttons cloned into the smart toolbox.");
+                console.log("All buttons cloned into the smart toolbox.");
 
                 smartToolbox.style.display = "flex";
                 targetDiv.style.display = "none";
+                toggleButton.innerText = "Hide Toolbox"; // Update button text when turned on
             } else {
                 smartToolbox.style.display = "none";
                 targetDiv.style.display = "block";
+                toggleButton.innerText = "Show Toolbox"; // Update button text when turned off
             }
         };
 
         const toggleButton = document.createElement("button");
-        toggleButton.innerText = "toggle toolbox";
+        toggleButton.innerText = "Show Toolbox"; // Start in OFF state
         toggleButton.style.position = "fixed";
         toggleButton.style.top = "10px";
         toggleButton.style.right = "10px";
@@ -187,22 +188,6 @@
 
         toggleButton.addEventListener("click", toggleSmartToolbox);
         document.body.appendChild(toggleButton);
-
-        // **🚀 Add MutationObserver to detect updates**
-        const observer = new MutationObserver(() => {
-            console.log("🔄 Detected toolbar update. Syncing Smart Toolbox...");
-
-            observer.disconnect(); // Pause observer to prevent infinite loop
-
-            if (smartToolbox.style.display === "flex") {
-                toggleSmartToolbox(); // Hide the toolbox
-                toggleSmartToolbox(); // Show updated toolbox
-            }
-
-            observer.observe(targetDiv, { childList: true, subtree: true, attributes: true }); // Resume observing
-        });
-
-        observer.observe(targetDiv, { childList: true, subtree: true, attributes: true });
     };
 
     waitForTargetDiv();

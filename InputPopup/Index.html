@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Let AI personalize your toolbar</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 24px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: 380px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 120%;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      font-size: 14px;
+      color: #6b6b6b;
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 14px;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #a0a0a0;
+    }
+
+    input:not(:placeholder-shown) {
+      color: #14708E;
+    }
+
+    .checkbox {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .checkbox input {
+      margin-right: 8px;
+      margin-top: 4px;
+    }
+
+    .button {
+      background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 600;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .button img {
+      height: 16px;
+      width: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Let AI personalize your toolbar</h1>
+    <p>Don’t worry- the default toolbar will be untouched</p>
+
+    <label for="build">What would you like to build today?</label>
+    <input type="text" id="build" placeholder="e.g. a door hinge" />
+
+    <label for="help">How can we best help you?</label>
+    <select id="help">
+      <option>I’d like to be guided through every step</option>
+      <option>I’d like to choose from a set of approaches</option>
+      <option>I’d like to choose my own approach</option>
+    </select>
+
+    <div id="dynamic-section"></div>
+
+    <button class="button">Generate smart toolbar <img src="sparkle-icon.png" alt="sparkle" /></button>
+  </div>
+
+  <script>
+    const helpSelect = document.getElementById('help');
+    const dynamicSection = document.getElementById('dynamic-section');
+
+    helpSelect.addEventListener('change', () => {
+      dynamicSection.innerHTML = '';
+      if (helpSelect.value.includes('set of approaches')) {
+        dynamicSection.innerHTML = `
+          <div class="checkbox"><input type="checkbox" checked /> <label>Option 1<br><small>Create hinge parts using basic shapes like cylinders and cubes, then combine them.</small></label></div>
+          <div class="checkbox"><input type="checkbox" /> <label>Option 2<br><small>Draw 2D sketches for the hinge leaves and pin, then extrude them into 3D.</small></label></div>
+          <div class="checkbox"><input type="checkbox" /> <label>Option 3<br><small>Sculpt and refine the hinge geometry from a basic shape using sculpting tools.</small></label></div>
+        `;
+      } else if (helpSelect.value.includes('own approach')) {
+        dynamicSection.innerHTML = `
+          <label for="approach">My approach will be to...</label>
+          <textarea id="approach" placeholder="e.g. Create hinge parts using basic shapes like cylinders and cubes, then combine them."></textarea>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  Shows AI configuration popup first, then loads smart toolbox with drag-scroll functionality
-// @author       Your Name
+// @author       Axelle Groothaert
 // @match        https://www.selfcad.com/app/*
 // @grant        GM_addStyle
 // ==/UserScript==
@@ -16,7 +16,17 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
     `);
 
-    // Create and show configuration popup
+    const waitForStartButton = () => {
+    const checkButton = setInterval(() => {
+        const startButton = document.querySelector('.start-project');
+        if (startButton) {
+            clearInterval(checkButton);
+            startButton.addEventListener('click', createPopup);
+        }
+    }, 500);
+};
+
+const createPopup = () => {
     const popupHost = document.createElement('div');
     document.body.appendChild(popupHost);
     const shadow = popupHost.attachShadow({mode: 'open'});
@@ -175,11 +185,8 @@
       margin-top: 12px;
     }
   </style>
-</head>
-<body>
 
 
-        </style>
         <div class="container">
             <h1>Let AI personalize your toolbar</h1>
             <p>Don’t worry- the default toolbar will be untouched</p>
@@ -447,4 +454,7 @@
 
     waitForTargetDiv();
     }
+}
+
+waitForStartButton(); // This starts looking for .start-project
 })();

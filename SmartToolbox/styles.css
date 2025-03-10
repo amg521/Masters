@@ -12,6 +12,10 @@
     z-index: 10000;
     font-family: 'Inter', sans-serif;
 }
+#smart-toolbox-toggle {
+    background: linear-gradient(90deg, rgb(53, 142, 110) 0%, rgb(97, 198, 240) 100%) !important;
+    color: white;
+}
 .container {
     background-color: #fff;
     padding: 8px 24px;

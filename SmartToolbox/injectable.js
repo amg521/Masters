@@ -407,7 +407,8 @@ const createPopup = () => {
                                 clonedDropdownItem.style.margin = "2px";
 
                                 clonedDropdownItem.addEventListener("click", () => {
-                                    dropdownItem.click();
+                                    dropdownItem.click(); // Simulate original button click
+                                  setTimeout(() => refreshSmartToolbox(), 500); // Wait a bit and refresh the toolbox
                                 });
 
                                 smartToolbox.appendChild(clonedDropdownItem);
@@ -435,9 +436,46 @@ const createPopup = () => {
                 });
 
                 console.log("All buttons cloned into the smart toolbox.");
+const refreshSmartToolbox = () => {
+    console.log("Refreshing smart toolbox...");
+
+    if (!smartToolbox || smartToolbox.style.display !== "flex") {
+        console.warn("Smart toolbox is not visible. Skipping refresh.");
+        return;
+    }
+
+    smartToolbox.innerHTML = ""; // Clear previous buttons
+
+    Array.from(targetDiv.children).forEach((child) => {
+        const clonedChild = child.cloneNode(true);
+        clonedChild.style.border = "1px solid #ddd";
+        clonedChild.style.backgroundColor = "#f9f9f9";
+        clonedChild.style.margin = "2px";
+
+        const labelElement = clonedChild.querySelector('.inner.pull-left');
+        if (labelElement) {
+            const buttonName = labelElement.textContent.trim();
+            clonedChild.setAttribute('name', buttonName);
+        }
+
+        clonedChild.addEventListener("click", () => {
+            console.log(`Button clicked: ${clonedChild.getAttribute("name")}`);
+            child.click(); // Simulate original button click
+            setTimeout(refreshSmartToolbox, 500); // Refresh the toolbox after interaction
+        });
+
+        smartToolbox.appendChild(clonedChild);
+    });
+
+    console.log("Smart toolbox refreshed.");
+};
+
 
 if (smartToolbox.style.display === "none") {
-    smartToolbox.innerHTML = ""; // clear previous content
+    console.log("Showing Smart Toolbox...");
+    refreshSmartToolbox(); // Refresh buttons without affecting visibility
+
+
 
     // loop through children of the target toolbar
     Array.from(targetDiv.children).forEach((child) => {
@@ -484,9 +522,15 @@ if (smartToolbox.style.display === "none") {
                     clonedDropdownItem.style.padding = "4px 6px";
                     clonedDropdownItem.style.margin = "2px";
 
-                    clonedDropdownItem.addEventListener("click", () => {
-                        dropdownItem.click();
-                    });
+clonedDropdownItem.addEventListener("click", () => {
+    dropdownItem.click();
+    setTimeout(() => {
+        if (smartToolbox.style.display === "flex") {
+            refreshSmartToolbox(); // Refresh only if toolbox is still displayed
+        }
+    }, 500);
+});
+
 
                     smartToolbox.appendChild(clonedDropdownItem);
                 }

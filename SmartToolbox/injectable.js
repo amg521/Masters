@@ -303,7 +303,8 @@ const createPopup = () => {
         smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
         smartToolbox.style.backgroundColor = "white";
         smartToolbox.style.padding = "0px";
-        smartToolbox.style.display = "flex";
+        smartToolbox.style.display = "none";
+
         smartToolbox.style.flexWrap = "nowrap";
         smartToolbox.style.alignItems = "center";
         smartToolbox.style.justifyContent = "flex-start";
@@ -435,9 +436,94 @@ const createPopup = () => {
 
                 console.log("All buttons cloned into the smart toolbox.");
 
-                smartToolbox.style.display = "flex";
-                targetDiv.style.display = "none";
-                toggleButton.innerText = "Hide Toolbox"; // Update button text when turned on
+if (smartToolbox.style.display === "none") {
+    smartToolbox.innerHTML = ""; // clear previous content
+
+    // loop through children of the target toolbar
+    Array.from(targetDiv.children).forEach((child) => {
+        const dropdownItems = child.querySelectorAll('[class^="dropdown-item"]');
+        if (dropdownItems.length > 0) {
+            dropdownItems.forEach((dropdownItem) => {
+                const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
+
+                // stack icon and label vertically
+                const iconElement = dropdownItem.querySelector('span[class^="pull-left"][class*="selfcad-grey-"]');
+                const labelElement = dropdownItem.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
+
+                if (iconElement && labelElement) {
+                    const stackedContainer = document.createElement("div");
+                    stackedContainer.style.display = "flex";
+                    stackedContainer.style.flexDirection = "column";
+                    stackedContainer.style.alignItems = "center";
+
+                    stackedContainer.appendChild(iconElement.cloneNode(true));
+                    stackedContainer.appendChild(labelElement.cloneNode(true));
+
+                    const stackedLabel = stackedContainer.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
+                    if (stackedLabel) {
+                        const isDisabled = dropdownItem.classList.contains('disabled');
+                        stackedLabel.style.color = isDisabled ? "rgb(158, 158, 158)" : "rgb(140, 187, 226)";
+                        stackedLabel.style.visibility = "visible";
+                        stackedLabel.style.opacity = "1";
+                        stackedLabel.style.transition = "none";
+                        stackedLabel.style.paddingTop = "6px";
+
+                        // Set button name to the text from the inner pull-left element
+                        const buttonName = stackedLabel.textContent.trim();
+                        clonedDropdownItem.setAttribute('name', buttonName);
+                    }
+
+                    clonedDropdownItem.innerHTML = "";
+                    clonedDropdownItem.appendChild(stackedContainer);
+
+                    clonedDropdownItem.style.display = "flex";
+                    clonedDropdownItem.style.flexDirection = "column";
+                    clonedDropdownItem.style.alignItems = "center";
+                    clonedDropdownItem.style.border = "1px solid #ddd";
+                    clonedDropdownItem.style.backgroundColor = "#f9f9f9";
+                    clonedDropdownItem.style.padding = "4px 6px";
+                    clonedDropdownItem.style.margin = "2px";
+
+                    clonedDropdownItem.addEventListener("click", () => {
+                        dropdownItem.click();
+                    });
+
+                    smartToolbox.appendChild(clonedDropdownItem);
+                }
+            });
+        } else {
+            const clonedChild = child.cloneNode(true);
+            clonedChild.style.border = "1px solid #ddd";
+            clonedChild.style.backgroundColor = "#f9f9f9";
+            clonedChild.style.margin = "2px";
+
+            // Set button name to the text from the inner pull-left element if present
+            const labelElement = clonedChild.querySelector('.inner.pull-left');
+            if (labelElement) {
+                const buttonName = labelElement.textContent.trim();
+                clonedChild.setAttribute('name', buttonName);
+            }
+
+            clonedChild.addEventListener("click", () => {
+                child.click();
+            });
+
+            smartToolbox.appendChild(clonedChild);
+        }
+    });
+
+    console.log("All buttons cloned into the smart toolbox.");
+
+    smartToolbox.style.display = "flex";
+    targetDiv.style.display = "none"; // Hide default toolbar
+    toggleButton.innerText = "Hide Toolbox"; // Update button text when turned on
+} else {
+    smartToolbox.style.display = "none";
+    targetDiv.style.display = "block"; // Show default toolbar
+    toggleButton.innerText = "Show Toolbox"; // Update button text when turned off
+}
+
+ // Update button text when turned on
             } else {
                 smartToolbox.style.display = "none";
                 targetDiv.style.display = "block";

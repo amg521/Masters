@@ -189,16 +189,16 @@ const createPopup = () => {
 
         <div class="container">
             <h1>Let AI personalize your toolbar</h1>
-            <p>Don’t worry- the default toolbar will be untouched</p>
+            <p>Don't worry- the default toolbar will be untouched</p>
 
             <label for="build">What would you like to build today?</label>
             <input type="text" id="build" placeholder="e.g. a door hinge" />
 
             <label for="help">How can we best help you?</label>
             <select id="help">
-                <option>I’d like to be guided through every step</option>
-                <option>I’d like to choose from a set of approaches</option>
-                <option>I’d like to choose my own approach</option>
+                <option>I'd like to be guided through every step</option>
+                <option>I'd like to choose from a set of approaches</option>
+                <option>I'd like to choose my own approach</option>
             </select>
 
             <div id="dynamic-section"></div>
@@ -264,9 +264,14 @@ const createPopup = () => {
     function initializeSmartToolbox() {
     console.log("smart toolbox script has started running.");
 
+    // Variables for global access
+    let targetDiv;
+    let smartToolbox;
+    let refreshTimeout;
+
     // MODIFIED: Added check for projects-panel.hidden
     const waitForTargetDiv = () => {
-        const targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
+        targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
         const toolbar = document.getElementById("headerToolbarMenu");
         const projectsPanel = document.querySelector('.projects-panel'); // NEW
 
@@ -281,15 +286,179 @@ const createPopup = () => {
         createSmartToolbox(targetDiv, toolbar);
     };
 
+    // Extract the repeated code into a function for populating the toolbox
+    const populateSmartToolbox = (toolbox, sourceDiv) => {
+        toolbox.innerHTML = ""; // clear previous content
+
+        // loop through children of the target toolbar
+        Array.from(sourceDiv.children).forEach((child) => {
+            const dropdownItems = child.querySelectorAll('[class^="dropdown-item"]');
+            if (dropdownItems.length > 0) {
+                dropdownItems.forEach((dropdownItem) => {
+                    const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
+
+                    // stack icon and label vertically
+                    const iconElement = dropdownItem.querySelector('span[class^="pull-left"][class*="selfcad-grey-"]');
+                    const labelElement = dropdownItem.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
+
+                    if (iconElement && labelElement) {
+                        const stackedContainer = document.createElement("div");
+                        stackedContainer.style.display = "flex";
+                        stackedContainer.style.flexDirection = "column";
+                        stackedContainer.style.alignItems = "center";
+
+                        stackedContainer.appendChild(iconElement.cloneNode(true));
+                        stackedContainer.appendChild(labelElement.cloneNode(true));
+
+                        const stackedLabel = stackedContainer.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
+                        if (stackedLabel) {
+                            const isDisabled = dropdownItem.classList.contains('disabled');
+                            stackedLabel.style.color = isDisabled ? "rgb(158, 158, 158)" : "rgb(140, 187, 226)";
+                            stackedLabel.style.visibility = "visible";
+                            stackedLabel.style.opacity = "1";
+                            stackedLabel.style.transition = "none";
+                            stackedLabel.style.paddingTop = "6px";
+
+                            // Set button name to the text from the inner pull-left element
+                            const buttonName = stackedLabel.textContent.trim();
+                            clonedDropdownItem.setAttribute('name', buttonName);
+                        }
+
+                        clonedDropdownItem.innerHTML = "";
+                        clonedDropdownItem.appendChild(stackedContainer);
+
+                        clonedDropdownItem.style.display = "flex";
+                        clonedDropdownItem.style.flexDirection = "column";
+                        clonedDropdownItem.style.alignItems = "center";
+                        clonedDropdownItem.style.border = "1px solid #ddd";
+                        clonedDropdownItem.style.backgroundColor = "#f9f9f9";
+                        clonedDropdownItem.style.padding = "4px 6px";
+                        clonedDropdownItem.style.margin = "2px";
+
+                        // Add disabled styling if original item is disabled
+                        if (dropdownItem.classList.contains('disabled')) {
+                            clonedDropdownItem.classList.add('disabled');
+                            clonedDropdownItem.style.opacity = "0.6";
+                            clonedDropdownItem.style.cursor = "not-allowed";
+                        } else {
+                            clonedDropdownItem.addEventListener("click", () => {
+                                dropdownItem.click();
+                                // Schedule a refresh after click
+                                scheduleToolboxRefresh();
+                            });
+                        }
+
+                        toolbox.appendChild(clonedDropdownItem);
+                    }
+                });
+            } else {
+                const clonedChild = child.cloneNode(true);
+                clonedChild.style.border = "1px solid #ddd";
+                clonedChild.style.backgroundColor = "#f9f9f9";
+                clonedChild.style.margin = "2px";
+
+                // Set button name to the text from the inner pull-left element if present
+                const labelElement = clonedChild.querySelector('.inner.pull-left');
+                if (labelElement) {
+                    const buttonName = labelElement.textContent.trim();
+                    clonedChild.setAttribute('name', buttonName);
+                }
+
+                // Add disabled styling if original item is disabled
+                if (child.classList.contains('disabled')) {
+                    clonedChild.classList.add('disabled');
+                    clonedChild.style.opacity = "0.6";
+                    clonedChild.style.cursor = "not-allowed";
+                } else {
+                    clonedChild.addEventListener("click", () => {
+                        child.click();
+                        // Schedule a refresh after click
+                        scheduleToolboxRefresh();
+                    });
+                }
+
+                toolbox.appendChild(clonedChild);
+            }
+        });
+
+        console.log("All buttons cloned into the smart toolbox.");
+    };
+
+    // Function to schedule a toolbox refresh with debouncing
+    const scheduleToolboxRefresh = () => {
+        console.log("Scheduling toolbox refresh...");
+
+        // Clear any existing timeout to prevent multiple refreshes
+        if (refreshTimeout) {
+            clearTimeout(refreshTimeout);
+        }
+
+        // Set a new timeout for refresh (300ms delay to ensure UI has updated)
+        refreshTimeout = setTimeout(() => {
+            if (smartToolbox && smartToolbox.style.display !== "none" && targetDiv) {
+                console.log("Refreshing toolbox...");
+                populateSmartToolbox(smartToolbox, targetDiv);
+            }
+        }, 300);
+    };
+
+    // Function to observe app interactions and refresh toolbox
+    const setupInteractionObservers = () => {
+        console.log("Setting up interaction observers...");
+
+        // 1. Observe clicks on the entire app
+        document.addEventListener('click', (e) => {
+            // Only refresh if the click is not on the smart toolbox itself
+            if (smartToolbox && !smartToolbox.contains(e.target)) {
+                scheduleToolboxRefresh();
+            }
+        });
+
+        // 2. Observe keypress events that might trigger actions
+        document.addEventListener('keydown', () => {
+            scheduleToolboxRefresh();
+        });
+
+        // 3. Set up MutationObserver to watch for changes in the UI
+        const observer = new MutationObserver((mutations) => {
+            let shouldRefresh = false;
+
+            // Check if any mutations affect the disabled state of buttons
+            mutations.forEach((mutation) => {
+                if (mutation.target.classList &&
+                    (mutation.target.classList.contains('disabled') ||
+                     mutation.target.parentElement && mutation.target.parentElement.classList.contains('dropdown-item'))) {
+                    shouldRefresh = true;
+                }
+            });
+
+            if (shouldRefresh) {
+                scheduleToolboxRefresh();
+            }
+        });
+
+        // Start observing the target div for class changes (especially 'disabled' class)
+        if (targetDiv) {
+            observer.observe(targetDiv, {
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['class']
+            });
+        }
+    };
+
     // initialize the smart toolbox
-    const createSmartToolbox = (targetDiv, toolbar) => {
+    const createSmartToolbox = (sourceDiv, toolbar) => {
         console.log("Initializing smart toolbox...");
+
+        // Store reference to targetDiv
+        targetDiv = sourceDiv;
 
         // get toolbar dimensions
         const rect = toolbar.getBoundingClientRect();
 
         // create the smart toolbox container
-        const smartToolbox = document.createElement("div");
+        smartToolbox = document.createElement("div");
         smartToolbox.id = "smart-toolbox";
         smartToolbox.style.display = "none"; // initially hidden
         smartToolbox.style.position = "absolute";
@@ -356,218 +525,15 @@ const createPopup = () => {
             smartToolbox.scrollLeft = scrollLeft - walk;
         });
 
-        // function to clone and move child elements into the smart toolbox
+        // function to toggle toolbox visibility and populate it
         const toggleSmartToolbox = () => {
             if (smartToolbox.style.display === "none") {
-                smartToolbox.innerHTML = ""; // clear previous content
+                // Populate the smart toolbox using the extracted function
+                populateSmartToolbox(smartToolbox, targetDiv);
 
-                // loop through children of the target toolbar
-                Array.from(targetDiv.children).forEach((child) => {
-                    const dropdownItems = child.querySelectorAll('[class^="dropdown-item"]');
-                    if (dropdownItems.length > 0) {
-                        dropdownItems.forEach((dropdownItem) => {
-                            const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
-
-                            // stack icon and label vertically
-                            const iconElement = dropdownItem.querySelector('span[class^="pull-left"][class*="selfcad-grey-"]');
-                            const labelElement = dropdownItem.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
-
-                            if (iconElement && labelElement) {
-                                const stackedContainer = document.createElement("div");
-                                stackedContainer.style.display = "flex";
-                                stackedContainer.style.flexDirection = "column";
-                                stackedContainer.style.alignItems = "center";
-
-                                stackedContainer.appendChild(iconElement.cloneNode(true));
-                                stackedContainer.appendChild(labelElement.cloneNode(true));
-
-                                const stackedLabel = stackedContainer.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
-                                if (stackedLabel) {
-                                    const isDisabled = dropdownItem.classList.contains('disabled');
-                                    stackedLabel.style.color = isDisabled ? "rgb(158, 158, 158)" : "rgb(140, 187, 226)";
-                                    stackedLabel.style.visibility = "visible";
-                                    stackedLabel.style.opacity = "1";
-                                    stackedLabel.style.transition = "none";
-                                    stackedLabel.style.paddingTop = "6px";
-
-                                    // Set button name to the text from the inner pull-left element
-                                    const buttonName = stackedLabel.textContent.trim();
-                                    clonedDropdownItem.setAttribute('name', buttonName);
-                                }
-
-                                clonedDropdownItem.innerHTML = "";
-                                clonedDropdownItem.appendChild(stackedContainer);
-
-                                clonedDropdownItem.style.display = "flex";
-                                clonedDropdownItem.style.flexDirection = "column";
-                                clonedDropdownItem.style.alignItems = "center";
-                                clonedDropdownItem.style.border = "1px solid #ddd";
-                                clonedDropdownItem.style.backgroundColor = "#f9f9f9";
-                                clonedDropdownItem.style.padding = "4px 6px";
-                                clonedDropdownItem.style.margin = "2px";
-
-                                clonedDropdownItem.addEventListener("click", () => {
-                                    dropdownItem.click(); // Simulate original button click
-                                  setTimeout(() => refreshSmartToolbox(), 500); // Wait a bit and refresh the toolbox
-                                });
-
-                                smartToolbox.appendChild(clonedDropdownItem);
-                            }
-                        });
-                    } else {
-                        const clonedChild = child.cloneNode(true);
-                        clonedChild.style.border = "1px solid #ddd";
-                        clonedChild.style.backgroundColor = "#f9f9f9";
-                        clonedChild.style.margin = "2px";
-
-                        // Set button name to the text from the inner pull-left element if present
-                        const labelElement = clonedChild.querySelector('.inner.pull-left');
-                        if (labelElement) {
-                            const buttonName = labelElement.textContent.trim();
-                            clonedChild.setAttribute('name', buttonName);
-                        }
-
-                        clonedChild.addEventListener("click", () => {
-                            child.click();
-                        });
-
-                        smartToolbox.appendChild(clonedChild);
-                    }
-                });
-
-                console.log("All buttons cloned into the smart toolbox.");
-const refreshSmartToolbox = () => {
-    console.log("Refreshing smart toolbox...");
-
-    if (!smartToolbox || smartToolbox.style.display !== "flex") {
-        console.warn("Smart toolbox is not visible. Skipping refresh.");
-        return;
-    }
-
-    smartToolbox.innerHTML = ""; // Clear previous buttons
-
-    Array.from(targetDiv.children).forEach((child) => {
-        const clonedChild = child.cloneNode(true);
-        clonedChild.style.border = "1px solid #ddd";
-        clonedChild.style.backgroundColor = "#f9f9f9";
-        clonedChild.style.margin = "2px";
-
-        const labelElement = clonedChild.querySelector('.inner.pull-left');
-        if (labelElement) {
-            const buttonName = labelElement.textContent.trim();
-            clonedChild.setAttribute('name', buttonName);
-        }
-
-        clonedChild.addEventListener("click", () => {
-            console.log(`Button clicked: ${clonedChild.getAttribute("name")}`);
-            child.click(); // Simulate original button click
-            setTimeout(refreshSmartToolbox, 500); // Refresh the toolbox after interaction
-        });
-
-        smartToolbox.appendChild(clonedChild);
-    });
-
-    console.log("Smart toolbox refreshed.");
-};
-
-
-if (smartToolbox.style.display === "none") {
-    console.log("Showing Smart Toolbox...");
-    refreshSmartToolbox(); // Refresh buttons without affecting visibility
-
-
-
-    // loop through children of the target toolbar
-    Array.from(targetDiv.children).forEach((child) => {
-        const dropdownItems = child.querySelectorAll('[class^="dropdown-item"]');
-        if (dropdownItems.length > 0) {
-            dropdownItems.forEach((dropdownItem) => {
-                const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
-
-                // stack icon and label vertically
-                const iconElement = dropdownItem.querySelector('span[class^="pull-left"][class*="selfcad-grey-"]');
-                const labelElement = dropdownItem.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
-
-                if (iconElement && labelElement) {
-                    const stackedContainer = document.createElement("div");
-                    stackedContainer.style.display = "flex";
-                    stackedContainer.style.flexDirection = "column";
-                    stackedContainer.style.alignItems = "center";
-
-                    stackedContainer.appendChild(iconElement.cloneNode(true));
-                    stackedContainer.appendChild(labelElement.cloneNode(true));
-
-                    const stackedLabel = stackedContainer.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
-                    if (stackedLabel) {
-                        const isDisabled = dropdownItem.classList.contains('disabled');
-                        stackedLabel.style.color = isDisabled ? "rgb(158, 158, 158)" : "rgb(140, 187, 226)";
-                        stackedLabel.style.visibility = "visible";
-                        stackedLabel.style.opacity = "1";
-                        stackedLabel.style.transition = "none";
-                        stackedLabel.style.paddingTop = "6px";
-
-                        // Set button name to the text from the inner pull-left element
-                        const buttonName = stackedLabel.textContent.trim();
-                        clonedDropdownItem.setAttribute('name', buttonName);
-                    }
-
-                    clonedDropdownItem.innerHTML = "";
-                    clonedDropdownItem.appendChild(stackedContainer);
-
-                    clonedDropdownItem.style.display = "flex";
-                    clonedDropdownItem.style.flexDirection = "column";
-                    clonedDropdownItem.style.alignItems = "center";
-                    clonedDropdownItem.style.border = "1px solid #ddd";
-                    clonedDropdownItem.style.backgroundColor = "#f9f9f9";
-                    clonedDropdownItem.style.padding = "4px 6px";
-                    clonedDropdownItem.style.margin = "2px";
-
-clonedDropdownItem.addEventListener("click", () => {
-    dropdownItem.click();
-    setTimeout(() => {
-        if (smartToolbox.style.display === "flex") {
-            refreshSmartToolbox(); // Refresh only if toolbox is still displayed
-        }
-    }, 500);
-});
-
-
-                    smartToolbox.appendChild(clonedDropdownItem);
-                }
-            });
-        } else {
-            const clonedChild = child.cloneNode(true);
-            clonedChild.style.border = "1px solid #ddd";
-            clonedChild.style.backgroundColor = "#f9f9f9";
-            clonedChild.style.margin = "2px";
-
-            // Set button name to the text from the inner pull-left element if present
-            const labelElement = clonedChild.querySelector('.inner.pull-left');
-            if (labelElement) {
-                const buttonName = labelElement.textContent.trim();
-                clonedChild.setAttribute('name', buttonName);
-            }
-
-            clonedChild.addEventListener("click", () => {
-                child.click();
-            });
-
-            smartToolbox.appendChild(clonedChild);
-        }
-    });
-
-    console.log("All buttons cloned into the smart toolbox.");
-
-    smartToolbox.style.display = "flex";
-    targetDiv.style.display = "none"; // Hide default toolbar
-    toggleButton.innerText = "Hide Toolbox"; // Update button text when turned on
-} else {
-    smartToolbox.style.display = "none";
-    targetDiv.style.display = "block"; // Show default toolbar
-    toggleButton.innerText = "Show Toolbox"; // Update button text when turned off
-}
-
- // Update button text when turned on
+                smartToolbox.style.display = "flex";
+                targetDiv.style.display = "none"; // Hide default toolbar
+                toggleButton.innerText = "Hide Toolbox"; // Update button text when turned on
             } else {
                 smartToolbox.style.display = "none";
                 targetDiv.style.display = "block";
@@ -584,6 +550,9 @@ clonedDropdownItem.addEventListener("click", () => {
 
         toggleButton.addEventListener("click", toggleSmartToolbox);
         document.body.appendChild(toggleButton);
+
+        // Setup observers for UI interactions
+        setupInteractionObservers();
     };
 
     waitForTargetDiv();

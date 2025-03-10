@@ -27,7 +27,7 @@ h1 {
     letter-spacing: -0.02em;
     line-height: 120%;
     margin-bottom: 4px;
-    background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
+    background: linear-gradient(90deg, #26C9FF 0%, #26C9FF 69%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }

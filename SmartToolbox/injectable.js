@@ -6,15 +6,16 @@
 // @author       Axelle Groothaert
 // @match        https://www.selfcad.com/app/*
 // @grant        GM_addStyle
+// @resource     STYLES https://raw.githubusercontent.com/amg521/Masters/refs/heads/main/SmartToolbox/styles.css
+// @grant        GM_getResourceText
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // Inject Inter font globally
-    GM_addStyle(`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-    `);
+    // Load the external CSS
+    const cssContent = GM_getResourceText('STYLES');
+    GM_addStyle(cssContent);
 
     const waitForStartButton = () => {
     const checkButton = setInterval(() => {
@@ -31,181 +32,33 @@ const createPopup = () => {
     document.body.appendChild(popupHost);
     const shadow = popupHost.attachShadow({mode: 'open'});
 
-    // Popup HTML and CSS
-    shadow.innerHTML = `
-        <style>
-            :host {
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                background-color: rgba(0, 0, 0, 0.5);
-                z-index: 10000;
-                font-family: 'Inter', sans-serif;
-            }
+    // Create a style element inside the shadow DOM to apply the styles
+    const shadowStyle = document.createElement('style');
+    shadowStyle.textContent = cssContent; // Use the loaded CSS
+    shadow.appendChild(shadowStyle);
 
-            .container {
-                background-color: #fff;
-                padding: 8px 24px;
-                border-radius: 8px;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                width: 380px;
-                border: 1px solid #D9D9D9;
-                position: relative;
-            }
+    // Popup HTML
+    const container = document.createElement('div');
+    container.className = 'container';
+    container.innerHTML = `
+        <h1>Let AI personalize your toolbar</h1>
+        <p>Don't worry- the default toolbar will be untouched</p>
 
-            h1 {
-                font-size: 24px;
-                font-weight: 600;
-                letter-spacing: -0.02em;
-                line-height: 120%;
-                margin-bottom: 4px;
-                background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
+        <label for="build">What would you like to build today?</label>
+        <input type="text" id="build" placeholder="e.g. a door hinge" />
 
-            p {
-                font-size: 16px;
-                font-weight: 400;
-                color: #757575;
-                margin-top: 4px;
-                margin-bottom: 24px;
-            }
+        <label for="help">How can we best help you?</label>
+        <select id="help">
+            <option>I'd like to be guided through every step</option>
+            <option>I'd like to choose from a set of approaches</option>
+            <option>I'd like to choose my own approach</option>
+        </select>
 
-            label {
-      display: block;
-      font-size: 16px;
-      margin-bottom: 8px;
-      color: #464646;
-    }
+        <div id="dynamic-section"></div>
 
-    input, select, textarea {
-      width: 100%;
-      height: 40px;
-      padding: 8px;
-      margin-bottom: 24px;
-      border: 1px solid #26C9FF;
-      border-radius: 8px;
-      box-sizing: border-box;
-      font-size: 16px;
-    }
-    select {
-      margin-bottom: 8px;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      font-weight: 400;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      background-size: 20px;
-      padding-right: 44px;
-    }
- .button {
-      background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      width: 100%;
-      font-weight: 600;
-      font-size: 16px;
-      height: 44px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-      margin-top: 24px;
-      margin-bottom: 24px;
-    }
-#build::placeholder,
-    textarea#approach::placeholder {
-      color: #B3B3B3;
-    }
-
-    .button img {
-      height: 16px;
-      width: 16px;
-    }
-
-    .checkbox {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 24px;
-    }
-    .checkbox input {
-      width: 16px;
-      height: 16px;
-      margin-right: 12px;
-      border-radius: 4px;
-      background-color: #464646;
-      border: 1px solid #464646;
-      align-self: flex-start;
-    }
-
-    .checkbox label {
-      font-size: 16px;
-      margin: 0;
-    }
-
-    .checkbox label span {
-      color: #464646;
-      font-weight: 300;
-    }
-       .checkbox small {
-      color: #757575;
-      font-size: 16px;
-      display: block;
-      margin-top: 4px;
-    }
-
-    .checkbox input:checked + label span {
-      font-weight: 600;
-    }
-
-    #build, #help {
-      padding-left: 16px;
-      color: #464646;
-    }
-     textarea#approach {
-      height: 80px;
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      padding-left: 16px;
-      margin-bottom: 8px;
-    }
-
-    #dynamic-section {
-      margin-top: 12px;
-    }
-  </style>
-
-
-        <div class="container">
-            <h1>Let AI personalize your toolbar</h1>
-            <p>Don't worry- the default toolbar will be untouched</p>
-
-            <label for="build">What would you like to build today?</label>
-            <input type="text" id="build" placeholder="e.g. a door hinge" />
-
-            <label for="help">How can we best help you?</label>
-            <select id="help">
-                <option>I'd like to be guided through every step</option>
-                <option>I'd like to choose from a set of approaches</option>
-                <option>I'd like to choose my own approach</option>
-            </select>
-
-            <div id="dynamic-section"></div>
-
-            <button class="button">Generate smart toolbar <img src="sparkle-icon.png" alt="sparkle" /></button>
-        </div>
+        <button class="button">Generate smart toolbar <img src="sparkle-icon.png" alt="sparkle" /></button>
     `;
+    shadow.appendChild(container);
 
     // Add popup interactivity
     const helpSelect = shadow.getElementById('help');
@@ -259,8 +112,6 @@ const createPopup = () => {
     });
 
     // Smart Toolbox functionality
-// ... rest of the original code remains unchanged ...
-
     function initializeSmartToolbox() {
     console.log("smart toolbox script has started running.");
 
@@ -541,15 +392,33 @@ const createPopup = () => {
             }
         };
 
+        // Create the toggle button with explicit styling
         const toggleButton = document.createElement("button");
         toggleButton.innerText = "Show Toolbox"; // Start in OFF state
         toggleButton.style.position = "fixed";
         toggleButton.style.top = "10px";
         toggleButton.style.right = "10px";
         toggleButton.style.zIndex = "10001";
+        toggleButton.style.padding = "8px 12px";
+        toggleButton.style.backgroundColor = "#14708E";
+        toggleButton.style.color = "white";
+        toggleButton.style.border = "none";
+        toggleButton.style.borderRadius = "4px";
+        toggleButton.style.cursor = "pointer";
+        toggleButton.style.fontFamily = "Inter, sans-serif";
+        toggleButton.style.fontWeight = "600";
 
         toggleButton.addEventListener("click", toggleSmartToolbox);
+        // Check if the button already exists and remove it if it does
+        const existingButton = document.getElementById("smart-toolbox-toggle");
+        if (existingButton) {
+            existingButton.remove();
+        }
+        // Add an ID to the button for easier reference
+        toggleButton.id = "smart-toolbox-toggle";
+        // Append the button to the document body
         document.body.appendChild(toggleButton);
+        console.log("Toggle button created and added to page");
 
         // Setup observers for UI interactions
         setupInteractionObservers();

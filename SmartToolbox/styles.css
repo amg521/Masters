@@ -1,5 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-:host {
+/* CSS Variables for Toolbox positioning */
+:root {
+    --toolbox-top: 0px;
+    --toolbox-left: 0px;
+    --toolbox-width: 100%;
+    --toolbox-height: 50px;
+}
+
+/* Popup Host Styles */
+.popup-host {
     position: fixed;
     top: 0;
     left: 0;
@@ -12,10 +20,8 @@
     z-index: 10000;
     font-family: 'Inter', sans-serif;
 }
-#smart-toolbox-toggle {
-    background: linear-gradient(90deg, rgb(53, 142, 110) 0%, rgb(97, 198, 240) 100%) !important;
-    color: white;
-}
+
+/* Popup Styles */
 .container {
     background-color: #fff;
     padding: 8px 24px;
@@ -25,16 +31,18 @@
     border: 1px solid #D9D9D9;
     position: relative;
 }
+
 h1 {
     font-size: 24px;
     font-weight: 600;
     letter-spacing: -0.02em;
     line-height: 120%;
     margin-bottom: 4px;
-    background: linear-gradient(90deg, #26C9FF 0%, #26C9FF 69%);
+    background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
 p {
     font-size: 16px;
     font-weight: 400;
@@ -42,12 +50,14 @@ p {
     margin-top: 4px;
     margin-bottom: 24px;
 }
+
 label {
     display: block;
     font-size: 16px;
     margin-bottom: 8px;
     color: #464646;
 }
+
 input, select, textarea {
     width: 100%;
     height: 40px;
@@ -58,6 +68,7 @@ input, select, textarea {
     box-sizing: border-box;
     font-size: 16px;
 }
+
 select {
     margin-bottom: 8px;
     appearance: none;
@@ -70,8 +81,9 @@ select {
     background-size: 20px;
     padding-right: 44px;
 }
+
 .button {
-    background: linear-gradient(90deg, #26C9FF 0%, #26C9FF 69%);
+    background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
     color: white;
     padding: 12px;
     border: none;
@@ -80,7 +92,7 @@ select {
     width: 100%;
     font-weight: 600;
     font-size: 16px;
-    height: 40px;
+    height: 44px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -88,19 +100,23 @@ select {
     margin-top: 24px;
     margin-bottom: 24px;
 }
+
 #build::placeholder,
 textarea#approach::placeholder {
     color: #B3B3B3;
 }
+
 .button img {
     height: 16px;
     width: 16px;
 }
+
 .checkbox {
     display: flex;
     align-items: flex-start;
     margin-bottom: 24px;
 }
+
 .checkbox input {
     width: 16px;
     height: 16px;
@@ -110,27 +126,33 @@ textarea#approach::placeholder {
     border: 1px solid #464646;
     align-self: flex-start;
 }
+
 .checkbox label {
     font-size: 16px;
     margin: 0;
 }
+
 .checkbox label span {
     color: #464646;
     font-weight: 300;
 }
+
 .checkbox small {
     color: #757575;
     font-size: 16px;
     display: block;
     margin-top: 4px;
 }
+
 .checkbox input:checked + label span {
     font-weight: 600;
 }
+
 #build, #help {
     padding-left: 16px;
     color: #464646;
 }
+
 textarea#approach {
     height: 80px;
     font-family: 'Inter', sans-serif;
@@ -138,6 +160,100 @@ textarea#approach {
     padding-left: 16px;
     margin-bottom: 8px;
 }
+
 #dynamic-section {
     margin-top: 12px;
+}
+
+.margin-bottom-24 {
+    margin-bottom: 24px;
+}
+
+/* Smart Toolbox Styles */
+.smart-toolbox-container {
+    position: absolute;
+    top: var(--toolbox-top);
+    left: var(--toolbox-left);
+    width: var(--toolbox-width);
+    height: var(--toolbox-height);
+    z-index: 9999;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    background-color: white;
+    padding: 0px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: grab;
+}
+
+.smart-toolbox-container.hidden {
+    display: none;
+}
+
+.smart-toolbox-container.visible {
+    display: flex;
+}
+
+.smart-toolbox-container.grabbing {
+    cursor: grabbing;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.cloned-dropdown-item, .cloned-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    padding: 4px 6px;
+    margin: 2px;
+}
+
+.stacked-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stacked-label {
+    color: rgb(140, 187, 226);
+    visibility: visible;
+    opacity: 1;
+    transition: none;
+    padding-top: 6px;
+}
+
+.stacked-label.disabled {
+    color: rgb(158, 158, 158);
+}
+
+.cloned-dropdown-item.disabled, .cloned-item.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.toggle-button {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 10001;
+    padding: 8px 16px;
+    background-color: #26C9FF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-button:hover {
+    background-color: #14708E;
 }

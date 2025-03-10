@@ -67,7 +67,7 @@ select {
     padding-right: 44px;
 }
 .button {
-    background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
+    background: linear-gradient(90deg, #26C9FF 0%, #26C9FF 69%);
     color: white;
     padding: 12px;
     border: none;
@@ -76,7 +76,7 @@ select {
     width: 100%;
     font-weight: 600;
     font-size: 16px;
-    height: 44px;
+    height: 40px;
     display: flex;
     justify-content: center;
     align-items: center;

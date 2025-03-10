@@ -1,5 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
-
 :host {
     position: fixed;
     top: 0;
@@ -13,7 +12,6 @@
     z-index: 10000;
     font-family: 'Inter', sans-serif;
 }
-
 .container {
     background-color: #fff;
     padding: 8px 24px;
@@ -23,7 +21,6 @@
     border: 1px solid #D9D9D9;
     position: relative;
 }
-
 h1 {
     font-size: 24px;
     font-weight: 600;
@@ -34,7 +31,6 @@ h1 {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-
 p {
     font-size: 16px;
     font-weight: 400;
@@ -42,14 +38,12 @@ p {
     margin-top: 4px;
     margin-bottom: 24px;
 }
-
 label {
     display: block;
     font-size: 16px;
     margin-bottom: 8px;
     color: #464646;
 }
-
 input, select, textarea {
     width: 100%;
     height: 40px;
@@ -60,7 +54,6 @@ input, select, textarea {
     box-sizing: border-box;
     font-size: 16px;
 }
-
 select {
     margin-bottom: 8px;
     appearance: none;
@@ -73,9 +66,8 @@ select {
     background-size: 20px;
     padding-right: 44px;
 }
-
 .button {
-    background: linear-gradient(90deg, rgb(140, 187, 226) 0%, rgb(0, 0, 128) 100%);
+    background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
     color: white;
     padding: 12px;
     border: none;
@@ -84,7 +76,7 @@ select {
     width: 100%;
     font-weight: 600;
     font-size: 16px;
-    height: 40px;
+    height: 44px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -92,23 +84,19 @@ select {
     margin-top: 24px;
     margin-bottom: 24px;
 }
-
 #build::placeholder,
 textarea#approach::placeholder {
     color: #B3B3B3;
 }
-
 .button img {
     height: 16px;
     width: 16px;
 }
-
 .checkbox {
     display: flex;
     align-items: flex-start;
     margin-bottom: 24px;
 }
-
 .checkbox input {
     width: 16px;
     height: 16px;
@@ -118,33 +106,27 @@ textarea#approach::placeholder {
     border: 1px solid #464646;
     align-self: flex-start;
 }
-
 .checkbox label {
     font-size: 16px;
     margin: 0;
 }
-
 .checkbox label span {
     color: #464646;
     font-weight: 300;
 }
-
 .checkbox small {
     color: #757575;
     font-size: 16px;
     display: block;
     margin-top: 4px;
 }
-
 .checkbox input:checked + label span {
     font-weight: 600;
 }
-
 #build, #help {
     padding-left: 16px;
     color: #464646;
 }
-
 textarea#approach {
     height: 80px;
     font-family: 'Inter', sans-serif;
@@ -152,7 +134,6 @@ textarea#approach {
     padding-left: 16px;
     margin-bottom: 8px;
 }
-
 #dynamic-section {
     margin-top: 12px;
 }

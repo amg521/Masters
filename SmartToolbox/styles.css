@@ -74,24 +74,24 @@ select {
     padding-right: 44px;
 }
 
-.button {
-    background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    font-weight: 600;
-    font-size: 16px;
-    height: 44px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    margin-top: 24px;
-    margin-bottom: 24px;
-}
+ .button {
+      background: linear-gradient(90deg, #14708E 0%, #26C9FF 69%);
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 600;
+      font-size: 16px;
+      height: 44px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      margin-top: 24px;
+      margin-bottom: 24px;
+    }
 
 #build::placeholder,
 textarea#approach::placeholder {

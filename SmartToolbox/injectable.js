@@ -259,17 +259,21 @@ const createPopup = () => {
     });
 
     // Smart Toolbox functionality
+// ... rest of the original code remains unchanged ...
+
     function initializeSmartToolbox() {
     console.log("smart toolbox script has started running.");
 
-    // function to wait for the target div to appear
+    // MODIFIED: Added check for projects-panel.hidden
     const waitForTargetDiv = () => {
         const targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
         const toolbar = document.getElementById("headerToolbarMenu");
+        const projectsPanel = document.querySelector('.projects-panel'); // NEW
 
-        if (!targetDiv || !toolbar) {
-            console.log("Target div or toolbar not found. Retrying...");
-            setTimeout(waitForTargetDiv, 500); // retry every 500ms
+        // MODIFIED condition to check projects-panel state
+        if (!targetDiv || !toolbar || !projectsPanel || !projectsPanel.classList.contains('hidden')) {
+            console.log("Target div, toolbar, or projects panel not found/hidden. Retrying...");
+            setTimeout(waitForTargetDiv, 500);
             return;
         }
 

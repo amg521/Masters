@@ -70,7 +70,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer API_KEY_HERE'
+                    'Authorization': 'Bearer API_KEY'
                 },
                 body: JSON.stringify({
                     model: 'gpt-4',
@@ -116,16 +116,21 @@
                 ${JSON.stringify(toolboxData)}
                 
                 Please create a step-by-step plan for how to create this object using the available tools.
-                Keep in mind that I'm using SelfCAD which is a 3D modeling tool. 
-                Include specific tool names from the list provided when applicable.
+                Be specific about which tools to use at each step.
+                Use the exact tool names from the list when recommending tools.
+                Keep in mind that I'm using SelfCAD which is a 3D modeling tool.
                 Make your instructions clear and specific.
+
+                Also, please include a comma-separated list at the end of your response titled "TOOL_ORDER:" 
+                that lists, in order of use, all the tool names that should be used in this plan.
+                Example: "TOOL_ORDER: Cube, Extrusion, Fillet, Move"
             `;
 
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer API_KEY_HERE'
+                    'Authorization': 'Bearer API_KEY'
                 },
                 body: JSON.stringify({
                     model: 'gpt-4',
@@ -151,6 +156,30 @@
             console.error("Error generating action plan:", error);
             return "Error generating action plan. Please try again.";
         }
+    };
+
+    // Function to extract tool order from action plan
+    const extractToolOrder = (actionPlanText) => {
+        // Try to find the TOOL_ORDER section
+        const toolOrderMatch = actionPlanText.match(/TOOL_ORDER:\s*(.*?)(\n|$)/);
+        if (toolOrderMatch && toolOrderMatch[1]) {
+            // Parse the comma-separated list
+            return toolOrderMatch[1].split(',').map(tool => tool.trim());
+        }
+
+        // Fallback: extract tool names mentioned in the text
+        const toolNames = [];
+        if (toolboxData && toolboxData.tools) {
+            // Extract all tool names mentioned in the action plan
+            toolboxData.tools.forEach(tool => {
+                // Check if the tool name is mentioned in the action plan
+                if (actionPlanText.includes(tool.name)) {
+                    toolNames.push(tool.name);
+                }
+            });
+        }
+        
+        return [...new Set(toolNames)]; // Remove duplicates
     };
 
     // Initialize the app by fetching the toolbox data first
@@ -537,12 +566,19 @@
     };
 
     function initializeSmartToolbox() {
-        console.log("smart toolbox script has started running.");
+        console.log("Smart toolbox script has started running.");
 
         // Variables for global access
         let targetDiv;
         let smartToolbox;
         let refreshTimeout;
+        let toolOrder = [];
+
+        // Extract tool order from action plan
+        if (actionPlan) {
+            toolOrder = extractToolOrder(actionPlan);
+            console.log("Tool order extracted:", toolOrder);
+        }
 
         // Create action plan display
         const createActionPlanDisplay = () => {
@@ -569,7 +605,15 @@
             titleElement.style.fontWeight = '600';
             
             const contentElement = document.createElement('div');
-            contentElement.innerHTML = actionPlan.replace(/\n/g, '<br>');
+            
+            // Remove the TOOL_ORDER line from display
+            let displayText = actionPlan;
+            const toolOrderIndex = displayText.indexOf("TOOL_ORDER:");
+            if (toolOrderIndex !== -1) {
+                displayText = displayText.substring(0, toolOrderIndex);
+            }
+            
+            contentElement.innerHTML = displayText.replace(/\n/g, '<br>');
             contentElement.style.fontSize = '14px';
             contentElement.style.lineHeight = '1.4';
             contentElement.style.color = '#464646';
@@ -636,6 +680,9 @@
         // Extract the repeated code into a function for populating the toolbox
         const populateSmartToolbox = (toolbox, sourceDiv) => {
             toolbox.innerHTML = ""; // clear previous content
+            
+            // First, collect all buttons
+            const allButtons = [];
 
             // loop through children of the target toolbar
             Array.from(sourceDiv.children).forEach((child) => {
@@ -643,6 +690,9 @@
                 if (dropdownItems.length > 0) {
                     dropdownItems.forEach((dropdownItem) => {
                         const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
+                        
+                        // Fix button height to ensure consistency
+                        clonedDropdownItem.style.height = "85px"; // Set fixed height
 
                         // stack icon and label vertically
                         const iconElement = dropdownItem.querySelector('span[class^="pull-left"][class*="selfcad-grey-"]');
@@ -653,22 +703,26 @@
                             stackedContainer.style.display = "flex";
                             stackedContainer.style.flexDirection = "column";
                             stackedContainer.style.alignItems = "center";
+                            stackedContainer.style.justifyContent = "center";
+                            stackedContainer.style.height = "100%";
 
-                            stackedContainer.appendChild(iconElement.cloneNode(true));
-                            stackedContainer.appendChild(labelElement.cloneNode(true));
+                            const clonedIcon = iconElement.cloneNode(true);
+                            const clonedLabel = labelElement.cloneNode(true);
+                            
+                            stackedContainer.appendChild(clonedIcon);
+                            stackedContainer.appendChild(clonedLabel);
 
-                            const stackedLabel = stackedContainer.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
-                            if (stackedLabel) {
+                            const buttonName = labelElement.textContent.trim();
+                            clonedDropdownItem.setAttribute('name', buttonName);
+                            clonedDropdownItem.buttonName = buttonName; // Store for sorting later
+
+                            if (clonedLabel) {
                                 const isDisabled = dropdownItem.classList.contains('disabled');
-                                stackedLabel.style.color = isDisabled ? "rgb(158, 158, 158)" : "rgb(140, 187, 226)";
-                                stackedLabel.style.visibility = "visible";
-                                stackedLabel.style.opacity = "1";
-                                stackedLabel.style.transition = "none";
-                                stackedLabel.style.paddingTop = "6px";
-
-                                // Set button name to the text from the inner pull-left element
-                                const buttonName = stackedLabel.textContent.trim();
-                                clonedDropdownItem.setAttribute('name', buttonName);
+                                clonedLabel.style.color = isDisabled ? "rgb(158, 158, 158)" : "rgb(140, 187, 226)";
+                                clonedLabel.style.visibility = "visible";
+                                clonedLabel.style.opacity = "1";
+                                clonedLabel.style.transition = "none";
+                                clonedLabel.style.paddingTop = "6px";
                             }
 
                             clonedDropdownItem.innerHTML = "";
@@ -677,10 +731,12 @@
                             clonedDropdownItem.style.display = "flex";
                             clonedDropdownItem.style.flexDirection = "column";
                             clonedDropdownItem.style.alignItems = "center";
+                            clonedDropdownItem.style.justifyContent = "center";
                             clonedDropdownItem.style.border = "1px solid #ddd";
                             clonedDropdownItem.style.backgroundColor = "#f9f9f9";
                             clonedDropdownItem.style.padding = "4px 6px";
                             clonedDropdownItem.style.margin = "2px";
+                            clonedDropdownItem.style.width = "85px"; // Fixed width
 
                             // Add disabled styling if original item is disabled
                             if (dropdownItem.classList.contains('disabled')) {
@@ -695,20 +751,29 @@
                                 });
                             }
 
-                            toolbox.appendChild(clonedDropdownItem);
+                            allButtons.push(clonedDropdownItem);
                         }
                     });
                 } else {
                     const clonedChild = child.cloneNode(true);
+                    
+                    // Fix button height to ensure consistency
+                    clonedChild.style.height = "85px"; // Set fixed height
+                    clonedChild.style.width = "85px"; // Fixed width
                     clonedChild.style.border = "1px solid #ddd";
                     clonedChild.style.backgroundColor = "#f9f9f9";
                     clonedChild.style.margin = "2px";
+                    clonedChild.style.display = "flex";
+                    clonedChild.style.flexDirection = "column";
+                    clonedChild.style.alignItems = "center";
+                    clonedChild.style.justifyContent = "center";
 
                     // Set button name to the text from the inner pull-left element if present
                     const labelElement = clonedChild.querySelector('.inner.pull-left');
                     if (labelElement) {
                         const buttonName = labelElement.textContent.trim();
                         clonedChild.setAttribute('name', buttonName);
+                        clonedChild.buttonName = buttonName; // Store for sorting later
                     }
 
                     // Add disabled styling if original item is disabled
@@ -724,11 +789,36 @@
                         });
                     }
 
-                    toolbox.appendChild(clonedChild);
+                    allButtons.push(clonedChild);
                 }
             });
 
-            console.log("All buttons cloned into the smart toolbox.");
+            // Sort buttons based on tool order
+            if (toolOrder.length > 0) {
+                // Create a priority map (lower index = higher priority)
+                const priorityMap = new Map();
+                toolOrder.forEach((toolName, index) => {
+                    priorityMap.set(toolName.toLowerCase(), index);
+                });
+
+                // Sort buttons by priority
+                allButtons.sort((a, b) => {
+                    const aName = a.buttonName ? a.buttonName.toLowerCase() : "";
+                    const bName = b.buttonName ? b.buttonName.toLowerCase() : "";
+                    
+                    const aPriority = priorityMap.has(aName) ? priorityMap.get(aName) : Number.MAX_SAFE_INTEGER;
+                    const bPriority = priorityMap.has(bName) ? priorityMap.get(bName) : Number.MAX_SAFE_INTEGER;
+                    
+                    return aPriority - bPriority;
+                });
+            }
+
+            // Add all buttons to the toolbox
+            allButtons.forEach(button => {
+                toolbox.appendChild(button);
+            });
+
+            console.log("All buttons added to the smart toolbox in recommended order.");
         };
 
         // Function to schedule a toolbox refresh with debouncing

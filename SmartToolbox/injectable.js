@@ -20,6 +20,8 @@
     // Global variables
     let toolboxData = null;
     let actionPlan = null;
+    let actionPlanSteps = [];
+    let currentStepIndex = 0;
 
     // Fetch the toolbox JSON from GitHub
     const fetchToolboxData = async () => {
@@ -54,10 +56,10 @@
                 Generate 3 different approaches for building "${userBuildInput}" using CAD tools.
                 Use the following list of tools as reference:
                 ${JSON.stringify(toolboxData)}
-                
+
                 Format your response as a JSON array with 3 objects, each with a single property 'approach'.
                 Each approach description must be maximum 83 characters.
-                
+
                 Example format:
                 [
                     {"approach": "First approach description (max 83 chars)"},
@@ -86,11 +88,11 @@
             });
 
             const data = await response.json();
-            
+
             if (data.error) {
                 throw new Error(`API Error: ${data.error.message}`);
             }
-            
+
             // Parse the JSON response from the API
             const content = data.choices[0].message.content;
             return JSON.parse(content);
@@ -111,17 +113,18 @@
             // Prepare the prompt for ChatGPT
             const prompt = `
                 I want to create "${objectToMake}" using SelfCAD. My preferred approach is: "${userApproach}".
-                
+
                 Here are all the tools available in SelfCAD that I can use:
                 ${JSON.stringify(toolboxData)}
-                
+
                 Please create a step-by-step plan for how to create this object using the available tools.
+                Format your response so that each step is clearly numbered (e.g., "Step 1:").
                 Be specific about which tools to use at each step.
                 Use the exact tool names from the list when recommending tools.
                 Keep in mind that I'm using SelfCAD which is a 3D modeling tool.
                 Make your instructions clear and specific.
 
-                Also, please include a comma-separated list at the end of your response titled "TOOL_ORDER:" 
+                Also, please include a comma-separated list at the end of your response titled "TOOL_ORDER:"
                 that lists, in order of use, all the tool names that should be used in this plan.
                 Example: "TOOL_ORDER: Cube, Extrusion, Fillet, Move"
             `;
@@ -146,11 +149,11 @@
             });
 
             const data = await response.json();
-            
+
             if (data.error) {
                 throw new Error(`API Error: ${data.error.message}`);
             }
-            
+
             return data.choices[0].message.content;
         } catch (error) {
             console.error("Error generating action plan:", error);
@@ -178,8 +181,47 @@
                 }
             });
         }
-        
+
         return [...new Set(toolNames)]; // Remove duplicates
+    };
+
+    // Function to extract numbered steps from the action plan
+    const extractSteps = (actionPlanText) => {
+        // Remove the TOOL_ORDER line
+        let displayText = actionPlanText;
+        const toolOrderIndex = displayText.indexOf("TOOL_ORDER:");
+        if (toolOrderIndex !== -1) {
+            displayText = displayText.substring(0, toolOrderIndex).trim();
+        }
+
+        // Split by "Step X:" pattern
+        const stepRegex = /Step\s+\d+:/gi;
+        const stepMatches = displayText.match(stepRegex);
+
+        if (stepMatches && stepMatches.length > 0) {
+            const steps = [];
+            const stepPositions = [];
+
+            // Find positions of each step marker
+            let match;
+            const re = new RegExp(stepRegex);
+            while ((match = re.exec(displayText)) !== null) {
+                stepPositions.push({marker: match[0], position: match.index});
+            }
+
+            // Extract content for each step
+            for (let i = 0; i < stepPositions.length; i++) {
+                const start = stepPositions[i].position;
+                const end = (i < stepPositions.length - 1) ? stepPositions[i + 1].position : displayText.length;
+                const stepContent = displayText.substring(start, end).trim();
+                steps.push(stepContent);
+            }
+
+            return steps;
+        }
+
+        // Fallback: if no numbered steps found, split by paragraph
+        return displayText.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 0);
     };
 
     // Initialize the app by fetching the toolbox data first
@@ -301,6 +343,10 @@
                     margin-top: 24px;
                     margin-bottom: 24px;
                 }
+                .button:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                }
                 #build::placeholder,
                 textarea#approach::placeholder {
                     color: #B3B3B3;
@@ -361,14 +407,14 @@
                 #dynamic-section {
                     margin-top: 12px;
                 }
-                
+
                 .loading {
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     height: 100px;
                 }
-                
+
                 .loading-spinner {
                     border: 4px solid rgba(0, 0, 0, 0.1);
                     border-radius: 50%;
@@ -377,10 +423,20 @@
                     height: 30px;
                     animation: spin 1s linear infinite;
                 }
-                
+
                 @keyframes spin {
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }
+                }
+
+                .button-spinner {
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-radius: 50%;
+                    border-top-color: white;
+                    animation: spin 1s ease-in-out infinite;
                 }
             </style>
 
@@ -409,7 +465,7 @@
         const buildInput = shadow.getElementById('build');
         const dynamicSection = shadow.getElementById('dynamic-section');
         const generateButton = shadow.querySelector('.button');
-        
+
         // Track previous selection to detect changes
         let previousSelection = helpSelect.value;
         let previousBuildInput = buildInput.value;
@@ -419,16 +475,16 @@
         const updateDynamicSection = async () => {
             const currentSelection = helpSelect.value;
             const currentBuildInput = buildInput.value;
-            
+
             // Only regenerate if selection changed or build input changed while on "set of approaches"
-            if (currentSelection !== previousSelection || 
+            if (currentSelection !== previousSelection ||
                 (currentSelection.includes('set of approaches') && currentBuildInput !== previousBuildInput)) {
-                
+
                 previousSelection = currentSelection;
                 previousBuildInput = currentBuildInput;
-                
+
                 dynamicSection.innerHTML = '';
-                
+
                 if (currentSelection.includes('set of approaches')) {
                     // Show loading spinner
                     dynamicSection.innerHTML = `
@@ -436,22 +492,22 @@
                             <div class="loading-spinner"></div>
                         </div>
                     `;
-                    
+
                     // Get what the user wants to build
                     const userBuildInput = currentBuildInput.trim() || "a generic object";
-                    
+
                     try {
                         // Call ChatGPT API to generate approaches
                         generatedApproaches = await generateApproaches(userBuildInput);
-                        
+
                         // Remove loading spinner and add the generated approaches
                         dynamicSection.innerHTML = '';
-                        
+
                         // Create radio buttons for each approach
                         generatedApproaches.forEach((item, index) => {
                             const optionId = `option${index + 1}`;
                             const isChecked = index === 0 ? 'checked' : '';
-                            
+
                             const optionDiv = document.createElement('div');
                             optionDiv.className = 'checkbox';
                             optionDiv.innerHTML = `
@@ -461,7 +517,7 @@
                                     <small>${item.approach}</small>
                                 </label>
                             `;
-                            
+
                             dynamicSection.appendChild(optionDiv);
                         });
                     } catch (error) {
@@ -471,7 +527,7 @@
                             {"approach": "Draw 2D sketches, then extrude them into 3D objects."},
                             {"approach": "Sculpt and refine the geometry from a basic shape using sculpting tools."}
                         ];
-                        
+
                         dynamicSection.innerHTML = `
                             <div class="checkbox">
                                 <input type="radio" name="approach" id="option1" checked>
@@ -486,7 +542,7 @@
                                 <label for="option3"><span>Option 3</span><br><small>${generatedApproaches[2].approach}</small></label>
                             </div>
                         `;
-                        
+
                         console.error("Error generating approaches:", error);
                     }
                 } else if (currentSelection.includes('own approach')) {
@@ -495,14 +551,14 @@
                         <textarea id="approach" placeholder="e.g. Create hinge parts using basic shapes like cylinders and cubes, then combine them."></textarea>
                     `;
                 }
-                
+
                 dynamicSection.style.marginBottom = '24px';
             }
         };
 
         // Listen for changes to help select dropdown
         helpSelect.addEventListener('change', updateDynamicSection);
-        
+
         // Listen for changes to build input when in "set of approaches" mode
         buildInput.addEventListener('input', () => {
             if (helpSelect.value.includes('set of approaches')) {
@@ -529,39 +585,57 @@
 
         // Button click handler
         generateButton.addEventListener('click', async () => {
-            // Get the user's build object
-            const objectToMake = buildInput.value.trim() || "a generic object";
-            
-            // Get the user's selected approach
-            let userApproach = "";
-            
-            if (helpSelect.value.includes('guided')) {
-                userApproach = "I'd like to be guided through every step";
-            } 
-            else if (helpSelect.value.includes('set of approaches')) {
-                // Find which radio button is checked
-                const selectedRadio = dynamicSection.querySelector('input[type="radio"]:checked');
-                if (selectedRadio) {
-                    const index = parseInt(selectedRadio.id.replace('option', '')) - 1;
-                    userApproach = generatedApproaches[index]?.approach || "Using a combined approach of basic shapes";
+            // Show loading spinner and disable button
+            generateButton.disabled = true;
+            const originalButtonContent = generateButton.innerHTML;
+            generateButton.innerHTML = `<span class="button-spinner"></span> Generating...`;
+
+            try {
+                // Get the user's build object
+                const objectToMake = buildInput.value.trim() || "a generic object";
+
+                // Get the user's selected approach
+                let userApproach = "";
+
+                if (helpSelect.value.includes('guided')) {
+                    userApproach = "I'd like to be guided through every step";
                 }
-            } 
-            else if (helpSelect.value.includes('own approach')) {
-                const approachTextarea = dynamicSection.querySelector('#approach');
-                userApproach = approachTextarea ? approachTextarea.value.trim() : "";
-                if (!userApproach) {
-                    userApproach = "Creating using my own custom approach";
+                else if (helpSelect.value.includes('set of approaches')) {
+                    // Find which radio button is checked
+                    const selectedRadio = dynamicSection.querySelector('input[type="radio"]:checked');
+                    if (selectedRadio) {
+                        const index = parseInt(selectedRadio.id.replace('option', '')) - 1;
+                        userApproach = generatedApproaches[index]?.approach || "Using a combined approach of basic shapes";
+                    }
                 }
+                else if (helpSelect.value.includes('own approach')) {
+                    const approachTextarea = dynamicSection.querySelector('#approach');
+                    userApproach = approachTextarea ? approachTextarea.value.trim() : "";
+                    if (!userApproach) {
+                        userApproach = "Creating using my own custom approach";
+                    }
+                }
+
+                // Generate action plan
+                actionPlan = await generateActionPlan(objectToMake, userApproach);
+
+                // Extract steps from the action plan
+                actionPlanSteps = extractSteps(actionPlan);
+
+                // Reset current step index
+                currentStepIndex = 0;
+
+                // Remove popup
+                popupHost.remove();
+
+                // Initialize smart toolbox and action plan display
+                initializeSmartToolbox();
+            } catch (error) {
+                console.error("Error processing request:", error);
+                generateButton.innerHTML = originalButtonContent;
+                generateButton.disabled = false;
+                alert("Error generating plan. Please try again.");
             }
-            
-            // Generate action plan
-            actionPlan = await generateActionPlan(objectToMake, userApproach);
-            
-            // Remove popup
-            popupHost.remove();
-            
-            // Initialize smart toolbox and action plan display
-            initializeSmartToolbox();
         });
     };
 
@@ -572,7 +646,9 @@
         let targetDiv;
         let smartToolbox;
         let refreshTimeout;
+        let actionPlanContainer;
         let toolOrder = [];
+        let stepButtonMap = new Map(); // Maps step index to button element
 
         // Extract tool order from action plan
         if (actionPlan) {
@@ -582,7 +658,8 @@
 
         // Create action plan display
         const createActionPlanDisplay = () => {
-            const actionPlanContainer = document.createElement('div');
+            actionPlanContainer = document.createElement('div');
+            actionPlanContainer.id = "action-plan-container";
             actionPlanContainer.style.position = 'fixed';
             actionPlanContainer.style.bottom = '20px';
             actionPlanContainer.style.right = '20px';
@@ -592,10 +669,11 @@
             actionPlanContainer.style.border = '1px solid #D9D9D9';
             actionPlanContainer.style.borderRadius = '8px';
             actionPlanContainer.style.padding = '16px';
-            actionPlanContainer.style.zIndex = '10000';
+            actionPlanContainer.style.zIndex = '9996'; // Lower than toolbox but higher than content
             actionPlanContainer.style.overflow = 'auto';
             actionPlanContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
             actionPlanContainer.style.fontFamily = "'Inter', sans-serif";
+            actionPlanContainer.style.cursor = 'move'; // Indicate it's draggable
 
             const titleElement = document.createElement('h3');
             titleElement.textContent = 'AI Action Plan';
@@ -603,21 +681,81 @@
             titleElement.style.marginBottom = '12px';
             titleElement.style.fontSize = '16px';
             titleElement.style.fontWeight = '600';
-            
-            const contentElement = document.createElement('div');
-            
-            // Remove the TOOL_ORDER line from display
-            let displayText = actionPlan;
-            const toolOrderIndex = displayText.indexOf("TOOL_ORDER:");
-            if (toolOrderIndex !== -1) {
-                displayText = displayText.substring(0, toolOrderIndex);
+            titleElement.style.cursor = 'move';
+
+            const stepsContainer = document.createElement('div');
+            stepsContainer.id = 'action-steps-container';
+            stepsContainer.style.fontSize = '14px';
+            stepsContainer.style.lineHeight = '1.4';
+            stepsContainer.style.color = '#464646';
+
+            // Create numbered steps
+            actionPlanSteps.forEach((step, index) => {
+                const stepElement = document.createElement('div');
+                stepElement.classList.add('action-step');
+                stepElement.dataset.stepIndex = index;
+                stepElement.innerHTML = step.replace(/\n/g, '<br>');
+                stepElement.style.padding = '8px';
+                stepElement.style.borderRadius = '4px';
+                stepElement.style.marginBottom = '8px';
+
+                // Highlight the first step
+                if (index === 0) {
+                    stepElement.style.backgroundColor = '#e6f7ff';
+                    stepElement.style.border = '1px solid #91d5ff';
+                }
+
+                stepsContainer.appendChild(stepElement);
+            });
+
+            // Add navigation buttons
+            const navigationContainer = document.createElement('div');
+            navigationContainer.style.display = 'flex';
+            navigationContainer.style.justifyContent = 'space-between';
+            navigationContainer.style.marginTop = '12px';
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '← Previous';
+            prevButton.style.backgroundColor = '#f0f0f0';
+            prevButton.style.border = 'none';
+            prevButton.style.padding = '6px 12px';
+            prevButton.style.borderRadius = '4px';
+            prevButton.style.cursor = 'pointer';
+            prevButton.style.fontSize = '12px';
+            prevButton.disabled = true;
+            prevButton.style.opacity = '0.5';
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next →';
+            nextButton.style.backgroundColor = '#1890ff';
+            nextButton.style.border = 'none';
+            nextButton.style.padding = '6px 12px';
+            nextButton.style.borderRadius = '4px';
+            nextButton.style.cursor = 'pointer';
+            nextButton.style.color = 'white';
+            nextButton.style.fontSize = '12px';
+
+            // Disable next button if there's only one step
+            if (actionPlanSteps.length <= 1) {
+                nextButton.disabled = true;
+                nextButton.style.opacity = '0.5';
             }
-            
-            contentElement.innerHTML = displayText.replace(/\n/g, '<br>');
-            contentElement.style.fontSize = '14px';
-            contentElement.style.lineHeight = '1.4';
-            contentElement.style.color = '#464646';
-            
+
+            prevButton.addEventListener('click', () => {
+                if (currentStepIndex > 0) {
+                    updateCurrentStep(currentStepIndex - 1);
+                }
+            });
+
+            nextButton.addEventListener('click', () => {
+                if (currentStepIndex < actionPlanSteps.length - 1) {
+                    updateCurrentStep(currentStepIndex + 1);
+                }
+            });
+
+            navigationContainer.appendChild(prevButton);
+            navigationContainer.appendChild(nextButton);
+
             const minimizeButton = document.createElement('button');
             minimizeButton.textContent = '−';
             minimizeButton.style.position = 'absolute';
@@ -633,26 +771,125 @@
             minimizeButton.style.display = 'flex';
             minimizeButton.style.justifyContent = 'center';
             minimizeButton.style.alignItems = 'center';
-            
+            minimizeButton.style.zIndex = '1'; // Ensure it's above draggable area
+
             let isMinimized = false;
             minimizeButton.addEventListener('click', () => {
                 if (isMinimized) {
-                    contentElement.style.display = 'block';
+                    stepsContainer.style.display = 'block';
+                    navigationContainer.style.display = 'flex';
                     actionPlanContainer.style.height = 'auto';
                     minimizeButton.textContent = '−';
                 } else {
-                    contentElement.style.display = 'none';
+                    stepsContainer.style.display = 'none';
+                    navigationContainer.style.display = 'none';
                     actionPlanContainer.style.height = 'auto';
                     minimizeButton.textContent = '+';
                 }
                 isMinimized = !isMinimized;
             });
-            
+
             actionPlanContainer.appendChild(titleElement);
-            actionPlanContainer.appendChild(contentElement);
+            actionPlanContainer.appendChild(stepsContainer);
+            actionPlanContainer.appendChild(navigationContainer);
             actionPlanContainer.appendChild(minimizeButton);
-            
+
             document.body.appendChild(actionPlanContainer);
+
+            // Make the action plan container draggable
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            const startDrag = (e) => {
+                // Only initiate drag on heading or container itself (not on buttons or content)
+                if (e.target === titleElement || e.target === actionPlanContainer) {
+                    isDragging = true;
+                    offsetX = e.clientX - actionPlanContainer.getBoundingClientRect().left;
+                    offsetY = e.clientY - actionPlanContainer.getBoundingClientRect().top;
+                    document.addEventListener('mousemove', dragMove);
+                    document.addEventListener('mouseup', stopDrag);
+                }
+            };
+
+            const dragMove = (e) => {
+                if (isDragging) {
+                    const x = e.clientX - offsetX;
+                    const y = e.clientY - offsetY;
+
+                    // Keep within window bounds
+                    const maxX = window.innerWidth - actionPlanContainer.offsetWidth;
+                    const maxY = window.innerHeight - actionPlanContainer.offsetHeight;
+
+                    actionPlanContainer.style.left = `${Math.max(0, Math.min(maxX, x))}px`;
+                    actionPlanContainer.style.top = `${Math.max(0, Math.min(maxY, y))}px`;
+                    actionPlanContainer.style.right = 'auto';
+                    actionPlanContainer.style.bottom = 'auto';
+                }
+            };
+
+            const stopDrag = () => {
+                isDragging = false;
+                document.removeEventListener('mousemove', dragMove);
+                document.removeEventListener('mouseup', stopDrag);
+            };
+
+            actionPlanContainer.addEventListener('mousedown', startDrag);
+
+            // Store reference to buttons for step navigation
+            return {prevButton, nextButton};
+        };
+
+        // Function to update the current step
+        const updateCurrentStep = (newIndex) => {
+            if (newIndex < 0 || newIndex >= actionPlanSteps.length) return;
+
+            // Update step index
+            currentStepIndex = newIndex;
+
+            // Update step highlighting in action plan
+            const stepElements = document.querySelectorAll('.action-step');
+            stepElements.forEach((el, idx) => {
+                if (idx === currentStepIndex) {
+                    el.style.backgroundColor = '#e6f7ff';
+                    el.style.border = '1px solid #91d5ff';
+                } else {
+                    el.style.backgroundColor = 'transparent';
+                    el.style.border = 'none';
+                }
+            });
+
+            // Update button highlighting in toolbox
+            if (smartToolbox) {
+                const allButtons = smartToolbox.querySelectorAll('[data-tool-name]');
+                allButtons.forEach(button => {
+                    button.style.boxShadow = 'none';
+                });
+
+                // Highlight the button for this step if available
+                if (stepButtonMap.has(currentStepIndex)) {
+                    const button = stepButtonMap.get(currentStepIndex);
+                    button.style.boxShadow = '0 0 0 2px #1890ff';
+
+                    // Scroll the button into view if needed
+                    if (button.offsetLeft < smartToolbox.scrollLeft ||
+                        button.offsetLeft + button.offsetWidth > smartToolbox.scrollLeft + smartToolbox.offsetWidth) {
+                        smartToolbox.scrollLeft = button.offsetLeft - 20;
+                    }
+                }
+            }
+
+            // Update navigation buttons
+            const navContainer = document.querySelector('#action-plan-container');
+            if (navContainer) {
+                const prevButton = navContainer.querySelector('button:first-of-type');
+                const nextButton = navContainer.querySelector('button:last-of-type');
+
+                prevButton.disabled = currentStepIndex === 0;
+                prevButton.style.opacity = currentStepIndex === 0 ? '0.5' : '1';
+
+                nextButton.disabled = currentStepIndex === actionPlanSteps.length - 1;
+                nextButton.style.opacity = currentStepIndex === actionPlanSteps.length - 1 ? '0.5' : '1';
+            }
         };
 
         // MODIFIED: Added check for projects-panel.hidden
@@ -660,6 +897,7 @@
             targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
             const toolbar = document.getElementById("headerToolbarMenu");
             const projectsPanel = document.querySelector('.projects-panel'); // NEW
+            const quickMenus = document.querySelector('.quick-menus'); // For toggle button placement
 
             // MODIFIED condition to check projects-panel state
             if (!targetDiv || !toolbar || !projectsPanel || !projectsPanel.classList.contains('hidden')) {
@@ -669,36 +907,73 @@
             }
 
             console.log("Target div and toolbar located.");
-            createSmartToolbox(targetDiv, toolbar);
-            
+            createSmartToolbox(targetDiv, toolbar, quickMenus);
+
             // Create action plan display after smart toolbox is initialized
             if (actionPlan) {
-                createActionPlanDisplay();
+                const navButtons = createActionPlanDisplay();
+
+                // Initialize step highlighting after both toolbox and action plan are created
+                setTimeout(() => {
+                    // Initial step highlighting
+                    updateCurrentStep(0);
+                }, 500);
             }
+        };
+
+        // Function to map tool names to the relevant steps
+        const mapToolsToSteps = () => {
+            const toolStepMap = new Map(); // Maps tool name to step index
+
+            // Extract potential tool names from the original JSON data
+            const allToolNames = toolboxData.tools.map(tool => tool.name.toLowerCase());
+
+            // Scan each step for tool mentions
+            actionPlanSteps.forEach((step, stepIndex) => {
+                allToolNames.forEach(toolName => {
+                    if (step.toLowerCase().includes(toolName.toLowerCase())) {
+                        if (!toolStepMap.has(toolName)) {
+                            toolStepMap.set(toolName, stepIndex);
+                        }
+                    }
+                });
+            });
+
+            return toolStepMap;
         };
 
         // Extract the repeated code into a function for populating the toolbox
         const populateSmartToolbox = (toolbox, sourceDiv) => {
             toolbox.innerHTML = ""; // clear previous content
-            
-            // First, collect all buttons
+            stepButtonMap.clear(); // Reset step-to-button mapping
+
+            // Create a map of tool names to the steps they appear in
+            const toolStepMap = mapToolsToSteps();
+
+            // First, collect all buttons and filter for relevant ones
             const allButtons = [];
+            const relevantTools = new Set(toolOrder.map(t => t.toLowerCase()));
 
             // loop through children of the target toolbar
             Array.from(sourceDiv.children).forEach((child) => {
                 const dropdownItems = child.querySelectorAll('[class^="dropdown-item"]');
                 if (dropdownItems.length > 0) {
                     dropdownItems.forEach((dropdownItem) => {
-                        const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
-                        
-                        // Fix button height to ensure consistency
-                        clonedDropdownItem.style.height = "85px"; // Set fixed height
-
-                        // stack icon and label vertically
                         const iconElement = dropdownItem.querySelector('span[class^="pull-left"][class*="selfcad-grey-"]');
                         const labelElement = dropdownItem.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
 
                         if (iconElement && labelElement) {
+                            const buttonName = labelElement.textContent.trim();
+
+                            // Skip if this tool is not in our toolOrder (not relevant to the plan)
+                            if (!relevantTools.has(buttonName.toLowerCase())) return;
+
+                            const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
+
+                            // Add data attribute for the tool name (useful for step tracking)
+                            clonedDropdownItem.setAttribute('data-tool-name', buttonName.toLowerCase());
+
+                            // Create stacked container for proper layout
                             const stackedContainer = document.createElement("div");
                             stackedContainer.style.display = "flex";
                             stackedContainer.style.flexDirection = "column";
@@ -708,11 +983,10 @@
 
                             const clonedIcon = iconElement.cloneNode(true);
                             const clonedLabel = labelElement.cloneNode(true);
-                            
+
                             stackedContainer.appendChild(clonedIcon);
                             stackedContainer.appendChild(clonedLabel);
 
-                            const buttonName = labelElement.textContent.trim();
                             clonedDropdownItem.setAttribute('name', buttonName);
                             clonedDropdownItem.buttonName = buttonName; // Store for sorting later
 
@@ -736,7 +1010,8 @@
                             clonedDropdownItem.style.backgroundColor = "#f9f9f9";
                             clonedDropdownItem.style.padding = "4px 6px";
                             clonedDropdownItem.style.margin = "2px";
-                            clonedDropdownItem.style.width = "85px"; // Fixed width
+                            // Let width be determined by content with min-width
+                            clonedDropdownItem.style.minWidth = "75px";
 
                             // Add disabled styling if original item is disabled
                             if (dropdownItem.classList.contains('disabled')) {
@@ -751,45 +1026,72 @@
                                 });
                             }
 
+                            // Associate button with step if applicable
+                            if (toolStepMap.has(buttonName.toLowerCase())) {
+                                const stepIndex = toolStepMap.get(buttonName.toLowerCase());
+                                stepButtonMap.set(stepIndex, clonedDropdownItem);
+
+                                // Add a click handler to navigate to this step
+                                clonedDropdownItem.addEventListener('click', () => {
+                                    updateCurrentStep(stepIndex);
+                                });
+                            }
+
                             allButtons.push(clonedDropdownItem);
                         }
                     });
                 } else {
-                    const clonedChild = child.cloneNode(true);
-                    
-                    // Fix button height to ensure consistency
-                    clonedChild.style.height = "85px"; // Set fixed height
-                    clonedChild.style.width = "85px"; // Fixed width
-                    clonedChild.style.border = "1px solid #ddd";
-                    clonedChild.style.backgroundColor = "#f9f9f9";
-                    clonedChild.style.margin = "2px";
-                    clonedChild.style.display = "flex";
-                    clonedChild.style.flexDirection = "column";
-                    clonedChild.style.alignItems = "center";
-                    clonedChild.style.justifyContent = "center";
-
-                    // Set button name to the text from the inner pull-left element if present
-                    const labelElement = clonedChild.querySelector('.inner.pull-left');
+                    const labelElement = child.querySelector('.inner.pull-left');
                     if (labelElement) {
                         const buttonName = labelElement.textContent.trim();
+                        // Skip if this tool is not in our toolOrder (not relevant to the plan)
+                        if (!relevantTools.has(buttonName.toLowerCase())) return;
+
+                        const clonedChild = child.cloneNode(true);
+
+                        // Add data attribute for the tool name
+                        clonedChild.setAttribute('data-tool-name', buttonName.toLowerCase());
+
+                        clonedChild.style.display = "flex";
+                        clonedChild.style.flexDirection = "column";
+                        clonedChild.style.alignItems = "center";
+                        clonedChild.style.justifyContent = "center";
+                        clonedChild.style.border = "1px solid #ddd";
+                        clonedChild.style.backgroundColor = "#f9f9f9";
+                        clonedChild.style.padding = "4px 6px";
+                        clonedChild.style.margin = "2px";
+                        // Let width be determined by content with min-width
+                        clonedChild.style.minWidth = "75px";
+
                         clonedChild.setAttribute('name', buttonName);
                         clonedChild.buttonName = buttonName; // Store for sorting later
-                    }
 
-                    // Add disabled styling if original item is disabled
-                    if (child.classList.contains('disabled')) {
-                        clonedChild.classList.add('disabled');
-                        clonedChild.style.opacity = "0.6";
-                        clonedChild.style.cursor = "not-allowed";
-                    } else {
-                        clonedChild.addEventListener("click", () => {
-                            child.click();
-                            // Schedule a refresh after click
-                            scheduleToolboxRefresh();
-                        });
-                    }
+                        // Add disabled styling if original item is disabled
+                        if (child.classList.contains('disabled')) {
+                            clonedChild.classList.add('disabled');
+                            clonedChild.style.opacity = "0.6";
+                            clonedChild.style.cursor = "not-allowed";
+                        } else {
+                            clonedChild.addEventListener("click", () => {
+                                child.click();
+                                // Schedule a refresh after click
+                                scheduleToolboxRefresh();
+                            });
+                        }
 
-                    allButtons.push(clonedChild);
+                        // Associate button with step if applicable
+                        if (toolStepMap.has(buttonName.toLowerCase())) {
+                            const stepIndex = toolStepMap.get(buttonName.toLowerCase());
+                            stepButtonMap.set(stepIndex, clonedChild);
+
+                            // Add a click handler to navigate to this step
+                            clonedChild.addEventListener('click', () => {
+                                updateCurrentStep(stepIndex);
+                            });
+                        }
+
+                        allButtons.push(clonedChild);
+                    }
                 }
             });
 
@@ -805,10 +1107,10 @@
                 allButtons.sort((a, b) => {
                     const aName = a.buttonName ? a.buttonName.toLowerCase() : "";
                     const bName = b.buttonName ? b.buttonName.toLowerCase() : "";
-                    
+
                     const aPriority = priorityMap.has(aName) ? priorityMap.get(aName) : Number.MAX_SAFE_INTEGER;
                     const bPriority = priorityMap.has(bName) ? priorityMap.get(bName) : Number.MAX_SAFE_INTEGER;
-                    
+
                     return aPriority - bPriority;
                 });
             }
@@ -818,7 +1120,12 @@
                 toolbox.appendChild(button);
             });
 
-            console.log("All buttons added to the smart toolbox in recommended order.");
+            console.log("Smart toolbox populated with relevant tools in recommended order.");
+
+            // Highlight the current step's button if applicable
+            setTimeout(() => {
+                updateCurrentStep(currentStepIndex);
+            }, 100);
         };
 
         // Function to schedule a toolbox refresh with debouncing
@@ -885,7 +1192,7 @@
         };
 
         // initialize the smart toolbox
-        const createSmartToolbox = (sourceDiv, toolbar) => {
+        const createSmartToolbox = (sourceDiv, toolbar, quickMenus) => {
             console.log("Initializing smart toolbox...");
 
             // Store reference to targetDiv
@@ -903,7 +1210,7 @@
             smartToolbox.style.left = `${rect.left + window.scrollX}px`;
             smartToolbox.style.width = `${rect.width}px`;
             smartToolbox.style.height = `${rect.height}px`;
-            smartToolbox.style.zIndex = "9999";
+            smartToolbox.style.zIndex = "9998"; // Higher than most content, lower than dropdown menus
             smartToolbox.style.overflowX = "auto"; // enable scrolling
             smartToolbox.style.overflowY = "hidden";
             smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
@@ -970,23 +1277,31 @@
 
                     smartToolbox.style.display = "flex";
                     targetDiv.style.display = "none"; // Hide default toolbar
-                    toggleButton.innerText = "Hide Toolbox"; // Update button text when turned on
+                    toggleButton.innerText = "Hide Smart Toolbox"; // Update button text when turned on
                 } else {
                     smartToolbox.style.display = "none";
                     targetDiv.style.display = "block";
-                    toggleButton.innerText = "Show Toolbox"; // Update button text when turned off
+                    toggleButton.innerText = "Show Smart Toolbox"; // Update button text when turned off
                 }
             };
 
+            // Create toggle button and add it to the quick-menus area
             const toggleButton = document.createElement("button");
-            toggleButton.innerText = "Show Toolbox"; // Start in OFF state
-            toggleButton.style.position = "fixed";
-            toggleButton.style.top = "10px";
-            toggleButton.style.right = "10px";
-            toggleButton.style.zIndex = "10001";
-
+            toggleButton.innerText = "Show Smart Toolbox"; // Start in OFF state
+            toggleButton.className = "btn btn-default btn-sm pull-left";
+            toggleButton.style.marginRight = "5px";
             toggleButton.addEventListener("click", toggleSmartToolbox);
-            document.body.appendChild(toggleButton);
+            // Insert the button in the quick-menus div if available
+            if (quickMenus) {
+                quickMenus.appendChild(toggleButton);
+            } else {
+                // Fallback to fixed position if quick-menus not found
+                toggleButton.style.position = "fixed";
+                toggleButton.style.top = "10px";
+                toggleButton.style.right = "10px";
+                toggleButton.style.zIndex = "10001";
+                document.body.appendChild(toggleButton);
+            }
 
             // Setup observers for UI interactions
             setupInteractionObservers();

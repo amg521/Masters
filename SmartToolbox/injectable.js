@@ -19,6 +19,7 @@
 
     // Global variables
     let toolboxData = null;
+    let actionPlan = null;
 
     // Fetch the toolbox JSON from GitHub
     const fetchToolboxData = async () => {
@@ -45,7 +46,7 @@
         });
     };
 
-    // Function to call ChatGPT API
+    // Function to call ChatGPT API for generating approaches
     const generateApproaches = async (userBuildInput) => {
         try {
             // Prepare the prompt for ChatGPT
@@ -53,10 +54,10 @@
                 Generate 3 different approaches for building "${userBuildInput}" using CAD tools.
                 Use the following list of tools as reference:
                 ${JSON.stringify(toolboxData)}
-
+                
                 Format your response as a JSON array with 3 objects, each with a single property 'approach'.
                 Each approach description must be maximum 83 characters.
-
+                
                 Example format:
                 [
                     {"approach": "First approach description (max 83 chars)"},
@@ -85,11 +86,11 @@
             });
 
             const data = await response.json();
-
+            
             if (data.error) {
                 throw new Error(`API Error: ${data.error.message}`);
             }
-
+            
             // Parse the JSON response from the API
             const content = data.choices[0].message.content;
             return JSON.parse(content);
@@ -101,6 +102,54 @@
                 {"approach": "Error getting AI suggestions. Use 2D sketches and extrude into 3D."},
                 {"approach": "Error getting AI suggestions. Sculpt from a basic shape."}
             ];
+        }
+    };
+
+    // Function to generate action plan based on user selections
+    const generateActionPlan = async (objectToMake, userApproach) => {
+        try {
+            // Prepare the prompt for ChatGPT
+            const prompt = `
+                I want to create "${objectToMake}" using SelfCAD. My preferred approach is: "${userApproach}".
+                
+                Here are all the tools available in SelfCAD that I can use:
+                ${JSON.stringify(toolboxData)}
+                
+                Please create a step-by-step plan for how to create this object using the available tools.
+                Keep in mind that I'm using SelfCAD which is a 3D modeling tool. 
+                Include specific tool names from the list provided when applicable.
+                Make your instructions clear and specific.
+            `;
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer API_KEY_HERE'
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4',
+                    messages: [
+                        {
+                            role: 'user',
+                            content: prompt
+                        }
+                    ],
+                    max_tokens: 1000,
+                    temperature: 0.7
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(`API Error: ${data.error.message}`);
+            }
+            
+            return data.choices[0].message.content;
+        } catch (error) {
+            console.error("Error generating action plan:", error);
+            return "Error generating action plan. Please try again.";
         }
     };
 
@@ -283,14 +332,14 @@
                 #dynamic-section {
                     margin-top: 12px;
                 }
-
+                
                 .loading {
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     height: 100px;
                 }
-
+                
                 .loading-spinner {
                     border: 4px solid rgba(0, 0, 0, 0.1);
                     border-radius: 50%;
@@ -299,7 +348,7 @@
                     height: 30px;
                     animation: spin 1s linear infinite;
                 }
-
+                
                 @keyframes spin {
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }
@@ -331,25 +380,26 @@
         const buildInput = shadow.getElementById('build');
         const dynamicSection = shadow.getElementById('dynamic-section');
         const generateButton = shadow.querySelector('.button');
-
+        
         // Track previous selection to detect changes
         let previousSelection = helpSelect.value;
         let previousBuildInput = buildInput.value;
+        let generatedApproaches = [];
 
         // Dynamic section handler
         const updateDynamicSection = async () => {
             const currentSelection = helpSelect.value;
             const currentBuildInput = buildInput.value;
-
+            
             // Only regenerate if selection changed or build input changed while on "set of approaches"
-            if (currentSelection !== previousSelection ||
+            if (currentSelection !== previousSelection || 
                 (currentSelection.includes('set of approaches') && currentBuildInput !== previousBuildInput)) {
-
+                
                 previousSelection = currentSelection;
                 previousBuildInput = currentBuildInput;
-
+                
                 dynamicSection.innerHTML = '';
-
+                
                 if (currentSelection.includes('set of approaches')) {
                     // Show loading spinner
                     dynamicSection.innerHTML = `
@@ -357,22 +407,22 @@
                             <div class="loading-spinner"></div>
                         </div>
                     `;
-
+                    
                     // Get what the user wants to build
                     const userBuildInput = currentBuildInput.trim() || "a generic object";
-
+                    
                     try {
                         // Call ChatGPT API to generate approaches
-                        const approaches = await generateApproaches(userBuildInput);
-
+                        generatedApproaches = await generateApproaches(userBuildInput);
+                        
                         // Remove loading spinner and add the generated approaches
                         dynamicSection.innerHTML = '';
-
+                        
                         // Create radio buttons for each approach
-                        approaches.forEach((item, index) => {
+                        generatedApproaches.forEach((item, index) => {
                             const optionId = `option${index + 1}`;
                             const isChecked = index === 0 ? 'checked' : '';
-
+                            
                             const optionDiv = document.createElement('div');
                             optionDiv.className = 'checkbox';
                             optionDiv.innerHTML = `
@@ -382,26 +432,32 @@
                                     <small>${item.approach}</small>
                                 </label>
                             `;
-
+                            
                             dynamicSection.appendChild(optionDiv);
                         });
                     } catch (error) {
                         // Handle errors by showing default options
+                        generatedApproaches = [
+                            {"approach": "Create parts using basic shapes like cylinders and cubes, then combine them."},
+                            {"approach": "Draw 2D sketches, then extrude them into 3D objects."},
+                            {"approach": "Sculpt and refine the geometry from a basic shape using sculpting tools."}
+                        ];
+                        
                         dynamicSection.innerHTML = `
                             <div class="checkbox">
                                 <input type="radio" name="approach" id="option1" checked>
-                                <label for="option1"><span>Option 1</span><br><small>Create parts using basic shapes like cylinders and cubes, then combine them.</small></label>
+                                <label for="option1"><span>Option 1</span><br><small>${generatedApproaches[0].approach}</small></label>
                             </div>
                             <div class="checkbox">
                                 <input type="radio" name="approach" id="option2">
-                                <label for="option2"><span>Option 2</span><br><small>Draw 2D sketches, then extrude them into 3D objects.</small></label>
+                                <label for="option2"><span>Option 2</span><br><small>${generatedApproaches[1].approach}</small></label>
                             </div>
                             <div class="checkbox">
                                 <input type="radio" name="approach" id="option3">
-                                <label for="option3"><span>Option 3</span><br><small>Sculpt and refine the geometry from a basic shape using sculpting tools.</small></label>
+                                <label for="option3"><span>Option 3</span><br><small>${generatedApproaches[2].approach}</small></label>
                             </div>
                         `;
-
+                        
                         console.error("Error generating approaches:", error);
                     }
                 } else if (currentSelection.includes('own approach')) {
@@ -410,14 +466,14 @@
                         <textarea id="approach" placeholder="e.g. Create hinge parts using basic shapes like cylinders and cubes, then combine them."></textarea>
                     `;
                 }
-
+                
                 dynamicSection.style.marginBottom = '24px';
             }
         };
 
         // Listen for changes to help select dropdown
         helpSelect.addEventListener('change', updateDynamicSection);
-
+        
         // Listen for changes to build input when in "set of approaches" mode
         buildInput.addEventListener('input', () => {
             if (helpSelect.value.includes('set of approaches')) {
@@ -443,8 +499,39 @@
         updateDynamicSection();
 
         // Button click handler
-        generateButton.addEventListener('click', () => {
+        generateButton.addEventListener('click', async () => {
+            // Get the user's build object
+            const objectToMake = buildInput.value.trim() || "a generic object";
+            
+            // Get the user's selected approach
+            let userApproach = "";
+            
+            if (helpSelect.value.includes('guided')) {
+                userApproach = "I'd like to be guided through every step";
+            } 
+            else if (helpSelect.value.includes('set of approaches')) {
+                // Find which radio button is checked
+                const selectedRadio = dynamicSection.querySelector('input[type="radio"]:checked');
+                if (selectedRadio) {
+                    const index = parseInt(selectedRadio.id.replace('option', '')) - 1;
+                    userApproach = generatedApproaches[index]?.approach || "Using a combined approach of basic shapes";
+                }
+            } 
+            else if (helpSelect.value.includes('own approach')) {
+                const approachTextarea = dynamicSection.querySelector('#approach');
+                userApproach = approachTextarea ? approachTextarea.value.trim() : "";
+                if (!userApproach) {
+                    userApproach = "Creating using my own custom approach";
+                }
+            }
+            
+            // Generate action plan
+            actionPlan = await generateActionPlan(objectToMake, userApproach);
+            
+            // Remove popup
             popupHost.remove();
+            
+            // Initialize smart toolbox and action plan display
             initializeSmartToolbox();
         });
     };
@@ -456,6 +543,73 @@
         let targetDiv;
         let smartToolbox;
         let refreshTimeout;
+
+        // Create action plan display
+        const createActionPlanDisplay = () => {
+            const actionPlanContainer = document.createElement('div');
+            actionPlanContainer.style.position = 'fixed';
+            actionPlanContainer.style.bottom = '20px';
+            actionPlanContainer.style.right = '20px';
+            actionPlanContainer.style.width = '300px';
+            actionPlanContainer.style.maxHeight = '400px';
+            actionPlanContainer.style.backgroundColor = 'white';
+            actionPlanContainer.style.border = '1px solid #D9D9D9';
+            actionPlanContainer.style.borderRadius = '8px';
+            actionPlanContainer.style.padding = '16px';
+            actionPlanContainer.style.zIndex = '10000';
+            actionPlanContainer.style.overflow = 'auto';
+            actionPlanContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            actionPlanContainer.style.fontFamily = "'Inter', sans-serif";
+
+            const titleElement = document.createElement('h3');
+            titleElement.textContent = 'AI Action Plan';
+            titleElement.style.marginTop = '0';
+            titleElement.style.marginBottom = '12px';
+            titleElement.style.fontSize = '16px';
+            titleElement.style.fontWeight = '600';
+            
+            const contentElement = document.createElement('div');
+            contentElement.innerHTML = actionPlan.replace(/\n/g, '<br>');
+            contentElement.style.fontSize = '14px';
+            contentElement.style.lineHeight = '1.4';
+            contentElement.style.color = '#464646';
+            
+            const minimizeButton = document.createElement('button');
+            minimizeButton.textContent = '−';
+            minimizeButton.style.position = 'absolute';
+            minimizeButton.style.top = '8px';
+            minimizeButton.style.right = '8px';
+            minimizeButton.style.backgroundColor = 'transparent';
+            minimizeButton.style.border = 'none';
+            minimizeButton.style.fontSize = '16px';
+            minimizeButton.style.cursor = 'pointer';
+            minimizeButton.style.width = '24px';
+            minimizeButton.style.height = '24px';
+            minimizeButton.style.borderRadius = '50%';
+            minimizeButton.style.display = 'flex';
+            minimizeButton.style.justifyContent = 'center';
+            minimizeButton.style.alignItems = 'center';
+            
+            let isMinimized = false;
+            minimizeButton.addEventListener('click', () => {
+                if (isMinimized) {
+                    contentElement.style.display = 'block';
+                    actionPlanContainer.style.height = 'auto';
+                    minimizeButton.textContent = '−';
+                } else {
+                    contentElement.style.display = 'none';
+                    actionPlanContainer.style.height = 'auto';
+                    minimizeButton.textContent = '+';
+                }
+                isMinimized = !isMinimized;
+            });
+            
+            actionPlanContainer.appendChild(titleElement);
+            actionPlanContainer.appendChild(contentElement);
+            actionPlanContainer.appendChild(minimizeButton);
+            
+            document.body.appendChild(actionPlanContainer);
+        };
 
         // MODIFIED: Added check for projects-panel.hidden
         const waitForTargetDiv = () => {
@@ -472,6 +626,11 @@
 
             console.log("Target div and toolbar located.");
             createSmartToolbox(targetDiv, toolbar);
+            
+            // Create action plan display after smart toolbox is initialized
+            if (actionPlan) {
+                createActionPlanDisplay();
+            }
         };
 
         // Extract the repeated code into a function for populating the toolbox

@@ -1,4 +1,132 @@
-// ==UserScript==
+// Function to verify tool name matching
+            const verifyToolNameMatching = () => {
+                console.log("\n===== TOOL NAME VERIFICATION =====");
+                console.log("Checking exact matching between TOOL_ORDER and button data-button-name attributes");
+
+                // Get all buttons with data-button-name attribute
+                const allNamedButtons = Array.from(document.querySelectorAll('[data-button-name]'))
+                    .map(btn => btn.getAttribute('data-button-name'));
+
+                console.log(`Found ${allNamedButtons.length} buttons with data-button-name attributes`);
+
+                // Check each tool in toolOrder
+                toolOrder.forEach((toolName, index) => {
+                    const matchingButtons = allNamedButtons.filter(btnName => btnName === toolName);
+                    console.log(`Tool "${toolName}" (index ${index}): ${matchingButtons.length} matching buttons found`);
+
+                    if (matchingButtons.length === 0) {
+                        console.warn(`WARNING: No buttons found with exact matching name for tool "${toolName}"`);
+                        // Try to find close matches for debugging
+                        const closeMatches = allNamedButtons.filter(btnName =>
+                            btnName.toLowerCase().includes(toolName.toLowerCase()) ||
+                            toolName.toLowerCase().includes(btnName.toLowerCase())
+                        );
+                        if (closeMatches.length > 0) {
+                            console.log(`Possible similar matches: ${closeMatches.join(', ')}`);
+                        }
+                    }
+                });
+
+                console.log("===== END VERIFICATION =====\n");
+            };
+
+            // Call verification function after everything is set up
+            setTimeout(verifyToolNameMatching, 2000); // Give UI time to render first        // Function to create tooltips for tool buttons
+        const setupToolTooltip = (button, toolIndex, steps) => {
+            if (toolIndex < 0 || toolIndex >= steps.length) return;
+
+            let tooltipTimeout;
+            let tooltip = null;
+
+            button.addEventListener('mouseenter', () => {
+                // Set longer delay before showing tooltip (1.5 seconds)
+                tooltipTimeout = setTimeout(() => {
+                    // Create tooltip
+                    tooltip = document.createElement('div');
+                    tooltip.className = 'tool-tooltip';
+                    tooltip.style.position = 'fixed'; // Use fixed positioning relative to viewport
+                    tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+                    tooltip.style.color = 'white';
+                    tooltip.style.padding = '15px';
+                    tooltip.style.borderRadius = '6px';
+                    tooltip.style.fontSize = '14px';
+                    tooltip.style.zIndex = '10001';
+                    tooltip.style.maxWidth = '350px';
+                    tooltip.style.width = 'auto';
+                    tooltip.style.whiteSpace = 'normal';
+                    tooltip.style.textAlign = 'left';
+                    tooltip.style.lineHeight = '1.5';
+                    tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                    tooltip.innerHTML = steps[toolIndex];
+
+                    // Add step number label
+                    const stepLabel = document.createElement('div');
+                    stepLabel.style.fontSize = '12px';
+                    stepLabel.style.color = '#26C9FF';
+                    stepLabel.style.marginBottom = '8px';
+                    stepLabel.style.fontWeight = 'bold';
+                    stepLabel.textContent = `Step ${toolIndex + 1}`;
+                    tooltip.insertBefore(stepLabel, tooltip.firstChild);
+
+                    // Add tooltip to body (not to button) for better positioning
+                    document.body.appendChild(tooltip);
+
+                    // Position tooltip near mouse cursor
+                    const updateTooltipPosition = (e) => {
+                        // Get mouse position
+                        const mouseX = e.clientX;
+                        const mouseY = e.clientY;
+
+                        // Calculate tooltip position
+                        let left = mouseX + 15; // Offset from cursor
+                        let top = mouseY + 15;
+
+                        // Check if tooltip would go off-screen and adjust if needed
+                        const tooltipRect = tooltip.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+
+                        if (left + tooltipRect.width > viewportWidth) {
+                            left = mouseX - tooltipRect.width - 15;
+                        }
+
+                        if (top + tooltipRect.height > viewportHeight) {
+                            top = mouseY - tooltipRect.height - 15;
+                        }
+
+                        // Apply position
+                        tooltip.style.left = `${left}px`;
+                        tooltip.style.top = `${top}px`;
+                    };
+
+                    // Initial positioning
+                    updateTooltipPosition(event);
+
+                    // Update tooltip position on mouse move
+                    button.addEventListener('mousemove', updateTooltipPosition);
+
+                    // Store the mousemove handler
+                    button.tooltipUpdateHandler = updateTooltipPosition;
+
+                }, 1500); // 1.5 seconds delay before showing
+            });
+
+            button.addEventListener('mouseleave', () => {
+                clearTimeout(tooltipTimeout);
+
+                // Remove tooltip
+                if (tooltip && tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                    tooltip = null;
+                }
+
+                // Remove the mousemove handler
+                if (button.tooltipUpdateHandler) {
+                    button.removeEventListener('mousemove', button.tooltipUpdateHandler);
+                    button.tooltipUpdateHandler = null;
+                }
+            });
+        };// ==UserScript==
 // @name         AI-Personalized Toolbar with Smart Toolbox and Debug Features
 // @namespace    http://tampermonkey.net/
 // @version      1.3
@@ -685,6 +813,15 @@
             // Parse the comma-separated list, being careful with spaces
             const toolOrder = toolOrderMatch[1].split(',').map(tool => tool.trim());
             console.log("Extracted tool order directly from action plan:", toolOrder);
+
+            // Verify these tool names will match exactly with button data-button-name attributes
+            console.log("Verifying tool names for exact matching...");
+
+            // Log each tool name for debugging
+            toolOrder.forEach((toolName, index) => {
+                console.log(`Tool ${index + 1}: "${toolName}"`);
+            });
+
             return toolOrder;
         }
 
@@ -698,6 +835,12 @@
 
             if (extractedTools.length > 0) {
                 console.log("Extracted tool order from numbered steps:", extractedTools);
+
+                // Log each tool name for debugging
+                extractedTools.forEach((toolName, index) => {
+                    console.log(`Tool ${index + 1}: "${toolName}"`);
+                });
+
                 return extractedTools;
             }
         }
@@ -720,6 +863,12 @@
 
             if (toolsFromNumberedLines.length > 0) {
                 console.log("Extracted tools from numbered lines:", toolsFromNumberedLines);
+
+                // Log each tool name for debugging
+                toolsFromNumberedLines.forEach((toolName, index) => {
+                    console.log(`Tool ${index + 1}: "${toolName}"`);
+                });
+
                 return toolsFromNumberedLines;
             }
         }
@@ -1203,10 +1352,13 @@
         const highlightCurrentStep = () => {
             if (!actionPlanDisplay || actionPlanSteps.length === 0) return;
 
-            // Remove previous highlight if it exists
-            if (currentStepHighlight) {
-                currentStepHighlight.classList.remove('current-step');
-            }
+            // Remove all previous highlights
+            const allSteps = actionPlanDisplay.querySelectorAll('.step');
+            allSteps.forEach(step => {
+                step.classList.remove('current-step');
+                step.style.backgroundColor = 'transparent';
+                step.style.border = '1px solid transparent';
+            });
 
             // Create highlight element for current step if it doesn't exist
             if (!actionPlanDisplay.querySelector('.steps-container')) {
@@ -1219,7 +1371,7 @@
                     const stepElement = document.createElement('div');
                     stepElement.className = 'step';
                     stepElement.dataset.stepIndex = index;
-                    stepElement.textContent = step;
+                    stepElement.innerHTML = step; // Use innerHTML to preserve HTML formatting (bold tool name)
                     stepElement.style.padding = '8px';
                     stepElement.style.marginBottom = '5px';
                     stepElement.style.borderRadius = '4px';
@@ -1624,7 +1776,7 @@
                 priorityMap = new Map();
                 toolOrder.forEach((toolName, index) => {
                     priorityMap.set(toolName, index);
-                    console.log(`Priority ${index}: ${toolName}`);
+                    console.log(`Priority ${index}: "${toolName}"`);
                 });
 
                 // Sort primary buttons based on priority
@@ -1633,15 +1785,35 @@
                     const aName = a.getAttribute('data-button-name');
                     const bName = b.getAttribute('data-button-name');
 
+                    console.log(`Comparing button names: "${aName}" vs "${bName}"`);
+
                     // Get priority values
                     const aPriority = priorityMap.get(aName);
                     const bPriority = priorityMap.get(bName);
+
+                    console.log(`Priorities: ${aPriority} vs ${bPriority}`);
+
+                    if (aPriority === undefined && bPriority === undefined) {
+                        return 0;
+                    } else if (aPriority === undefined) {
+                        return 1; // b comes before a
+                    } else if (bPriority === undefined) {
+                        return -1; // a comes before b
+                    }
 
                     return aPriority - bPriority;
                 });
 
                 console.log("Primary buttons after sorting:",
-                    primaryButtons.map(b => b.getAttribute('data-button-name')));
+                    primaryButtons.map(b => `"${b.getAttribute('data-button-name')}"`));
+
+                // Verify matching between priority map and data-button-name attributes
+                console.log("Verifying priority map against button attributes:");
+                primaryButtons.forEach(button => {
+                    const buttonName = button.getAttribute('data-button-name');
+                    const priority = priorityMap.get(buttonName);
+                    console.log(`Button: "${buttonName}", Priority: ${priority !== undefined ? priority : "Not found in priority map"}`);
+                });
             }
 
             // Create a collapsible button for additional tools
@@ -1735,6 +1907,9 @@
                     button.style.boxShadow = '0 0 8px rgba(38, 201, 255, 0.6)';
                     button.style.backgroundColor = '#e6f7ff';
                 }
+
+                // Add tooltip showing the corresponding step
+                setupToolTooltip(button, toolIndex, actionPlanSteps);
 
                 toolbox.appendChild(button);
             });

@@ -1275,13 +1275,24 @@
             actionPlanContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
             actionPlanContainer.style.fontFamily = "'Inter', sans-serif";
             actionPlanContainer.className = 'action-plan-display';
+            actionPlanContainer.style.resize = 'both'; // Make resizable
+
+            // Add a header area for dragging
+            const headerArea = document.createElement('div');
+            headerArea.style.position = 'relative';
+            headerArea.style.cursor = 'move'; // Show move cursor
+            headerArea.style.marginBottom = '12px';
+            headerArea.style.paddingBottom = '8px';
+            headerArea.style.borderBottom = '1px solid #eee';
 
             const titleElement = document.createElement('h3');
             titleElement.textContent = 'AI Action Plan';
             titleElement.style.marginTop = '0';
-            titleElement.style.marginBottom = '12px';
+            titleElement.style.marginBottom = '4px';
             titleElement.style.fontSize = '16px';
             titleElement.style.fontWeight = '600';
+
+            headerArea.appendChild(titleElement);
 
             const contentElement = document.createElement('div');
             contentElement.className = 'action-plan-content';
@@ -1315,8 +1326,8 @@
             const minimizeButton = document.createElement('button');
             minimizeButton.textContent = '−';
             minimizeButton.style.position = 'absolute';
-            minimizeButton.style.top = '8px';
-            minimizeButton.style.right = '8px';
+            minimizeButton.style.top = '0';
+            minimizeButton.style.right = '0';
             minimizeButton.style.backgroundColor = 'transparent';
             minimizeButton.style.border = 'none';
             minimizeButton.style.fontSize = '16px';
@@ -1327,6 +1338,8 @@
             minimizeButton.style.display = 'flex';
             minimizeButton.style.justifyContent = 'center';
             minimizeButton.style.alignItems = 'center';
+
+            headerArea.appendChild(minimizeButton);
 
             let isMinimized = false;
             minimizeButton.addEventListener('click', () => {
@@ -1344,12 +1357,34 @@
                 isMinimized = !isMinimized;
             });
 
-            actionPlanContainer.appendChild(titleElement);
+            actionPlanContainer.appendChild(headerArea);
             actionPlanContainer.appendChild(contentElement);
             actionPlanContainer.appendChild(nextStepButton);
-            actionPlanContainer.appendChild(minimizeButton);
 
             document.body.appendChild(actionPlanContainer);
+
+            // Make action plan draggable
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            headerArea.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                offsetX = e.clientX - actionPlanContainer.getBoundingClientRect().left;
+                offsetY = e.clientY - actionPlanContainer.getBoundingClientRect().top;
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+
+                actionPlanContainer.style.left = (e.clientX - offsetX) + 'px';
+                actionPlanContainer.style.top = (e.clientY - offsetY) + 'px';
+                actionPlanContainer.style.right = 'auto';
+                actionPlanContainer.style.bottom = 'auto';
+            });
+
+            document.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
 
             // Store reference for later use
             actionPlanDisplay = actionPlanContainer;
@@ -1463,7 +1498,9 @@
                             clonedDropdownItem.style.backgroundColor = "#f9f9f9";
                             clonedDropdownItem.style.padding = "4px 6px";
                             clonedDropdownItem.style.margin = "2px";
-                            clonedDropdownItem.style.width = "85px"; // Fixed width
+                            clonedDropdownItem.style.minWidth = "85px"; // Minimum width
+                            clonedDropdownItem.style.width = "auto"; // Allow width to expand to content
+                            clonedDropdownItem.style.boxSizing = "border-box"; // Include padding in width calculation
 
                             // Add disabled styling if original item is disabled
                             if (dropdownItem.classList.contains('disabled')) {
@@ -1490,7 +1527,9 @@
 
                     // Fix button height to ensure consistency
                     clonedChild.style.height = "85px"; // Set fixed height
-                    clonedChild.style.width = "85px"; // Fixed width
+                    clonedChild.style.minWidth = "85px"; // Minimum width
+                    clonedChild.style.width = "auto"; // Allow width to expand to content
+                    clonedChild.style.boxSizing = "border-box"; // Include padding in width calculation
                     clonedChild.style.border = "1px solid #ddd";
                     clonedChild.style.backgroundColor = "#f9f9f9";
                     clonedChild.style.margin = "2px";
@@ -1596,32 +1635,83 @@
                     primaryButtons.map(b => b.getAttribute('data-button-name')));
             }
 
-            // Create a divider between primary and secondary tools
-            let divider = null;
+            // Create a collapsible button for additional tools
+            let additionalToolsToggle = null;
+            let secondaryToolsContainer = null;
+
             if (primaryButtons.length > 0 && secondaryButtons.length > 0) {
-                divider = document.createElement('div');
-                divider.className = 'tools-divider';
-                divider.style.height = '85px';
-                divider.style.minWidth = '4px'; // Slightly wider for visibility
-                divider.style.backgroundColor = '#26C9FF'; // Match the theme color
-                divider.style.margin = '0 10px';
-                divider.style.borderRadius = '2px';
-                divider.style.boxShadow = '0 0 5px rgba(38, 201, 255, 0.5)'; // Add a glow effect
+                // Create the toggle button
+                additionalToolsToggle = document.createElement('div');
+                additionalToolsToggle.className = 'additional-tools-toggle';
+                additionalToolsToggle.style.height = '85px';
+                additionalToolsToggle.style.minWidth = '100px';
+                additionalToolsToggle.style.backgroundColor = '#14708E'; // Dark blue theme color
+                additionalToolsToggle.style.padding = '0 15px'; // Add padding
+                additionalToolsToggle.style.margin = '0 5px';
+                additionalToolsToggle.style.borderRadius = '4px';
+                additionalToolsToggle.style.boxShadow = '0 0 5px rgba(38, 201, 255, 0.5)';
+                additionalToolsToggle.style.cursor = 'pointer';
+                additionalToolsToggle.style.position = 'relative';
 
-                // Add a "More Tools" tooltip
-                const tooltipText = document.createElement('div');
-                tooltipText.textContent = 'Additional Tools';
-                tooltipText.style.fontSize = '10px';
-                tooltipText.style.color = '#14708E';
-                tooltipText.style.fontWeight = 'bold';
-                tooltipText.style.transform = 'rotate(-90deg)';
-                tooltipText.style.whiteSpace = 'nowrap';
-                tooltipText.style.letterSpacing = '0.5px';
+                // Add plus icon and text in a column layout
+                const toggleContent = document.createElement('div');
+                toggleContent.style.display = 'flex';
+                toggleContent.style.flexDirection = 'column';
+                toggleContent.style.alignItems = 'center';
+                toggleContent.style.justifyContent = 'center';
+                toggleContent.style.height = '100%';
 
-                divider.appendChild(tooltipText);
-                divider.style.display = 'flex';
-                divider.style.alignItems = 'center';
-                divider.style.justifyContent = 'center';
+                const plusSign = document.createElement('div');
+                plusSign.textContent = '+';
+                plusSign.style.fontSize = '30px'; // Bigger plus sign
+                plusSign.style.fontWeight = 'bold';
+                plusSign.style.color = 'white';
+                plusSign.style.lineHeight = '1';
+
+                const toolsText = document.createElement('div');
+                toolsText.textContent = 'Extra Tools';
+                toolsText.style.fontSize = '12px';
+                toolsText.style.color = 'white';
+                toolsText.style.fontWeight = 'bold';
+                toolsText.style.marginTop = '8px';
+
+                toggleContent.appendChild(plusSign);
+                toggleContent.appendChild(toolsText);
+
+                additionalToolsToggle.appendChild(toggleContent);
+                additionalToolsToggle.style.display = 'flex';
+                additionalToolsToggle.style.alignItems = 'center';
+                additionalToolsToggle.style.justifyContent = 'center';
+
+                // Create container for secondary tools (initially hidden)
+                secondaryToolsContainer = document.createElement('div');
+                secondaryToolsContainer.className = 'secondary-tools-container';
+                secondaryToolsContainer.style.display = 'none'; // Hidden by default
+                secondaryToolsContainer.style.height = '85px';
+                secondaryToolsContainer.style.backgroundColor = 'white';
+                secondaryToolsContainer.style.border = '1px solid #ddd';
+                secondaryToolsContainer.style.borderRadius = '4px';
+                secondaryToolsContainer.style.padding = '5px';
+                secondaryToolsContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+                secondaryToolsContainer.style.marginLeft = '5px';
+                secondaryToolsContainer.style.display = 'none'; // Initially hidden
+                secondaryToolsContainer.style.flexDirection = 'row';
+                secondaryToolsContainer.style.flexWrap = 'nowrap';
+                secondaryToolsContainer.style.alignItems = 'center';
+                secondaryToolsContainer.style.overflow = 'auto';
+
+                // Toggle functionality
+                additionalToolsToggle.addEventListener('click', () => {
+                    if (secondaryToolsContainer.style.display === 'none') {
+                        secondaryToolsContainer.style.display = 'flex';
+                        plusSign.textContent = '-';
+                        toolsText.textContent = 'Collapse extra tools';
+                    } else {
+                        secondaryToolsContainer.style.display = 'none';
+                        plusSign.textContent = '+';
+                        toolsText.textContent = 'Extra Tools';
+                    }
+                });
             }
 
             // Add primary buttons to the toolbox with highlighting for current step
@@ -1640,15 +1730,18 @@
                 toolbox.appendChild(button);
             });
 
-            // Add divider if we have secondary buttons
-            if (divider && secondaryButtons.length > 0) {
-                toolbox.appendChild(divider);
-            }
+            // Add the additional tools toggle and container
+            if (additionalToolsToggle && secondaryButtons.length > 0) {
+                toolbox.appendChild(additionalToolsToggle);
 
-            // Add secondary buttons to the toolbox
-            secondaryButtons.forEach(button => {
-                toolbox.appendChild(button);
-            });
+                // Add secondary buttons to the secondary tools container
+                secondaryButtons.forEach(button => {
+                    secondaryToolsContainer.appendChild(button);
+                });
+
+                // Add the secondary tools container right after the toggle in the DOM
+                toolbox.appendChild(secondaryToolsContainer);
+            }
 
             console.log("All buttons added to the smart toolbox in recommended order.");
         };
@@ -1816,7 +1909,7 @@
             toggleButton.innerText = "Show Smart Toolbox"; // Start in OFF state
 
             // ENHANCED: Styling for the toggle button
-            toggleButton.style.height = "22px"; // Make the button taller
+            toggleButton.style.height = "30px"; // Make the button taller
             toggleButton.style.padding = "0 12px";
             toggleButton.style.marginLeft = "10px";
             toggleButton.style.borderRadius = "4px";

@@ -1275,7 +1275,12 @@
             actionPlanContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
             actionPlanContainer.style.fontFamily = "'Inter', sans-serif";
             actionPlanContainer.className = 'action-plan-display';
-            actionPlanContainer.style.resize = 'both'; // Make resizable
+
+            // Make resizable with additional explicit CSS properties
+            actionPlanContainer.style.resize = 'both';
+            actionPlanContainer.style.minWidth = '200px';
+            actionPlanContainer.style.minHeight = '150px';
+            actionPlanContainer.style.overflow = 'auto'; // Required for resize to work
 
             // Add a header area for dragging
             const headerArea = document.createElement('div');
@@ -1498,8 +1503,10 @@
                             clonedDropdownItem.style.backgroundColor = "#f9f9f9";
                             clonedDropdownItem.style.padding = "4px 6px";
                             clonedDropdownItem.style.margin = "2px";
+                            // Ensure consistent width with box-sizing
                             clonedDropdownItem.style.minWidth = "85px"; // Minimum width
-                            clonedDropdownItem.style.width = "auto"; // Allow width to expand to content
+                            clonedDropdownItem.style.width = "85px"; // Fixed width
+                            clonedDropdownItem.style.maxWidth = "85px"; // Maximum width
                             clonedDropdownItem.style.boxSizing = "border-box"; // Include padding in width calculation
 
                             // Add disabled styling if original item is disabled
@@ -1527,8 +1534,10 @@
 
                     // Fix button height to ensure consistency
                     clonedChild.style.height = "85px"; // Set fixed height
+                    // Ensure consistent width with box-sizing
                     clonedChild.style.minWidth = "85px"; // Minimum width
-                    clonedChild.style.width = "auto"; // Allow width to expand to content
+                    clonedChild.style.width = "85px"; // Fixed width
+                    clonedChild.style.maxWidth = "85px"; // Maximum width
                     clonedChild.style.boxSizing = "border-box"; // Include padding in width calculation
                     clonedChild.style.border = "1px solid #ddd";
                     clonedChild.style.backgroundColor = "#f9f9f9";
@@ -1705,7 +1714,7 @@
                     if (secondaryToolsContainer.style.display === 'none') {
                         secondaryToolsContainer.style.display = 'flex';
                         plusSign.textContent = '-';
-                        toolsText.textContent = 'Collapse extra tools';
+                        toolsText.textContent = 'Collapse tools';
                     } else {
                         secondaryToolsContainer.style.display = 'none';
                         plusSign.textContent = '+';

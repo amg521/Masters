@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         AI-Personalized Toolbar with Smart Toolbox
+// @name         AI-Personalized Toolbar with Smart Toolbox and Debug Features
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  Shows AI configuration popup first, then loads smart toolbox with drag-scroll functionality
+// @version      1.1
+// @description  Shows AI configuration popup first, then loads smart toolbox with drag-scroll functionality and advanced debugging
 // @author       Axelle Groothaert
 // @match        https://www.selfcad.com/app/*
 // @grant        GM_addStyle
@@ -19,8 +19,393 @@
 
     // Global variables
     let toolboxData = null;
-    let actionPlanData = null;
-    let currentStepIndex = 0;
+    let actionPlan = null;
+
+    // Helper function to identify special buttons by analyzing their structure, class names, and content
+    const identifySpecialButton = (element) => {
+        // Get all available information about the element
+        const html = element.innerHTML.toLowerCase();
+        const classes = Array.from(element.classList).join(' ').toLowerCase();
+        const title = (element.getAttribute('title') || '').toLowerCase();
+        const tooltip = (element.getAttribute('data-tooltip') || '').toLowerCase();
+        const ariaLabel = (element.getAttribute('aria-label') || '').toLowerCase();
+
+        // Data structure to hold all the special button patterns to check
+        const buttonPatterns = [
+            // Transform tools
+            { name: "Move", patterns: ["move", "translate", "position"] },
+            { name: "Rotate", patterns: ["rotate", "rotation", "turning"] },
+            { name: "Scale", patterns: ["scale", "resize", "sizing"] },
+            { name: "Mirror", patterns: ["mirror", "reflect", "flip horizontal"] },
+            { name: "Flip", patterns: ["flip", "invert", "flip vertical"] },
+            { name: "Align", patterns: ["align", "alignment"] },
+            { name: "Array", patterns: ["array", "pattern", "duplicate", "repeat"] },
+
+            // Boolean operations
+            { name: "Union", patterns: ["union", "merge", "combine", "join", "add", "boolean union"] },
+            { name: "Subtract", patterns: ["subtract", "difference", "cut", "boolean subtract"] },
+            { name: "Intersect", patterns: ["intersect", "intersection", "boolean intersect"] },
+
+            // View controls
+            { name: "Orbit", patterns: ["orbit", "rotate view", "view rotation"] },
+            { name: "Pan", patterns: ["pan", "move view", "drag view"] },
+            { name: "Front View", patterns: ["front view", "front", "view front"] },
+            { name: "Top View", patterns: ["top view", "top", "view top"] },
+            { name: "Right View", patterns: ["right view", "right", "view right"] },
+            { name: "Perspective", patterns: ["perspective", "3d view", "isometric"] },
+
+            // Selection tools
+            { name: "Select", patterns: ["select", "selection tool"] },
+            { name: "Select All", patterns: ["select all", "all", "select everything"] },
+            { name: "Deselect", patterns: ["deselect", "clear selection", "unselect"] },
+            { name: "Invert Selection", patterns: ["invert", "invert selection", "reverse selection"] },
+
+            // Common CAD operations
+            { name: "Extrusion", patterns: ["extrude", "extrusion", "pull"] },
+            { name: "Fillet", patterns: ["fillet", "round", "rounded corner"] },
+            { name: "Chamfer", patterns: ["chamfer", "bevel", "angled corner"] },
+            { name: "Group", patterns: ["group", "create group"] },
+            { name: "Ungroup", patterns: ["ungroup", "separate", "break group"] },
+            { name: "Boolean", patterns: ["boolean", "boolean operations"] },
+
+            // Basic shapes
+            { name: "Cube", patterns: ["cube", "box", "rectangle"] },
+            { name: "Sphere", patterns: ["sphere", "ball"] },
+            { name: "Cylinder", patterns: ["cylinder", "tube"] },
+            { name: "Cone", patterns: ["cone"] },
+            { name: "Torus", patterns: ["torus", "donut"] },
+
+            // Common UI elements
+            { name: "Undo", patterns: ["undo", "undo action"] },
+            { name: "Redo", patterns: ["redo", "redo action"] },
+            { name: "Delete", patterns: ["delete", "remove", "erase"] },
+            { name: "Hide", patterns: ["hide", "invisible", "toggle visibility"] },
+            { name: "Show", patterns: ["show", "visible", "unhide"] }
+        ];
+
+        // Check all sources of information for each pattern
+        for (const button of buttonPatterns) {
+            for (const pattern of button.patterns) {
+                // Check if the pattern appears in any of the element properties
+                if (html.includes(pattern) ||
+                    classes.includes(pattern) ||
+                    title.includes(pattern) ||
+                    tooltip.includes(pattern) ||
+                    ariaLabel.includes(pattern)) {
+                    return button.name;
+                }
+
+                // Special case for icons with specific classes
+                if (element.querySelector(`[class*="${pattern}"]`)) {
+                    return button.name;
+                }
+            }
+        }
+
+        // Special case for icons that might be identified by image source
+        const images = element.querySelectorAll('img');
+        if (images.length > 0) {
+            const srcString = Array.from(images)
+                .map(img => (img.getAttribute('src') || '').toLowerCase())
+                .join(' ');
+
+            for (const button of buttonPatterns) {
+                for (const pattern of button.patterns) {
+                    if (srcString.includes(pattern)) {
+                        return button.name;
+                    }
+                }
+            }
+        }
+
+        // Special case for SVG icons
+        const svgs = element.querySelectorAll('svg');
+        if (svgs.length > 0) {
+            // Check SVG contents for clues
+            const svgString = Array.from(svgs)
+                .map(svg => svg.outerHTML.toLowerCase())
+                .join(' ');
+
+            for (const button of buttonPatterns) {
+                for (const pattern of button.patterns) {
+                    if (svgString.includes(pattern)) {
+                        return button.name;
+                    }
+                }
+            }
+        }
+
+        // Check for data attributes that might contain button information
+        const dataAttributeString = Array.from(element.attributes)
+            .filter(attr => attr.name.startsWith('data-'))
+            .map(attr => attr.value.toLowerCase())
+            .join(' ');
+
+        for (const button of buttonPatterns) {
+            for (const pattern of button.patterns) {
+                if (dataAttributeString.includes(pattern)) {
+                    return button.name;
+                }
+            }
+        }
+
+        // ENHANCEMENT: Extra patterns for additional tool identification
+        const extraPatterns = [
+            { name: "Extrusion", patterns: ["pull", "push", "extension"] },
+            { name: "Cube", patterns: ["box", "block", "rectangular prism"] },
+            { name: "Combine", patterns: ["join", "combine", "fuse"] },
+            { name: "Subtract", patterns: ["cut", "remove", "cutout"] },
+            { name: "Fillet", patterns: ["round edges", "rounded corners"] },
+            { name: "Chamfer", patterns: ["bevel edges", "angled corners"] },
+            { name: "Move", patterns: ["position", "relocate", "place"] },
+            { name: "Scale", patterns: ["resize", "size adjust", "dimension"] },
+            { name: "Align", patterns: ["center", "line up", "position relative"] }
+        ];
+
+        // Check extra patterns
+        for (const button of extraPatterns) {
+            for (const pattern of button.patterns) {
+                if (html.includes(pattern) ||
+                    classes.includes(pattern) ||
+                    title.includes(pattern) ||
+                    tooltip.includes(pattern) ||
+                    ariaLabel.includes(pattern)) {
+                    return button.name;
+                }
+            }
+        }
+
+        // No match found
+        return null;
+    };
+
+    // Function to create a debug popup showing button order with raw ChatGPT output
+    const createDebugOrderPopup = (allButtons, toolOrder, priorityMap) => {
+        // Create popup container
+        const debugPopup = document.createElement('div');
+        debugPopup.style.position = 'fixed';
+        debugPopup.style.top = '50%';
+        debugPopup.style.left = '50%';
+        debugPopup.style.transform = 'translate(-50%, -50%)';
+        debugPopup.style.width = '700px'; // Increased width for more content
+        debugPopup.style.maxHeight = '80vh';
+        debugPopup.style.backgroundColor = 'white';
+        debugPopup.style.border = '2px solid #26C9FF';
+        debugPopup.style.borderRadius = '8px';
+        debugPopup.style.padding = '16px';
+        debugPopup.style.zIndex = '20000';
+        debugPopup.style.overflowY = 'auto';
+        debugPopup.style.fontFamily = "'Inter', sans-serif";
+        debugPopup.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+
+        // Add title
+        const title = document.createElement('h2');
+        title.textContent = 'Button Order Debug Info';
+        title.style.marginTop = '0';
+        title.style.color = '#14708E';
+        title.style.borderBottom = '1px solid #eee';
+        title.style.paddingBottom = '8px';
+
+        // Create content sections
+        const orderInfo = document.createElement('div');
+
+        // Show raw ChatGPT output
+        const rawOutputSection = document.createElement('div');
+        rawOutputSection.innerHTML = '<h3>Raw ChatGPT Output:</h3>';
+
+        // Get the raw TOOL_ORDER section from actionPlan
+        let rawToolOrderText = "Not found";
+        if (actionPlan) {
+            const toolOrderMatch = actionPlan.match(/TOOL_ORDER:\s*([\w\s,]+)(?:\n|$)/);
+            if (toolOrderMatch && toolOrderMatch[0]) {
+                rawToolOrderText = toolOrderMatch[0].trim();
+            }
+        }
+
+        const rawOutputPre = document.createElement('pre');
+        rawOutputPre.style.backgroundColor = '#f5f5f5';
+        rawOutputPre.style.padding = '10px';
+        rawOutputPre.style.border = '1px solid #ddd';
+        rawOutputPre.style.borderRadius = '4px';
+        rawOutputPre.style.overflowX = 'auto';
+        rawOutputPre.style.maxHeight = '100px';
+        rawOutputPre.style.fontSize = '14px';
+        rawOutputPre.style.fontFamily = 'monospace';
+        rawOutputPre.textContent = rawToolOrderText;
+
+        rawOutputSection.appendChild(rawOutputPre);
+
+        // Show complete action plan
+        const fullActionPlanSection = document.createElement('div');
+        fullActionPlanSection.innerHTML = '<h3>Complete Action Plan:</h3>';
+
+        const fullActionPlanButton = document.createElement('button');
+        fullActionPlanButton.textContent = 'Show/Hide Full Action Plan';
+        fullActionPlanButton.style.backgroundColor = '#f0f0f0';
+        fullActionPlanButton.style.border = '1px solid #ddd';
+        fullActionPlanButton.style.borderRadius = '4px';
+        fullActionPlanButton.style.padding = '8px 12px';
+        fullActionPlanButton.style.marginBottom = '10px';
+        fullActionPlanButton.style.cursor = 'pointer';
+
+        const fullActionPlanPre = document.createElement('pre');
+        fullActionPlanPre.style.backgroundColor = '#f5f5f5';
+        fullActionPlanPre.style.padding = '10px';
+        fullActionPlanPre.style.border = '1px solid #ddd';
+        fullActionPlanPre.style.borderRadius = '4px';
+        fullActionPlanPre.style.overflowX = 'auto';
+        fullActionPlanPre.style.maxHeight = '200px';
+        fullActionPlanPre.style.fontSize = '14px';
+        fullActionPlanPre.style.fontFamily = 'monospace';
+        fullActionPlanPre.style.display = 'none'; // Initially hidden
+        fullActionPlanPre.textContent = actionPlan || "No action plan available";
+
+        fullActionPlanButton.addEventListener('click', () => {
+            fullActionPlanPre.style.display =
+                fullActionPlanPre.style.display === 'none' ? 'block' : 'none';
+        });
+
+        fullActionPlanSection.appendChild(fullActionPlanButton);
+        fullActionPlanSection.appendChild(fullActionPlanPre);
+
+        // Original tool order (processed)
+        const toolOrderSection = document.createElement('div');
+        toolOrderSection.innerHTML = `<h3>Processed Tool Order (${toolOrder.length} tools):</h3>`;
+        const toolOrderList = document.createElement('ol');
+        toolOrder.forEach(tool => {
+            const li = document.createElement('li');
+            li.textContent = tool;
+            toolOrderList.appendChild(li);
+        });
+        toolOrderSection.appendChild(toolOrderList);
+
+        // Priority map
+        const prioritySection = document.createElement('div');
+        prioritySection.innerHTML = '<h3>Priority Mapping:</h3>';
+        const priorityList = document.createElement('ul');
+        priorityMap.forEach((value, key) => {
+            const li = document.createElement('li');
+            li.textContent = `${key}: ${value}`;
+            priorityList.appendChild(li);
+        });
+        prioritySection.appendChild(priorityList);
+
+        // Final button order
+        const buttonOrderSection = document.createElement('div');
+        buttonOrderSection.innerHTML = `<h3>Final Button Order (${allButtons.length} buttons):</h3>`;
+        const buttonTable = document.createElement('table');
+        buttonTable.style.width = '100%';
+        buttonTable.style.borderCollapse = 'collapse';
+
+        // Add table header
+        const tableHeader = document.createElement('tr');
+        tableHeader.innerHTML = `
+            <th style="border:1px solid #ddd; padding:8px; text-align:left">Position</th>
+            <th style="border:1px solid #ddd; padding:8px; text-align:left">Button Name</th>
+            <th style="border:1px solid #ddd; padding:8px; text-align:left">Priority</th>
+        `;
+        buttonTable.appendChild(tableHeader);
+
+        // Add rows for each button
+        allButtons.forEach((button, index) => {
+            const buttonName = button.getAttribute('data-button-name') || button.buttonName || 'Unknown';
+            const priority = priorityMap.has(buttonName) ? priorityMap.get(buttonName) : 'N/A';
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="border:1px solid #ddd; padding:8px">${index + 1}</td>
+                <td style="border:1px solid #ddd; padding:8px">${buttonName}</td>
+                <td style="border:1px solid #ddd; padding:8px">${priority}</td>
+            `;
+
+            // Highlight matched buttons
+            if (priority !== 'N/A') {
+                row.style.backgroundColor = '#e6f7ff';
+            }
+
+            buttonTable.appendChild(row);
+        });
+
+        buttonOrderSection.appendChild(buttonTable);
+
+        // Add export to clipboard buttons
+        const exportSection = document.createElement('div');
+        exportSection.style.margin = '20px 0';
+        exportSection.style.borderTop = '1px solid #eee';
+        exportSection.style.paddingTop = '15px';
+
+        const exportButtonRaw = document.createElement('button');
+        exportButtonRaw.textContent = 'Copy Raw ChatGPT Output';
+        exportButtonRaw.style.backgroundColor = '#14708E';
+        exportButtonRaw.style.color = 'white';
+        exportButtonRaw.style.border = 'none';
+        exportButtonRaw.style.borderRadius = '4px';
+        exportButtonRaw.style.padding = '8px 12px';
+        exportButtonRaw.style.marginRight = '10px';
+        exportButtonRaw.style.cursor = 'pointer';
+
+        exportButtonRaw.addEventListener('click', () => {
+            navigator.clipboard.writeText(rawToolOrderText)
+                .then(() => {
+                    alert('Raw output copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+        });
+
+        const exportButtonAll = document.createElement('button');
+        exportButtonAll.textContent = 'Copy Full Action Plan';
+        exportButtonAll.style.backgroundColor = '#14708E';
+        exportButtonAll.style.color = 'white';
+        exportButtonAll.style.border = 'none';
+        exportButtonAll.style.borderRadius = '4px';
+        exportButtonAll.style.padding = '8px 12px';
+        exportButtonAll.style.cursor = 'pointer';
+
+        exportButtonAll.addEventListener('click', () => {
+            navigator.clipboard.writeText(actionPlan || "No action plan available")
+                .then(() => {
+                    alert('Full action plan copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error('Failed to copy: ', err);
+                    alert('Failed to copy to clipboard');
+                });
+        });
+
+        exportSection.appendChild(exportButtonRaw);
+        exportSection.appendChild(exportButtonAll);
+
+        // Add close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = 'Close';
+        closeButton.style.marginTop = '16px';
+        closeButton.style.padding = '8px 16px';
+        closeButton.style.backgroundColor = '#14708E';
+        closeButton.style.color = 'white';
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '4px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.float = 'right';
+        closeButton.onclick = () => document.body.removeChild(debugPopup);
+
+        // Assemble popup
+        orderInfo.appendChild(rawOutputSection);
+        orderInfo.appendChild(fullActionPlanSection);
+        orderInfo.appendChild(toolOrderSection);
+        orderInfo.appendChild(prioritySection);
+        orderInfo.appendChild(buttonOrderSection);
+        orderInfo.appendChild(exportSection);
+
+        debugPopup.appendChild(title);
+        debugPopup.appendChild(orderInfo);
+        debugPopup.appendChild(closeButton);
+
+        // Add to document
+        document.body.appendChild(debugPopup);
+    };
 
     // Fetch the toolbox JSON from GitHub
     const fetchToolboxData = async () => {
@@ -71,7 +456,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer API_KEY'
+                    'Authorization': 'Bearer API-KEY'
                 },
                 body: JSON.stringify({
                     model: 'gpt-4',
@@ -109,61 +494,40 @@
     // Function to generate action plan based on user selections
     const generateActionPlan = async (objectToMake, userApproach) => {
         try {
-            // Prepare the prompt for ChatGPT - request structured JSON with button IDs
-            const prompt = `
+            // Prepare the prompt for ChatGPT
+            let prompt = `
                 I want to create "${objectToMake}" using SelfCAD. My preferred approach is: "${userApproach}".
 
                 Here are all the tools available in SelfCAD that I can use:
                 ${JSON.stringify(toolboxData)}
 
-                Please respond with a JSON object that contains:
-                1. An array of steps to follow to create the object
-                2. An ordered list of tools that will be used
+                Please create a step-by-step plan for how to create this object using the available tools.
+                Be specific about which tools to use at each step.
+                Use the exact tool names from the list when recommending tools.
+                Keep in mind that I'm using SelfCAD which is a 3D modeling tool.
+                Make your instructions clear and specific.
 
-                Each step must include:
-                - step_number: The step number (starting at 1)
-                - description: A clear description of what to do
-                - tools: An array of objects containing tool names and IDs needed for this step, exactly matching from the provided tool list
-                  Each tool object needs both "name" and "id" properties from the tool list
+                VERY IMPORTANT: Please include a comma-separated list at the end of your response titled "TOOL_ORDER:"
+                that lists, in order of use, all the tool names that should be used in this plan. The tool names MUST EXACTLY match
+                the data-button-name attributes of the buttons in the UI. Common tool names are: Cube, Sphere, Cylinder, Cone, Torus,
+                Scale, Move, Rotate, Edit Details, Fillet, Combine.
 
-                Example JSON format:
-                {
-                  "plan": [
-                    {
-                      "step_number": 1,
-                      "description": "Create a cube as the base for the table",
-                      "tools": [
-                        {"name": "Cube", "id": "btn_cube"},
-                        {"name": "Scale", "id": "btn_scale"}
-                      ]
-                    },
-                    {
-                      "step_number": 2,
-                      "description": "Add cylinders for the table legs",
-                      "tools": [
-                        {"name": "Cylinder", "id": "btn_cylinder"},
-                        {"name": "Move", "id": "btn_move"}
-                      ]
-                    }
-                  ],
-                  "tool_order": [
-                    {"name": "Cube", "id": "btn_cube"},
-                    {"name": "Scale", "id": "btn_scale"},
-                    {"name": "Cylinder", "id": "btn_cylinder"},
-                    {"name": "Move", "id": "btn_move"},
-                    {"name": "Combine", "id": "btn_combine"}
-                  ]
-                }
+                Example: "TOOL_ORDER: Cube, Extrusion, Fillet, Move"
+            `;
 
-                Make sure all tool names and IDs match exactly with those in the provided list.
-                Your response should be only the JSON object, with no additional text.
+            // ENHANCEMENT: Add explicit instruction to ensure TOOL_ORDER section is included
+            prompt += `
+
+                I MUST include a clear TOOL_ORDER: section in my response with a comma-separated list
+                of ALL tools needed, in the exact order they should be used.
+                Example: "TOOL_ORDER: Cube, Extrude, Fillet, Move"
             `;
 
             const response = await fetch('https://api.openai.com/v1/chat/completions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer API_KEY'
+                    'Authorization': 'Bearer API-KEY'
                 },
                 body: JSON.stringify({
                     model: 'gpt-4',
@@ -173,7 +537,7 @@
                             content: prompt
                         }
                     ],
-                    max_tokens: 1500,
+                    max_tokens: 1000,
                     temperature: 0.7
                 })
             });
@@ -184,35 +548,44 @@
                 throw new Error(`API Error: ${data.error.message}`);
             }
 
-            // Parse the JSON response from the API
-            const content = data.choices[0].message.content;
-            const parsedContent = JSON.parse(content);
-            console.log("Received action plan:", parsedContent);
-            return parsedContent;
+            return data.choices[0].message.content;
         } catch (error) {
             console.error("Error generating action plan:", error);
-            // Return a minimal fallback plan with IDs
-            return {
-                "plan": [
-                    {
-                        "step_number": 1,
-                        "description": "Error generating detailed plan. Start by creating basic shapes needed for your model.",
-                        "tools": [
-                            {"name": "Cube", "id": "btn_cube"},
-                            {"name": "Sphere", "id": "btn_sphere"},
-                            {"name": "Cylinder", "id": "btn_cylinder"}
-                        ]
-                    }
-                ],
-                "tool_order": [
-                    {"name": "Cube", "id": "btn_cube"},
-                    {"name": "Sphere", "id": "btn_sphere"},
-                    {"name": "Cylinder", "id": "btn_cylinder"},
-                    {"name": "Move", "id": "btn_move"},
-                    {"name": "Scale", "id": "btn_scale"}
-                ]
-            };
+            return "Error generating action plan. Please try again.";
         }
+    };
+
+    // ENHANCEMENT: Improved function to extract tool order from action plan
+    const extractToolOrder = (actionPlanText) => {
+        console.log("Extracting tool order from action plan");
+
+        // Try to find the TOOL_ORDER section with a more comprehensive regex
+        // This handles both single-line and multi-line tool orders
+        const toolOrderMatch = actionPlanText.match(/TOOL_ORDER:\s*([\w\s,]+)(?:\n|$)/);
+        if (toolOrderMatch && toolOrderMatch[1]) {
+            // Parse the comma-separated list, being careful with spaces
+            const toolOrder = toolOrderMatch[1].split(',').map(tool => tool.trim());
+            console.log("Extracted tool order directly from action plan:", toolOrder);
+            return toolOrder;
+        }
+
+        // If no TOOL_ORDER section found, try another approach - look for numbered steps
+        const numberedSteps = actionPlanText.match(/\b(\d+)\.\s+Use\s+the\s+(\w+)\s+tool/gi);
+        if (numberedSteps && numberedSteps.length > 0) {
+            const extractedTools = numberedSteps.map(step => {
+                const match = step.match(/Use\s+the\s+(\w+)\s+tool/i);
+                return match ? match[1] : null;
+            }).filter(Boolean);
+
+            if (extractedTools.length > 0) {
+                console.log("Extracted tool order from numbered steps:", extractedTools);
+                return extractedTools;
+            }
+        }
+
+        // If no TOOL_ORDER section found, return empty array to prevent incorrect ordering
+        console.warn("No TOOL_ORDER section found in action plan! Returning empty array.");
+        return [];
     };
 
     // Initialize the app by fetching the toolbox data first
@@ -334,10 +707,6 @@
                     margin-top: 24px;
                     margin-bottom: 24px;
                 }
-                .button:disabled {
-                    opacity: 0.7;
-                    cursor: not-allowed;
-                }
                 #build::placeholder,
                 textarea#approach::placeholder {
                     color: #B3B3B3;
@@ -415,19 +784,25 @@
                     animation: spin 1s linear infinite;
                 }
 
+                .button-spinner {
+                    border: 3px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    border-top: 3px solid #FFFFFF;
+                    width: 16px;
+                    height: 16px;
+                    animation: spin 1s linear infinite;
+                    display: inline-block;
+                    margin-left: 10px;
+                }
+
+                .button:disabled {
+                    opacity: 0.8;
+                    cursor: not-allowed;
+                }
+
                 @keyframes spin {
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }
-                }
-
-                .button-spinner {
-                    display: inline-block;
-                    width: 20px;
-                    height: 20px;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    border-radius: 50%;
-                    border-top-color: white;
-                    animation: spin 1s ease-in-out infinite;
                 }
             </style>
 
@@ -447,7 +822,7 @@
 
                 <div id="dynamic-section"></div>
 
-                <button class="button">Generate smart toolbar <img src="sparkle-icon.png" alt="sparkle" /></button>
+                <button class="button">Generate smart toolbar <span style="font-size: 16px; margin-left: 8px;">✨</span></button>
             </div>
         `;
 
@@ -576,54 +951,44 @@
 
         // Button click handler
         generateButton.addEventListener('click', async () => {
-            // Show loading spinner and disable button
+            // Disable the button and show loading state
             generateButton.disabled = true;
-            const originalButtonContent = generateButton.innerHTML;
-            generateButton.innerHTML = `<span class="button-spinner"></span> Generating...`;
+            generateButton.innerHTML = 'Generating <span class="button-spinner"></span>';
+            generateButton.style.cursor = 'not-allowed';
 
-            try {
-                // Get the user's build object
-                const objectToMake = buildInput.value.trim() || "a generic object";
+            // Get the user's build object
+            const objectToMake = buildInput.value.trim() || "a generic object";
 
-                // Get the user's selected approach
-                let userApproach = "";
+            // Get the user's selected approach
+            let userApproach = "";
 
-                if (helpSelect.value.includes('guided')) {
-                    userApproach = "I'd like to be guided through every step";
-                }
-                else if (helpSelect.value.includes('set of approaches')) {
-                    // Find which radio button is checked
-                    const selectedRadio = dynamicSection.querySelector('input[type="radio"]:checked');
-                    if (selectedRadio) {
-                        const index = parseInt(selectedRadio.id.replace('option', '')) - 1;
-                        userApproach = generatedApproaches[index]?.approach || "Using a combined approach of basic shapes";
-                    }
-                }
-                else if (helpSelect.value.includes('own approach')) {
-                    const approachTextarea = dynamicSection.querySelector('#approach');
-                    userApproach = approachTextarea ? approachTextarea.value.trim() : "";
-                    if (!userApproach) {
-                        userApproach = "Creating using my own custom approach";
-                    }
-                }
-
-                // Generate action plan
-                actionPlanData = await generateActionPlan(objectToMake, userApproach);
-
-                // Reset current step index
-                currentStepIndex = 0;
-
-                // Remove popup
-                popupHost.remove();
-
-                // Initialize smart toolbox and action plan display
-                initializeSmartToolbox();
-            } catch (error) {
-                console.error("Error processing request:", error);
-                generateButton.innerHTML = originalButtonContent;
-                generateButton.disabled = false;
-                alert("Error generating plan. Please try again.");
+            if (helpSelect.value.includes('guided')) {
+                userApproach = "I'd like to be guided through every step";
             }
+            else if (helpSelect.value.includes('set of approaches')) {
+                // Find which radio button is checked
+                const selectedRadio = dynamicSection.querySelector('input[type="radio"]:checked');
+                if (selectedRadio) {
+                    const index = parseInt(selectedRadio.id.replace('option', '')) - 1;
+                    userApproach = generatedApproaches[index]?.approach || "Using a combined approach of basic shapes";
+                }
+            }
+            else if (helpSelect.value.includes('own approach')) {
+                const approachTextarea = dynamicSection.querySelector('#approach');
+                userApproach = approachTextarea ? approachTextarea.value.trim() : "";
+                if (!userApproach) {
+                    userApproach = "Creating using my own custom approach";
+                }
+            }
+
+            // Generate action plan
+            actionPlan = await generateActionPlan(objectToMake, userApproach);
+
+            // Remove popup
+            popupHost.remove();
+
+            // Initialize smart toolbox and action plan display
+            initializeSmartToolbox();
         });
     };
 
@@ -634,13 +999,27 @@
         let targetDiv;
         let smartToolbox;
         let refreshTimeout;
-        let actionPlanContainer;
-        let stepButtonMap = new Map(); // Maps step index to button element
+        let toolOrder = [];
+        // Store priorityMap at a higher scope for access by the debug button
+        let priorityMap = new Map();
+
+        // Extract tool order from action plan
+        if (actionPlan) {
+            toolOrder = extractToolOrder(actionPlan);
+            console.log("Tool order extracted:", toolOrder);
+
+            // Also log the raw TOOL_ORDER section from the action plan
+            const toolOrderMatch = actionPlan.match(/TOOL_ORDER:\s*([\w\s,]+)(?:\n|$)/);
+            if (toolOrderMatch && toolOrderMatch[0]) {
+                console.log("Raw TOOL_ORDER section:", toolOrderMatch[0]);
+            } else {
+                console.warn("No raw TOOL_ORDER section found in action plan!");
+            }
+        }
 
         // Create action plan display
         const createActionPlanDisplay = () => {
-            actionPlanContainer = document.createElement('div');
-            actionPlanContainer.id = "action-plan-container";
+            const actionPlanContainer = document.createElement('div');
             actionPlanContainer.style.position = 'fixed';
             actionPlanContainer.style.bottom = '20px';
             actionPlanContainer.style.right = '20px';
@@ -650,11 +1029,10 @@
             actionPlanContainer.style.border = '1px solid #D9D9D9';
             actionPlanContainer.style.borderRadius = '8px';
             actionPlanContainer.style.padding = '16px';
-            actionPlanContainer.style.zIndex = '9996'; // Lower than toolbox but higher than content
+            actionPlanContainer.style.zIndex = '10000';
             actionPlanContainer.style.overflow = 'auto';
             actionPlanContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
             actionPlanContainer.style.fontFamily = "'Inter', sans-serif";
-            actionPlanContainer.style.cursor = 'move'; // Indicate it's draggable
 
             const titleElement = document.createElement('h3');
             titleElement.textContent = 'AI Action Plan';
@@ -662,108 +1040,20 @@
             titleElement.style.marginBottom = '12px';
             titleElement.style.fontSize = '16px';
             titleElement.style.fontWeight = '600';
-            titleElement.style.cursor = 'move';
 
-            const stepsContainer = document.createElement('div');
-            stepsContainer.id = 'action-steps-container';
-            stepsContainer.style.fontSize = '14px';
-            stepsContainer.style.lineHeight = '1.4';
-            stepsContainer.style.color = '#464646';
+            const contentElement = document.createElement('div');
 
-            // Create numbered steps from the action plan data
-            if (actionPlanData && actionPlanData.plan) {
-                actionPlanData.plan.forEach((step, index) => {
-                    const stepElement = document.createElement('div');
-                    stepElement.classList.add('action-step');
-                    stepElement.dataset.stepIndex = index;
-
-                    // Create step heading with step number
-                    const stepHeading = document.createElement('div');
-                    stepHeading.style.fontWeight = 'bold';
-                    stepHeading.style.marginBottom = '4px';
-                    stepHeading.textContent = `Step ${step.step_number}:`;
-
-                    // Create step description
-                    const stepDescription = document.createElement('div');
-                    stepDescription.innerHTML = step.description;
-
-                    // Create step tools list
-                    const stepTools = document.createElement('div');
-                    stepTools.style.marginTop = '4px';
-                    stepTools.style.fontSize = '12px';
-                    stepTools.style.color = '#666';
-
-                    if (step.tools && step.tools.length > 0) {
-                        const toolNames = step.tools.map(tool => tool.name);
-                        stepTools.textContent = `Tools: ${toolNames.join(', ')}`;
-                    }
-
-                    // Add all elements to the step container
-                    stepElement.appendChild(stepHeading);
-                    stepElement.appendChild(stepDescription);
-                    stepElement.appendChild(stepTools);
-
-                    stepElement.style.padding = '8px';
-                    stepElement.style.borderRadius = '4px';
-                    stepElement.style.marginBottom = '8px';
-
-                    // Highlight the first step
-                    if (index === 0) {
-                        stepElement.style.backgroundColor = '#e6f7ff';
-                        stepElement.style.border = '1px solid #91d5ff';
-                    }
-
-                    stepsContainer.appendChild(stepElement);
-                });
+            // Remove the TOOL_ORDER line from display
+            let displayText = actionPlan;
+            const toolOrderIndex = displayText.indexOf("TOOL_ORDER:");
+            if (toolOrderIndex !== -1) {
+                displayText = displayText.substring(0, toolOrderIndex);
             }
 
-            // Add navigation buttons
-            const navigationContainer = document.createElement('div');
-            navigationContainer.style.display = 'flex';
-            navigationContainer.style.justifyContent = 'space-between';
-            navigationContainer.style.marginTop = '12px';
-
-            const prevButton = document.createElement('button');
-            prevButton.textContent = '← Previous';
-            prevButton.style.backgroundColor = '#f0f0f0';
-            prevButton.style.border = 'none';
-            prevButton.style.padding = '6px 12px';
-            prevButton.style.borderRadius = '4px';
-            prevButton.style.cursor = 'pointer';
-            prevButton.style.fontSize = '12px';
-            prevButton.disabled = true;
-            prevButton.style.opacity = '0.5';
-
-            const nextButton = document.createElement('button');
-            nextButton.textContent = 'Next →';
-            nextButton.style.backgroundColor = '#1890ff';
-            nextButton.style.border = 'none';
-            nextButton.style.padding = '6px 12px';
-            nextButton.style.borderRadius = '4px';
-            nextButton.style.cursor = 'pointer';
-            nextButton.style.color = 'white';
-            nextButton.style.fontSize = '12px';
-
-            // Disable next button if there's only one step
-            if (!actionPlanData || !actionPlanData.plan || actionPlanData.plan.length <= 1) {
-                nextButton.disabled = true;
-                nextButton.style.opacity = '0.5';
-            }
-
-            prevButton.addEventListener('click', () => {
-                if (currentStepIndex > 0) {
-                    updateCurrentStep(currentStepIndex - 1);
-                }
-            });
-
-            nextButton.addEventListener('click', () => {
-                if (actionPlanData && actionPlanData.plan && currentStepIndex < actionPlanData.plan.length - 1) {
-                    updateCurrentStep(currentStepIndex + 1);
-                }
-            });
-
-            navigationContainer.appendChild(prevButton);
-            navigationContainer.appendChild(nextButton);
+            contentElement.innerHTML = displayText.replace(/\n/g, '<br>');
+            contentElement.style.fontSize = '14px';
+            contentElement.style.lineHeight = '1.4';
+            contentElement.style.color = '#464646';
 
             const minimizeButton = document.createElement('button');
             minimizeButton.textContent = '−';
@@ -780,18 +1070,15 @@
             minimizeButton.style.display = 'flex';
             minimizeButton.style.justifyContent = 'center';
             minimizeButton.style.alignItems = 'center';
-            minimizeButton.style.zIndex = '1'; // Ensure it's above draggable area
 
             let isMinimized = false;
             minimizeButton.addEventListener('click', () => {
                 if (isMinimized) {
-                    stepsContainer.style.display = 'block';
-                    navigationContainer.style.display = 'flex';
+                    contentElement.style.display = 'block';
                     actionPlanContainer.style.height = 'auto';
                     minimizeButton.textContent = '−';
                 } else {
-                    stepsContainer.style.display = 'none';
-                    navigationContainer.style.display = 'none';
+                    contentElement.style.display = 'none';
                     actionPlanContainer.style.height = 'auto';
                     minimizeButton.textContent = '+';
                 }
@@ -799,121 +1086,10 @@
             });
 
             actionPlanContainer.appendChild(titleElement);
-            actionPlanContainer.appendChild(stepsContainer);
-            actionPlanContainer.appendChild(navigationContainer);
+            actionPlanContainer.appendChild(contentElement);
             actionPlanContainer.appendChild(minimizeButton);
 
             document.body.appendChild(actionPlanContainer);
-
-            // Make the action plan container draggable
-            let isDragging = false;
-            let offsetX, offsetY;
-
-            const startDrag = (e) => {
-                // Only initiate drag on heading or container itself (not on buttons or content)
-                if (e.target === titleElement || e.target === actionPlanContainer) {
-                    isDragging = true;
-                    offsetX = e.clientX - actionPlanContainer.getBoundingClientRect().left;
-                    offsetY = e.clientY - actionPlanContainer.getBoundingClientRect().top;
-                    document.addEventListener('mousemove', dragMove);
-                    document.addEventListener('mouseup', stopDrag);
-                }
-            };
-
-            const dragMove = (e) => {
-                if (isDragging) {
-                    const x = e.clientX - offsetX;
-                    const y = e.clientY - offsetY;
-
-                    // Keep within window bounds
-                    const maxX = window.innerWidth - actionPlanContainer.offsetWidth;
-                    const maxY = window.innerHeight - actionPlanContainer.offsetHeight;
-
-                    actionPlanContainer.style.left = `${Math.max(0, Math.min(maxX, x))}px`;
-                    actionPlanContainer.style.top = `${Math.max(0, Math.min(maxY, y))}px`;
-                    actionPlanContainer.style.right = 'auto';
-                    actionPlanContainer.style.bottom = 'auto';
-                }
-            };
-
-            const stopDrag = () => {
-                isDragging = false;
-                document.removeEventListener('mousemove', dragMove);
-                document.removeEventListener('mouseup', stopDrag);
-            };
-
-            actionPlanContainer.addEventListener('mousedown', startDrag);
-
-            // Store reference to buttons for step navigation
-            return {prevButton, nextButton};
-        };
-
-        // Function to update the current step
-        const updateCurrentStep = (newIndex) => {
-            if (!actionPlanData || !actionPlanData.plan) return;
-            if (newIndex < 0 || newIndex >= actionPlanData.plan.length) return;
-
-            // Update step index
-            currentStepIndex = newIndex;
-
-            // Update step highlighting in action plan
-            const stepElements = document.querySelectorAll('.action-step');
-            stepElements.forEach((el, idx) => {
-                if (idx === currentStepIndex) {
-                    el.style.backgroundColor = '#e6f7ff';
-                    el.style.border = '1px solid #91d5ff';
-                } else {
-                    el.style.backgroundColor = 'transparent';
-                    el.style.border = 'none';
-                }
-            });
-
-            // Update button highlighting in toolbox
-            if (smartToolbox) {
-                const allButtons = smartToolbox.querySelectorAll('[data-tool-name], [data-tool-id]');
-                allButtons.forEach(button => {
-                    button.style.boxShadow = 'none';
-                });
-
-                // Get the current step's tools
-                const currentStep = actionPlanData.plan[currentStepIndex];
-                if (currentStep && currentStep.tools) {
-                    // Highlight all buttons corresponding to tools in this step
-                    currentStep.tools.forEach(tool => {
-                        // Try to find by name first, then by ID
-                        let toolButton = smartToolbox.querySelector(`[data-tool-name="${tool.name.toLowerCase()}"]`);
-                        if (!toolButton) {
-                            toolButton = smartToolbox.querySelector(`[data-tool-id="${tool.id}"]`);
-                        }
-
-                        if (toolButton) {
-                            toolButton.style.boxShadow = '0 0 0 2px #1890ff';
-
-                            // Scroll the first highlighted button into view if needed
-                            if (toolButton === smartToolbox.querySelector(`[data-tool-name="${currentStep.tools[0].name.toLowerCase()}"]`) ||
-                                toolButton === smartToolbox.querySelector(`[data-tool-id="${currentStep.tools[0].id}"]`)) {
-                                if (toolButton.offsetLeft < smartToolbox.scrollLeft ||
-                                    toolButton.offsetLeft + toolButton.offsetWidth > smartToolbox.scrollLeft + smartToolbox.offsetWidth) {
-                                    smartToolbox.scrollLeft = toolButton.offsetLeft - 20;
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // Update navigation buttons
-            const navContainer = document.querySelector('#action-plan-container');
-            if (navContainer) {
-                const prevButton = navContainer.querySelector('button:first-of-type');
-                const nextButton = navContainer.querySelector('button:last-of-type');
-
-                prevButton.disabled = currentStepIndex === 0;
-                prevButton.style.opacity = currentStepIndex === 0 ? '0.5' : '1';
-
-                nextButton.disabled = currentStepIndex === actionPlanData.plan.length - 1;
-                nextButton.style.opacity = currentStepIndex === actionPlanData.plan.length - 1 ? '0.5' : '1';
-            }
         };
 
         // MODIFIED: Added check for projects-panel.hidden
@@ -921,7 +1097,6 @@
             targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
             const toolbar = document.getElementById("headerToolbarMenu");
             const projectsPanel = document.querySelector('.projects-panel'); // NEW
-            const quickMenus = document.querySelector('.quick-menus'); // For toggle button placement
 
             // MODIFIED condition to check projects-panel state
             if (!targetDiv || !toolbar || !projectsPanel || !projectsPanel.classList.contains('hidden')) {
@@ -931,102 +1106,74 @@
             }
 
             console.log("Target div and toolbar located.");
-            createSmartToolbox(targetDiv, toolbar, quickMenus);
+            createSmartToolbox(targetDiv, toolbar);
 
             // Create action plan display after smart toolbox is initialized
-            if (actionPlanData) {
-                const navButtons = createActionPlanDisplay();
-
-                // Initialize step highlighting after both toolbox and action plan are created
-                setTimeout(() => {
-                    // Initial step highlighting
-                    updateCurrentStep(0);
-                }, 500);
+            if (actionPlan) {
+                createActionPlanDisplay();
             }
         };
 
         // Extract the repeated code into a function for populating the toolbox
         const populateSmartToolbox = (toolbox, sourceDiv) => {
             toolbox.innerHTML = ""; // clear previous content
-            stepButtonMap.clear(); // Reset step-to-button mapping
 
-            // Get the ordered list of tools from the action plan
-            const relevantTools = new Set();
-            const relevantToolIds = new Set();
-
-            if (actionPlanData && actionPlanData.tool_order) {
-                actionPlanData.tool_order.forEach(tool => {
-                    relevantTools.add(tool.name.toLowerCase());
-                    relevantToolIds.add(tool.id);
-                });
-            }
-
-            // Fallback if tool_order is missing
-            if (relevantTools.size === 0 && actionPlanData && actionPlanData.plan) {
-                actionPlanData.plan.forEach(step => {
-                    if (step.tools) {
-                        step.tools.forEach(tool => {
-                            relevantTools.add(tool.name.toLowerCase());
-                            relevantToolIds.add(tool.id);
-                        });
-                    }
-                });
-            }
-
-            // First, collect all relevant buttons in order
+            // First, collect all buttons
             const allButtons = [];
 
-            // Create a map of tool names/ids to their order in the tool_order array
-            const toolOrderMap = new Map();
-            if (actionPlanData && actionPlanData.tool_order) {
-                actionPlanData.tool_order.forEach((tool, index) => {
-                    toolOrderMap.set(tool.name.toLowerCase(), index);
-                    toolOrderMap.set(tool.id, index);
-                });
-            }
+            // Debug the tool order before sorting
+            console.log("Tool order before sorting:", toolOrder);
 
             // loop through children of the target toolbar
             Array.from(sourceDiv.children).forEach((child) => {
                 const dropdownItems = child.querySelectorAll('[class^="dropdown-item"]');
                 if (dropdownItems.length > 0) {
                     dropdownItems.forEach((dropdownItem) => {
+                        const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
+
+                        // Fix button height to ensure consistency
+                        clonedDropdownItem.style.height = "85px"; // Set fixed height
+
+                        // stack icon and label vertically
                         const iconElement = dropdownItem.querySelector('span[class^="pull-left"][class*="selfcad-grey-"]');
                         const labelElement = dropdownItem.querySelector('span[class="inner pull-left"][rv-text="btn.labelText"]');
 
-                        if (iconElement && labelElement) {
-                            const buttonName = labelElement.textContent.trim();
-                            const buttonId = getButtonIdFromClassList(dropdownItem);
-
-                            // Skip if this tool is not in our relevantTools (not needed for the plan)
-                            if (!relevantTools.has(buttonName.toLowerCase()) && !relevantToolIds.has(buttonId)) return;
-
-                            const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
-
-                            // Add data attribute for the tool name and ID (useful for step tracking)
-                            clonedDropdownItem.setAttribute('data-tool-name', buttonName.toLowerCase());
-                            if (buttonId) {
-                                clonedDropdownItem.setAttribute('data-tool-id', buttonId);
+                        // Extract button name - try multiple possible selectors
+                        let buttonName = "";
+                        if (labelElement && labelElement.textContent) {
+                            buttonName = labelElement.textContent.trim();
+                        } else {
+                            // Try alternate selector
+                            const altLabel = dropdownItem.querySelector('.inner.pull-left');
+                            if (altLabel) {
+                                buttonName = altLabel.textContent.trim();
+                            } else {
+                            // Special case for transform and other special tools
+                            const specialButtons = identifySpecialButton(dropdownItem);
+                            if (specialButtons) {
+                                buttonName = specialButtons;
                             }
+                            }
+                        }
 
-                            // Create stacked container for proper layout
+                        // Store the button name consistently for all buttons
+                        clonedDropdownItem.setAttribute('data-button-name', buttonName);
+                        clonedDropdownItem.buttonName = buttonName;
+                        console.log(`Added dropdown button: ${buttonName}`);
+
+                        if (iconElement && labelElement) {
                             const stackedContainer = document.createElement("div");
                             stackedContainer.style.display = "flex";
                             stackedContainer.style.flexDirection = "column";
                             stackedContainer.style.alignItems = "center";
                             stackedContainer.style.justifyContent = "center";
                             stackedContainer.style.height = "100%";
-                            stackedContainer.style.padding = "4px 6px";
 
                             const clonedIcon = iconElement.cloneNode(true);
                             const clonedLabel = labelElement.cloneNode(true);
 
                             stackedContainer.appendChild(clonedIcon);
                             stackedContainer.appendChild(clonedLabel);
-
-                            clonedDropdownItem.setAttribute('name', buttonName);
-                            clonedDropdownItem.buttonName = buttonName; // Store for sorting later
-                            clonedDropdownItem.buttonId = buttonId; // Store ID for sorting later
-                            clonedDropdownItem.order = toolOrderMap.get(buttonName.toLowerCase()) || toolOrderMap.get(buttonId) || 999;
 
                             if (clonedLabel) {
                                 const isDisabled = dropdownItem.classList.contains('disabled');
@@ -1035,22 +1182,20 @@
                                 clonedLabel.style.opacity = "1";
                                 clonedLabel.style.transition = "none";
                                 clonedLabel.style.paddingTop = "6px";
-                                clonedLabel.style.fontSize = "12px";
-                                clonedLabel.style.whiteSpace = "nowrap";
                             }
 
                             clonedDropdownItem.innerHTML = "";
                             clonedDropdownItem.appendChild(stackedContainer);
 
-                            clonedDropdownItem.style.display = "inline-flex";
+                            clonedDropdownItem.style.display = "flex";
                             clonedDropdownItem.style.flexDirection = "column";
                             clonedDropdownItem.style.alignItems = "center";
                             clonedDropdownItem.style.justifyContent = "center";
                             clonedDropdownItem.style.border = "1px solid #ddd";
                             clonedDropdownItem.style.backgroundColor = "#f9f9f9";
-                            clonedDropdownItem.style.padding = "0";
+                            clonedDropdownItem.style.padding = "4px 6px";
                             clonedDropdownItem.style.margin = "2px";
-                            clonedDropdownItem.style.height = "85px"; // Match the original height
+                            clonedDropdownItem.style.width = "85px"; // Fixed width
 
                             // Add disabled styling if original item is disabled
                             if (dropdownItem.classList.contains('disabled')) {
@@ -1065,130 +1210,121 @@
                                 });
                             }
 
-                            // Associate button with steps where this tool is used
-                            if (actionPlanData && actionPlanData.plan) {
-                                actionPlanData.plan.forEach((step, stepIndex) => {
-                                    if (step.tools && step.tools.some(tool =>
-                                        tool.name.toLowerCase() === buttonName.toLowerCase() || tool.id === buttonId)) {
-                                        // Add a click handler to navigate to the first step using this tool
-                                        if (!clonedDropdownItem.hasStepHandler) {
-                                            clonedDropdownItem.addEventListener('click', () => {
-                                                updateCurrentStep(stepIndex);
-                                            });
-                                            clonedDropdownItem.hasStepHandler = true;
-                                        }
-                                    }
-                                });
-                            }
-
                             allButtons.push(clonedDropdownItem);
                         }
                     });
                 } else {
+                    const clonedChild = child.cloneNode(true);
+
+                    // Fix button height to ensure consistency
+                    clonedChild.style.height = "85px"; // Set fixed height
+                    clonedChild.style.width = "85px"; // Fixed width
+                    clonedChild.style.border = "1px solid #ddd";
+                    clonedChild.style.backgroundColor = "#f9f9f9";
+                    clonedChild.style.margin = "2px";
+                    clonedChild.style.display = "flex";
+                    clonedChild.style.flexDirection = "column";
+                    clonedChild.style.alignItems = "center";
+                    clonedChild.style.justifyContent = "center";
+
+                    // Extract button name - try multiple possible selectors
+                    let buttonName = "";
                     const labelElement = child.querySelector('.inner.pull-left');
-                    if (labelElement) {
-                        const buttonName = labelElement.textContent.trim();
-                        const buttonId = getButtonIdFromClassList(child);
-
-                        // Skip if this tool is not in our relevantTools (not needed for the plan)
-                        if (!relevantTools.has(buttonName.toLowerCase()) && !relevantToolIds.has(buttonId)) return;
-
-                        const clonedChild = child.cloneNode(true); // clone the child
-
-                        // Add data attribute for the tool name and ID
-                        clonedChild.setAttribute('data-tool-name', buttonName.toLowerCase());
-                        if (buttonId) {
-                            clonedChild.setAttribute('data-tool-id', buttonId);
-                        }
-
-                        // Fix the layout and styling
-                        clonedChild.style.display = "inline-flex";
-                        clonedChild.style.flexDirection = "column";
-                        clonedChild.style.alignItems = "center";
-                        clonedChild.style.justifyContent = "center";
-                        clonedChild.style.border = "1px solid #ddd";
-                        clonedChild.style.backgroundColor = "#f9f9f9";
-                        clonedChild.style.padding = "4px 6px";
-                        clonedChild.style.margin = "2px";
-                        clonedChild.style.height = "85px"; // Match the original height
-
-                        // Update label properties for readability
-                        const childLabel = clonedChild.querySelector('.inner.pull-left');
-                        if (childLabel) {
-                            childLabel.style.fontSize = "12px";
-                            childLabel.style.whiteSpace = "nowrap";
-                        }
-
-                        clonedChild.setAttribute('name', buttonName);
-                        clonedChild.buttonName = buttonName; // Store for sorting later
-                        clonedChild.buttonId = buttonId; // Store ID for sorting later
-                        clonedChild.order = toolOrderMap.get(buttonName.toLowerCase()) || toolOrderMap.get(buttonId) || 999;
-
-                        // Add disabled styling if original item is disabled
-                        if (child.classList.contains('disabled')) {
-                            clonedChild.classList.add('disabled');
-                            clonedChild.style.opacity = "0.6";
-                            clonedChild.style.cursor = "not-allowed";
+                    if (labelElement && labelElement.textContent) {
+                        buttonName = labelElement.textContent.trim();
+                    } else {
+                        // Try alternate selector
+                        const altLabel = child.querySelector('[rv-text="btn.labelText"]');
+                        if (altLabel) {
+                            buttonName = altLabel.textContent.trim();
                         } else {
-                            clonedChild.addEventListener("click", () => {
-                                child.click();
-                                // Schedule a refresh after click
-                                scheduleToolboxRefresh();
-                            });
+                            // Special case for identifying various special tools
+                            const specialButtons = identifySpecialButton(child);
+                            if (specialButtons) {
+                                buttonName = specialButtons;
+                                console.log(`Identified special button: ${buttonName}`);
+                            }
                         }
-
-                        // Associate button with steps where this tool is used
-                        if (actionPlanData && actionPlanData.plan) {
-                            actionPlanData.plan.forEach((step, stepIndex) => {
-                                if (step.tools && step.tools.some(tool =>
-                                    tool.name.toLowerCase() === buttonName.toLowerCase() || tool.id === buttonId)) {
-                                    // Add a click handler to navigate to the first step using this tool
-                                    if (!clonedChild.hasStepHandler) {
-                                        clonedChild.addEventListener('click', () => {
-                                            updateCurrentStep(stepIndex);
-                                        });
-                                        clonedChild.hasStepHandler = true;
-                                    }
-                                }
-                            });
-                        }
-
-                        allButtons.push(clonedChild);
                     }
+
+                    // Store the button name consistently for all buttons
+                    clonedChild.setAttribute('data-button-name', buttonName);
+                    clonedChild.buttonName = buttonName;
+                    console.log(`Added regular button: ${buttonName}`);
+
+                    // Add disabled styling if original item is disabled
+                    if (child.classList.contains('disabled')) {
+                        clonedChild.classList.add('disabled');
+                        clonedChild.style.opacity = "0.6";
+                        clonedChild.style.cursor = "not-allowed";
+                    } else {
+                        clonedChild.addEventListener("click", () => {
+                            child.click();
+                            // Schedule a refresh after click
+                            scheduleToolboxRefresh();
+                        });
+                    }
+
+                    allButtons.push(clonedChild);
                 }
             });
 
-            // Function to extract button ID from class list
-            function getButtonIdFromClassList(element) {
-                // Check if element has an ID attribute that starts with btn_
-                if (element.id && element.id.startsWith('btn_')) {
-                    return element.id;
-                }
+            // MODIFIED: Direct sorting by exact tool name matching without normalization
+            if (toolOrder.length > 0) {
+                console.log("Sorting buttons based on tool order:", toolOrder);
 
-                // Look through classes for one that starts with btn_
-                for (const className of element.classList) {
-                    if (className.startsWith('btn_')) {
-                        return className;
+                // Create a priority map using exact tool names, no normalization
+                priorityMap = new Map();
+                toolOrder.forEach((toolName, index) => {
+                    priorityMap.set(toolName, index);
+                    console.log(`Priority ${index}: ${toolName}`);
+                });
+
+                // Log all buttons for debugging
+                console.log("All buttons before sorting:",
+                    allButtons.map(b => `${b.buttonName} (${b.getAttribute('data-button-name')})`));
+
+                // Direct matching sort with no normalization
+                allButtons.sort((a, b) => {
+                    // Get the exact data-button-name
+                    const aName = a.getAttribute('data-button-name');
+                    const bName = b.getAttribute('data-button-name');
+
+                    // Check for direct matches in priority map
+                    const aInPriorityMap = priorityMap.has(aName);
+                    const bInPriorityMap = priorityMap.has(bName);
+
+                    // Get priority values
+                    const aPriority = aInPriorityMap ? priorityMap.get(aName) : Number.MAX_SAFE_INTEGER;
+                    const bPriority = bInPriorityMap ? priorityMap.get(bName) : Number.MAX_SAFE_INTEGER;
+
+                    // If both have priority values, sort by those
+                    if (aInPriorityMap && bInPriorityMap) {
+                        console.log(`Direct match sort: ${aName}(${aPriority}) vs ${bName}(${bPriority})`);
+                        return aPriority - bPriority;
                     }
-                }
 
-                return null;
+                    // If only one has a priority value, it comes first
+                    if (aInPriorityMap) return -1;
+                    if (bInPriorityMap) return 1;
+
+                    // If no matches found, maintain original order
+                    return 0;
+                });
+
+                console.log("All buttons after sorting:",
+                    allButtons.map(b => `${b.buttonName} (${b.getAttribute('data-button-name')})`));
+
+                // Create debug popup with ordering information
+                createDebugOrderPopup(allButtons, toolOrder, priorityMap);
             }
-
-            // Sort buttons based on tool order
-            allButtons.sort((a, b) => a.order - b.order);
 
             // Add all buttons to the toolbox
             allButtons.forEach(button => {
                 toolbox.appendChild(button);
             });
 
-            console.log("Smart toolbox populated with relevant tools in recommended order.");
-
-            // Highlight the current step's button if applicable
-            setTimeout(() => {
-                updateCurrentStep(currentStepIndex);
-            }, 100);
+            console.log("All buttons added to the smart toolbox in recommended order.");
         };
 
         // Function to schedule a toolbox refresh with debouncing
@@ -1255,7 +1391,7 @@
         };
 
         // initialize the smart toolbox
-        const createSmartToolbox = (sourceDiv, toolbar, quickMenus) => {
+        const createSmartToolbox = (sourceDiv, toolbar) => {
             console.log("Initializing smart toolbox...");
 
             // Store reference to targetDiv
@@ -1279,6 +1415,8 @@
             smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
             smartToolbox.style.backgroundColor = "white";
             smartToolbox.style.padding = "0px";
+            smartToolbox.style.display = "none";
+
             smartToolbox.style.flexWrap = "nowrap";
             smartToolbox.style.alignItems = "center";
             smartToolbox.style.justifyContent = "flex-start";
@@ -1288,18 +1426,17 @@
             document.body.appendChild(smartToolbox);
             console.log("Smart toolbox container added to the page.");
 
-            // function to update position on browser resize
-            const updateSmartToolboxPosition = () => {
-                const updatedRect = toolbar.getBoundingClientRect();
-                smartToolbox.style.width = `${updatedRect.width}px`;
-                smartToolbox.style.left = `${updatedRect.left + window.scrollX}px`;
-                smartToolbox.style.top = `${updatedRect.top + window.scrollY}px`;
-                console.log("Smart toolbox position updated!");
+            // function to update width on browser resize
+            const updateSmartToolboxSize = () => {
+                const rect = toolbar.getBoundingClientRect();
+                smartToolbox.style.width = `${rect.width}px`;
+                smartToolbox.style.left = `${rect.left + window.scrollX}px`;
+                console.log("Smart toolbox resized!");
             };
 
             // listen for window resize events
-            window.addEventListener("resize", updateSmartToolboxPosition);
-            updateSmartToolboxPosition(); // run immediately on initialization
+            window.addEventListener("resize", updateSmartToolboxSize);
+            updateSmartToolboxSize(); // run immediately on initialization
 
             // enable click-and-drag scrolling
             let isDragging = false;
@@ -1339,54 +1476,66 @@
 
                     smartToolbox.style.display = "flex";
                     targetDiv.style.display = "none"; // Hide default toolbar
-                    toggleButton.innerText = "Hide Smart Toolbox"; // Update button text when turned on
+                    toggleButton.innerText = "Hide Toolbox"; // Update button text when turned on
                 } else {
                     smartToolbox.style.display = "none";
                     targetDiv.style.display = "block";
-                    toggleButton.innerText = "Show Smart Toolbox"; // Update button text when turned off
+                    toggleButton.innerText = "Show Toolbox"; // Update button text when turned off
                 }
             };
 
-            // Create toggle button with blue gradient
+            // Create toggle button and add it to quick-menus div
             const toggleButton = document.createElement("button");
-            toggleButton.innerText = "Show Smart Toolbox";
-            toggleButton.className = "btn btn-sm"; // Use SelfCAD's button class but skip btn-default
-
-            // Add gradient style to match theme
-            toggleButton.style.background = "linear-gradient(90deg, #14708E 0%, #26C9FF 69%)";
-            toggleButton.style.color = "white";
-            toggleButton.style.border = "none";
-            toggleButton.style.margin = "0 5px";
-            toggleButton.style.padding = "2px 10px";
-            toggleButton.style.height = "100%";
+            toggleButton.innerText = "Show Toolbox"; // Start in OFF state
+            toggleButton.style.padding = "5px 10px";
+            toggleButton.style.marginLeft = "10px";
+            toggleButton.style.borderRadius = "4px";
+            toggleButton.style.border = "1px solid #ccc";
+            toggleButton.style.backgroundColor = "#f8f8f8";
+            toggleButton.style.cursor = "pointer";
             toggleButton.style.fontSize = "12px";
-            toggleButton.style.fontWeight = "500";
 
-            toggleButton.addEventListener("click", toggleSmartToolbox);
+            // Create debug button
+            const debugButton = document.createElement("button");
+            debugButton.innerText = "Debug Order";
+            debugButton.style.padding = "5px 10px";
+            debugButton.style.marginLeft = "10px";
+            debugButton.style.borderRadius = "4px";
+            debugButton.style.border = "1px solid #ff8c00";
+            debugButton.style.backgroundColor = "#fff3e0";
+            debugButton.style.cursor = "pointer";
+            debugButton.style.fontSize = "12px";
 
-            // Insert the button in the quick-menus div if available
-            if (quickMenus) {
-                // Create a container for our button
-                const buttonContainer = document.createElement("div");
-                buttonContainer.style.display = "inline-block";
-                buttonContainer.style.height = "100%";
-                buttonContainer.style.verticalAlign = "middle";
-                buttonContainer.appendChild(toggleButton);
+            debugButton.addEventListener("click", () => {
+                // We need to capture the current state when the button is clicked
+                const currentButtons = Array.from(smartToolbox.children);
+                createDebugOrderPopup(currentButtons, toolOrder, priorityMap);
+            });
 
-                // Insert at the beginning of quick-menus to avoid wrapping
-                if (quickMenus.firstChild) {
-                    quickMenus.insertBefore(buttonContainer, quickMenus.firstChild);
-                } else {
-                    quickMenus.appendChild(buttonContainer);
-                }
+            // Find quick-menus div and increase its width to accommodate the button
+            const quickMenusDiv = document.querySelector('.quick-menus');
+            if (quickMenusDiv) {
+                // Get the current width and increase it
+                const currentWidth = quickMenusDiv.offsetWidth;
+                quickMenusDiv.style.width = `${currentWidth + 240}px`; // Add enough space for both buttons
+                quickMenusDiv.appendChild(toggleButton);
+                quickMenusDiv.appendChild(debugButton);
             } else {
-                // Fallback to fixed position if quick-menus not found
+                // Fallback if quick-menus div is not found
                 toggleButton.style.position = "fixed";
                 toggleButton.style.top = "10px";
                 toggleButton.style.right = "10px";
                 toggleButton.style.zIndex = "10001";
                 document.body.appendChild(toggleButton);
+
+                debugButton.style.position = "fixed";
+                debugButton.style.top = "10px";
+                debugButton.style.right = "130px"; // Position to the left of toggle button
+                debugButton.style.zIndex = "10001";
+                document.body.appendChild(debugButton);
             }
+
+            toggleButton.addEventListener("click", toggleSmartToolbox);
 
             // Setup observers for UI interactions
             setupInteractionObservers();

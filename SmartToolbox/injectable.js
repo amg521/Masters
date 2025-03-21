@@ -30,7 +30,7 @@
         const title = (element.getAttribute('title') || '').toLowerCase();
         const tooltip = (element.getAttribute('data-tooltip') || '').toLowerCase();
         const ariaLabel = (element.getAttribute('aria-label') || '').toLowerCase();
-        
+
         // Data structure to hold all the special button patterns to check
         const buttonPatterns = [
             // Transform tools
@@ -41,12 +41,12 @@
             { name: "Flip", patterns: ["flip", "invert", "flip vertical"] },
             { name: "Align", patterns: ["align", "alignment"] },
             { name: "Array", patterns: ["array", "pattern", "duplicate", "repeat"] },
-            
+
             // Boolean operations
             { name: "Union", patterns: ["union", "merge", "combine", "join", "add", "boolean union"] },
             { name: "Subtract", patterns: ["subtract", "difference", "cut", "boolean subtract"] },
             { name: "Intersect", patterns: ["intersect", "intersection", "boolean intersect"] },
-            
+
             // View controls
             { name: "Orbit", patterns: ["orbit", "rotate view", "view rotation"] },
             { name: "Pan", patterns: ["pan", "move view", "drag view"] },
@@ -54,13 +54,13 @@
             { name: "Top View", patterns: ["top view", "top", "view top"] },
             { name: "Right View", patterns: ["right view", "right", "view right"] },
             { name: "Perspective", patterns: ["perspective", "3d view", "isometric"] },
-            
+
             // Selection tools
             { name: "Select", patterns: ["select", "selection tool"] },
             { name: "Select All", patterns: ["select all", "all", "select everything"] },
             { name: "Deselect", patterns: ["deselect", "clear selection", "unselect"] },
             { name: "Invert Selection", patterns: ["invert", "invert selection", "reverse selection"] },
-            
+
             // Common CAD operations
             { name: "Extrusion", patterns: ["extrude", "extrusion", "pull"] },
             { name: "Fillet", patterns: ["fillet", "round", "rounded corner"] },
@@ -68,14 +68,14 @@
             { name: "Group", patterns: ["group", "create group"] },
             { name: "Ungroup", patterns: ["ungroup", "separate", "break group"] },
             { name: "Boolean", patterns: ["boolean", "boolean operations"] },
-            
+
             // Basic shapes
             { name: "Cube", patterns: ["cube", "box", "rectangle"] },
             { name: "Sphere", patterns: ["sphere", "ball"] },
             { name: "Cylinder", patterns: ["cylinder", "tube"] },
             { name: "Cone", patterns: ["cone"] },
             { name: "Torus", patterns: ["torus", "donut"] },
-            
+
             // Common UI elements
             { name: "Undo", patterns: ["undo", "undo action"] },
             { name: "Redo", patterns: ["redo", "redo action"] },
@@ -83,33 +83,33 @@
             { name: "Hide", patterns: ["hide", "invisible", "toggle visibility"] },
             { name: "Show", patterns: ["show", "visible", "unhide"] }
         ];
-        
+
         // Check all sources of information for each pattern
         for (const button of buttonPatterns) {
             for (const pattern of button.patterns) {
                 // Check if the pattern appears in any of the element properties
-                if (html.includes(pattern) || 
-                    classes.includes(pattern) || 
-                    title.includes(pattern) || 
-                    tooltip.includes(pattern) || 
+                if (html.includes(pattern) ||
+                    classes.includes(pattern) ||
+                    title.includes(pattern) ||
+                    tooltip.includes(pattern) ||
                     ariaLabel.includes(pattern)) {
                     return button.name;
                 }
-                
+
                 // Special case for icons with specific classes
                 if (element.querySelector(`[class*="${pattern}"]`)) {
                     return button.name;
                 }
             }
         }
-        
+
         // Special case for icons that might be identified by image source
         const images = element.querySelectorAll('img');
         if (images.length > 0) {
             const srcString = Array.from(images)
                 .map(img => (img.getAttribute('src') || '').toLowerCase())
                 .join(' ');
-                
+
             for (const button of buttonPatterns) {
                 for (const pattern of button.patterns) {
                     if (srcString.includes(pattern)) {
@@ -118,7 +118,7 @@
                 }
             }
         }
-        
+
         // Special case for SVG icons
         const svgs = element.querySelectorAll('svg');
         if (svgs.length > 0) {
@@ -126,7 +126,7 @@
             const svgString = Array.from(svgs)
                 .map(svg => svg.outerHTML.toLowerCase())
                 .join(' ');
-                
+
             for (const button of buttonPatterns) {
                 for (const pattern of button.patterns) {
                     if (svgString.includes(pattern)) {
@@ -135,13 +135,13 @@
                 }
             }
         }
-        
+
         // Check for data attributes that might contain button information
         const dataAttributeString = Array.from(element.attributes)
             .filter(attr => attr.name.startsWith('data-'))
             .map(attr => attr.value.toLowerCase())
             .join(' ');
-            
+
         for (const button of buttonPatterns) {
             for (const pattern of button.patterns) {
                 if (dataAttributeString.includes(pattern)) {
@@ -149,7 +149,7 @@
                 }
             }
         }
-        
+
         // ENHANCEMENT: Extra patterns for additional tool identification
         const extraPatterns = [
             { name: "Extrusion", patterns: ["pull", "push", "extension"] },
@@ -166,16 +166,16 @@
         // Check extra patterns
         for (const button of extraPatterns) {
             for (const pattern of button.patterns) {
-                if (html.includes(pattern) || 
-                    classes.includes(pattern) || 
-                    title.includes(pattern) || 
-                    tooltip.includes(pattern) || 
+                if (html.includes(pattern) ||
+                    classes.includes(pattern) ||
+                    title.includes(pattern) ||
+                    tooltip.includes(pattern) ||
                     ariaLabel.includes(pattern)) {
                     return button.name;
                 }
             }
         }
-        
+
         // No match found
         return null;
     };
@@ -198,7 +198,7 @@
         debugPopup.style.overflowY = 'auto';
         debugPopup.style.fontFamily = "'Inter', sans-serif";
         debugPopup.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-        
+
         // Add title
         const title = document.createElement('h2');
         title.textContent = 'Button Order Debug Info';
@@ -206,14 +206,14 @@
         title.style.color = '#14708E';
         title.style.borderBottom = '1px solid #eee';
         title.style.paddingBottom = '8px';
-        
+
         // Create content sections
         const orderInfo = document.createElement('div');
-        
+
         // Show raw ChatGPT output
         const rawOutputSection = document.createElement('div');
         rawOutputSection.innerHTML = '<h3>Raw ChatGPT Output:</h3>';
-        
+
         // Get the raw TOOL_ORDER section from actionPlan
         let rawToolOrderText = "Not found";
         if (actionPlan) {
@@ -222,7 +222,7 @@
                 rawToolOrderText = toolOrderMatch[0].trim();
             }
         }
-        
+
         const rawOutputPre = document.createElement('pre');
         rawOutputPre.style.backgroundColor = '#f5f5f5';
         rawOutputPre.style.padding = '10px';
@@ -233,13 +233,13 @@
         rawOutputPre.style.fontSize = '14px';
         rawOutputPre.style.fontFamily = 'monospace';
         rawOutputPre.textContent = rawToolOrderText;
-        
+
         rawOutputSection.appendChild(rawOutputPre);
-        
+
         // Show complete action plan
         const fullActionPlanSection = document.createElement('div');
         fullActionPlanSection.innerHTML = '<h3>Complete Action Plan:</h3>';
-        
+
         const fullActionPlanButton = document.createElement('button');
         fullActionPlanButton.textContent = 'Show/Hide Full Action Plan';
         fullActionPlanButton.style.backgroundColor = '#f0f0f0';
@@ -248,7 +248,7 @@
         fullActionPlanButton.style.padding = '8px 12px';
         fullActionPlanButton.style.marginBottom = '10px';
         fullActionPlanButton.style.cursor = 'pointer';
-        
+
         const fullActionPlanPre = document.createElement('pre');
         fullActionPlanPre.style.backgroundColor = '#f5f5f5';
         fullActionPlanPre.style.padding = '10px';
@@ -260,15 +260,15 @@
         fullActionPlanPre.style.fontFamily = 'monospace';
         fullActionPlanPre.style.display = 'none'; // Initially hidden
         fullActionPlanPre.textContent = actionPlan || "No action plan available";
-        
+
         fullActionPlanButton.addEventListener('click', () => {
-            fullActionPlanPre.style.display = 
+            fullActionPlanPre.style.display =
                 fullActionPlanPre.style.display === 'none' ? 'block' : 'none';
         });
-        
+
         fullActionPlanSection.appendChild(fullActionPlanButton);
         fullActionPlanSection.appendChild(fullActionPlanPre);
-        
+
         // Original tool order (processed)
         const toolOrderSection = document.createElement('div');
         toolOrderSection.innerHTML = `<h3>Processed Tool Order (${toolOrder.length} tools):</h3>`;
@@ -279,7 +279,7 @@
             toolOrderList.appendChild(li);
         });
         toolOrderSection.appendChild(toolOrderList);
-        
+
         // Secondary tools section
         if (secondaryTools.length > 0) {
             const secondaryToolsSection = document.createElement('div');
@@ -293,7 +293,7 @@
             secondaryToolsSection.appendChild(secondaryToolsList);
             toolOrderSection.appendChild(secondaryToolsSection);
         }
-        
+
         // Priority map
         const prioritySection = document.createElement('div');
         prioritySection.innerHTML = '<h3>Priority Mapping:</h3>';
@@ -304,14 +304,14 @@
             priorityList.appendChild(li);
         });
         prioritySection.appendChild(priorityList);
-        
+
         // Final button order
         const buttonOrderSection = document.createElement('div');
         buttonOrderSection.innerHTML = `<h3>Final Button Order (${allButtons.length} buttons):</h3>`;
         const buttonTable = document.createElement('table');
         buttonTable.style.width = '100%';
         buttonTable.style.borderCollapse = 'collapse';
-        
+
         // Add table header
         const tableHeader = document.createElement('tr');
         tableHeader.innerHTML = `
@@ -321,12 +321,12 @@
             <th style="border:1px solid #ddd; padding:8px; text-align:left">Type</th>
         `;
         buttonTable.appendChild(tableHeader);
-        
+
         // Add rows for each button
         allButtons.forEach((button, index) => {
             const buttonName = button.getAttribute('data-button-name') || button.buttonName || 'Unknown';
             const priority = priorityMap.has(buttonName) ? priorityMap.get(buttonName) : 'N/A';
-            
+
             // Determine the button type
             let buttonType = "Not Used";
             if (priority !== 'N/A') {
@@ -334,7 +334,7 @@
             } else if (secondaryTools.includes(buttonName)) {
                 buttonType = "Secondary";
             }
-            
+
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td style="border:1px solid #ddd; padding:8px">${index + 1}</td>
@@ -342,25 +342,25 @@
                 <td style="border:1px solid #ddd; padding:8px">${priority}</td>
                 <td style="border:1px solid #ddd; padding:8px">${buttonType}</td>
             `;
-            
+
             // Highlight matched buttons
             if (priority !== 'N/A') {
                 row.style.backgroundColor = '#e6f7ff'; // Primary tools
             } else if (secondaryTools.includes(buttonName)) {
                 row.style.backgroundColor = '#f9f0ff'; // Secondary tools
             }
-            
+
             buttonTable.appendChild(row);
         });
-        
+
         buttonOrderSection.appendChild(buttonTable);
-        
+
         // Add export to clipboard buttons
         const exportSection = document.createElement('div');
         exportSection.style.margin = '20px 0';
         exportSection.style.borderTop = '1px solid #eee';
         exportSection.style.paddingTop = '15px';
-        
+
         const exportButtonRaw = document.createElement('button');
         exportButtonRaw.textContent = 'Copy Raw ChatGPT Output';
         exportButtonRaw.style.backgroundColor = '#14708E';
@@ -370,7 +370,7 @@
         exportButtonRaw.style.padding = '8px 12px';
         exportButtonRaw.style.marginRight = '10px';
         exportButtonRaw.style.cursor = 'pointer';
-        
+
         exportButtonRaw.addEventListener('click', () => {
             navigator.clipboard.writeText(rawToolOrderText)
                 .then(() => {
@@ -381,7 +381,7 @@
                     alert('Failed to copy to clipboard');
                 });
         });
-        
+
         const exportButtonAll = document.createElement('button');
         exportButtonAll.textContent = 'Copy Full Action Plan';
         exportButtonAll.style.backgroundColor = '#14708E';
@@ -390,7 +390,7 @@
         exportButtonAll.style.borderRadius = '4px';
         exportButtonAll.style.padding = '8px 12px';
         exportButtonAll.style.cursor = 'pointer';
-        
+
         exportButtonAll.addEventListener('click', () => {
             navigator.clipboard.writeText(actionPlan || "No action plan available")
                 .then(() => {
@@ -401,10 +401,10 @@
                     alert('Failed to copy to clipboard');
                 });
         });
-        
+
         exportSection.appendChild(exportButtonRaw);
         exportSection.appendChild(exportButtonAll);
-        
+
         // Add close button
         const closeButton = document.createElement('button');
         closeButton.textContent = 'Close';
@@ -417,7 +417,7 @@
         closeButton.style.cursor = 'pointer';
         closeButton.style.float = 'right';
         closeButton.onclick = () => document.body.removeChild(debugPopup);
-        
+
         // Assemble popup
         orderInfo.appendChild(rawOutputSection);
         orderInfo.appendChild(fullActionPlanSection);
@@ -425,11 +425,11 @@
         orderInfo.appendChild(prioritySection);
         orderInfo.appendChild(buttonOrderSection);
         orderInfo.appendChild(exportSection);
-        
+
         debugPopup.appendChild(title);
         debugPopup.appendChild(orderInfo);
         debugPopup.appendChild(closeButton);
-        
+
         // Add to document
         document.body.appendChild(debugPopup);
     };
@@ -467,10 +467,10 @@
                 Generate 3 different approaches for building "${userBuildInput}" using CAD tools.
                 Use the following list of tools as reference:
                 ${JSON.stringify(toolboxData)}
-                
+
                 Format your response as a JSON array with 3 objects, each with a single property 'approach'.
                 Each approach description must be maximum 83 characters.
-                
+
                 Example format:
                 [
                     {"approach": "First approach description (max 83 chars)"},
@@ -483,7 +483,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer'
+                    'Authorization': 'Bearer API-KEY'
                 },
                 body: JSON.stringify({
                     model: 'gpt-4',
@@ -499,11 +499,11 @@
             });
 
             const data = await response.json();
-            
+
             if (data.error) {
                 throw new Error(`API Error: ${data.error.message}`);
             }
-            
+
             // Parse the JSON response from the API
             const content = data.choices[0].message.content;
             return JSON.parse(content);
@@ -524,27 +524,27 @@
             // Prepare the prompt for ChatGPT
             let prompt = `
                 I want to create "${objectToMake}" using SelfCAD. My preferred approach is: "${userApproach}".
-                
+
                 Here are all the tools available in SelfCAD that I can use:
                 ${JSON.stringify(toolboxData)}
-                
+
                 Please create a step-by-step plan for how to create this object using the available tools.
                 Be specific about which tools to use at each step.
                 Use the exact tool names from the list when recommending tools.
                 Keep in mind that I'm using SelfCAD which is a 3D modeling tool.
                 Make your instructions clear and specific.
 
-                VERY IMPORTANT: Please include a comma-separated list at the end of your response titled "TOOL_ORDER:" 
-                that lists, in order of use, all the tool names that should be used in this plan. The tool names MUST EXACTLY match 
-                the data-button-name attributes of the buttons in the UI. Common tool names are: Cube, Sphere, Cylinder, Cone, Torus, 
+                VERY IMPORTANT: Please include a comma-separated list at the end of your response titled "TOOL_ORDER:"
+                that lists, in order of use, all the tool names that should be used in this plan. The tool names MUST EXACTLY match
+                the data-button-name attributes of the buttons in the UI. Common tool names are: Cube, Sphere, Cylinder, Cone, Torus,
                 Scale, Move, Rotate, Edit Details, Fillet, Combine.
-                
+
                 Example: "TOOL_ORDER: Cube, Extrusion, Fillet, Move"
             `;
 
             // ENHANCEMENT: Add explicit instruction to ensure TOOL_ORDER section is included
             prompt += `
-                
+
                 I MUST include a clear TOOL_ORDER: section in my response with a comma-separated list
                 of ALL tools needed, in the exact order they should be used.
                 Example: "TOOL_ORDER: Cube, Extrude, Fillet, Move"
@@ -554,7 +554,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer'
+                    'Authorization': 'Bearer API-KEY'
                 },
                 body: JSON.stringify({
                     model: 'gpt-4',
@@ -570,11 +570,11 @@
             });
 
             const data = await response.json();
-            
+
             if (data.error) {
                 throw new Error(`API Error: ${data.error.message}`);
             }
-            
+
             return data.choices[0].message.content;
         } catch (error) {
             console.error("Error generating action plan:", error);
@@ -589,13 +589,13 @@
             const prompt = `
                 I'm creating "${objectToMake}" in SelfCAD. I already have the main tools I need, which are:
                 ${primaryTools.join(', ')}
-                
+
                 Based on this task, what additional tools from SelfCAD might be helpful that aren't already in my main list?
-                
-                Please provide a list of tool names that aren't in my main tools list but might be helpful.
+
+                Please provide a list of 3-5 tool names that aren't in my main tools list but might be helpful.
                 Return your answer in this format:
                 "SECONDARY_TOOLS: Tool1, Tool2, Tool3, etc."
-                
+
                 The tool names should match exactly from this list:
                 ${JSON.stringify(toolboxData.tools.map(tool => tool.name))}
             `;
@@ -620,22 +620,22 @@
             });
 
             const data = await response.json();
-            
+
             if (data.error) {
                 throw new Error(`API Error: ${data.error.message}`);
             }
-            
+
             // Extract the secondary tools list
             const content = data.choices[0].message.content;
             const match = content.match(/SECONDARY_TOOLS:\s*([\w\s,]+)(?:\n|$)/);
-            
+
             if (match && match[1]) {
                 // Parse the comma-separated list, being careful with spaces
                 const secondaryTools = match[1].split(',').map(tool => tool.trim());
                 // Filter out any tools already in primary list
                 return secondaryTools.filter(tool => !primaryTools.includes(tool));
             }
-            
+
             return [];
         } catch (error) {
             console.error("Error getting secondary tools:", error);
@@ -646,7 +646,7 @@
     // ENHANCEMENT: Improved function to extract tool order from action plan
     const extractToolOrder = (actionPlanText) => {
         console.log("Extracting tool order from action plan");
-        
+
         // Try to find the TOOL_ORDER section with a more comprehensive regex
         // This handles both single-line and multi-line tool orders
         const toolOrderMatch = actionPlanText.match(/TOOL_ORDER:\s*([\w\s,]+)(?:\n|$)/);
@@ -664,7 +664,7 @@
                 const match = step.match(/Use\s+the\s+(\w+)\s+tool/i);
                 return match ? match[1] : null;
             }).filter(Boolean);
-            
+
             if (extractedTools.length > 0) {
                 console.log("Extracted tool order from numbered steps:", extractedTools);
                 return extractedTools;
@@ -855,14 +855,14 @@
                 #dynamic-section {
                     margin-top: 12px;
                 }
-                
+
                 .loading {
                     display: flex;
                     justify-content: center;
                     align-items: center;
                     height: 100px;
                 }
-                
+
                 .loading-spinner {
                     border: 4px solid rgba(0, 0, 0, 0.1);
                     border-radius: 50%;
@@ -871,7 +871,7 @@
                     height: 30px;
                     animation: spin 1s linear infinite;
                 }
-                
+
                 .button-spinner {
                     border: 3px solid rgba(255, 255, 255, 0.3);
                     border-radius: 50%;
@@ -882,12 +882,12 @@
                     display: inline-block;
                     margin-left: 10px;
                 }
-                
+
                 .button:disabled {
                     opacity: 0.8;
                     cursor: not-allowed;
                 }
-                
+
                 @keyframes spin {
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }
@@ -919,7 +919,7 @@
         const buildInput = shadow.getElementById('build');
         const dynamicSection = shadow.getElementById('dynamic-section');
         const generateButton = shadow.querySelector('.button');
-        
+
         // Track previous selection to detect changes
         let previousSelection = helpSelect.value;
         let previousBuildInput = buildInput.value;
@@ -929,16 +929,16 @@
         const updateDynamicSection = async () => {
             const currentSelection = helpSelect.value;
             const currentBuildInput = buildInput.value;
-            
+
             // Only regenerate if selection changed or build input changed while on "set of approaches"
-            if (currentSelection !== previousSelection || 
+            if (currentSelection !== previousSelection ||
                 (currentSelection.includes('set of approaches') && currentBuildInput !== previousBuildInput)) {
-                
+
                 previousSelection = currentSelection;
                 previousBuildInput = currentBuildInput;
-                
+
                 dynamicSection.innerHTML = '';
-                
+
                 if (currentSelection.includes('set of approaches')) {
                     // Show loading spinner
                     dynamicSection.innerHTML = `
@@ -946,22 +946,22 @@
                             <div class="loading-spinner"></div>
                         </div>
                     `;
-                    
+
                     // Get what the user wants to build
                     const userBuildInput = currentBuildInput.trim() || "a generic object";
-                    
+
                     try {
                         // Call ChatGPT API to generate approaches
                         generatedApproaches = await generateApproaches(userBuildInput);
-                        
+
                         // Remove loading spinner and add the generated approaches
                         dynamicSection.innerHTML = '';
-                        
+
                         // Create radio buttons for each approach
                         generatedApproaches.forEach((item, index) => {
                             const optionId = `option${index + 1}`;
                             const isChecked = index === 0 ? 'checked' : '';
-                            
+
                             const optionDiv = document.createElement('div');
                             optionDiv.className = 'checkbox';
                             optionDiv.innerHTML = `
@@ -971,7 +971,7 @@
                                     <small>${item.approach}</small>
                                 </label>
                             `;
-                            
+
                             dynamicSection.appendChild(optionDiv);
                         });
                     } catch (error) {
@@ -981,7 +981,7 @@
                             {"approach": "Draw 2D sketches, then extrude them into 3D objects."},
                             {"approach": "Sculpt and refine the geometry from a basic shape using sculpting tools."}
                         ];
-                        
+
                         dynamicSection.innerHTML = `
                             <div class="checkbox">
                                 <input type="radio" name="approach" id="option1" checked>
@@ -996,7 +996,7 @@
                                 <label for="option3"><span>Option 3</span><br><small>${generatedApproaches[2].approach}</small></label>
                             </div>
                         `;
-                        
+
                         console.error("Error generating approaches:", error);
                     }
                 } else if (currentSelection.includes('own approach')) {
@@ -1005,14 +1005,14 @@
                         <textarea id="approach" placeholder="e.g. Create hinge parts using basic shapes like cylinders and cubes, then combine them."></textarea>
                     `;
                 }
-                
+
                 dynamicSection.style.marginBottom = '24px';
             }
         };
 
         // Listen for changes to help select dropdown
         helpSelect.addEventListener('change', updateDynamicSection);
-        
+
         // Listen for changes to build input when in "set of approaches" mode
         buildInput.addEventListener('input', () => {
             if (helpSelect.value.includes('set of approaches')) {
@@ -1043,16 +1043,16 @@
             generateButton.disabled = true;
             generateButton.innerHTML = 'Generating <span class="button-spinner"></span>';
             generateButton.style.cursor = 'not-allowed';
-            
+
             // Get the user's build object
             const objectToMake = buildInput.value.trim() || "a generic object";
-            
+
             // Get the user's selected approach
             let userApproach = "";
-            
+
             if (helpSelect.value.includes('guided')) {
                 userApproach = "I'd like to be guided through every step";
-            } 
+            }
             else if (helpSelect.value.includes('set of approaches')) {
                 // Find which radio button is checked
                 const selectedRadio = dynamicSection.querySelector('input[type="radio"]:checked');
@@ -1060,7 +1060,7 @@
                     const index = parseInt(selectedRadio.id.replace('option', '')) - 1;
                     userApproach = generatedApproaches[index]?.approach || "Using a combined approach of basic shapes";
                 }
-            } 
+            }
             else if (helpSelect.value.includes('own approach')) {
                 const approachTextarea = dynamicSection.querySelector('#approach');
                 userApproach = approachTextarea ? approachTextarea.value.trim() : "";
@@ -1068,13 +1068,13 @@
                     userApproach = "Creating using my own custom approach";
                 }
             }
-            
+
             // Generate action plan
             actionPlan = await generateActionPlan(objectToMake, userApproach);
-            
+
             // Remove popup
             popupHost.remove();
-            
+
             // Initialize smart toolbox and action plan display
             initializeSmartToolbox(objectToMake);
         });
@@ -1095,7 +1095,7 @@
         if (actionPlan) {
             toolOrder = extractToolOrder(actionPlan);
             console.log("Tool order extracted:", toolOrder);
-            
+
             // Also log the raw TOOL_ORDER section from the action plan
             const toolOrderMatch = actionPlan.match(/TOOL_ORDER:\s*([\w\s,]+)(?:\n|$)/);
             if (toolOrderMatch && toolOrderMatch[0]) {
@@ -1103,14 +1103,14 @@
             } else {
                 console.warn("No raw TOOL_ORDER section found in action plan!");
             }
-            
-            // Get secondary tools
+
+            // Get secondary tools immediately after extracting primary tools
             if (toolOrder.length > 0 && objectToMake) {
                 console.log("Getting secondary tools...");
                 getSecondaryTools(toolOrder, objectToMake).then(tools => {
                     secondaryTools = tools;
                     console.log("Secondary tools received:", secondaryTools);
-                    
+
                     // Refresh toolbox to include secondary tools
                     if (smartToolbox && smartToolbox.style.display !== "none" && targetDiv) {
                         populateSmartToolbox(smartToolbox, targetDiv);
@@ -1142,21 +1142,21 @@
             titleElement.style.marginBottom = '12px';
             titleElement.style.fontSize = '16px';
             titleElement.style.fontWeight = '600';
-            
+
             const contentElement = document.createElement('div');
-            
+
             // Remove the TOOL_ORDER line from display
             let displayText = actionPlan;
             const toolOrderIndex = displayText.indexOf("TOOL_ORDER:");
             if (toolOrderIndex !== -1) {
                 displayText = displayText.substring(0, toolOrderIndex);
             }
-            
+
             contentElement.innerHTML = displayText.replace(/\n/g, '<br>');
             contentElement.style.fontSize = '14px';
             contentElement.style.lineHeight = '1.4';
             contentElement.style.color = '#464646';
-            
+
             const minimizeButton = document.createElement('button');
             minimizeButton.textContent = '−';
             minimizeButton.style.position = 'absolute';
@@ -1172,7 +1172,7 @@
             minimizeButton.style.display = 'flex';
             minimizeButton.style.justifyContent = 'center';
             minimizeButton.style.alignItems = 'center';
-            
+
             let isMinimized = false;
             minimizeButton.addEventListener('click', () => {
                 if (isMinimized) {
@@ -1186,11 +1186,11 @@
                 }
                 isMinimized = !isMinimized;
             });
-            
+
             actionPlanContainer.appendChild(titleElement);
             actionPlanContainer.appendChild(contentElement);
             actionPlanContainer.appendChild(minimizeButton);
-            
+
             document.body.appendChild(actionPlanContainer);
         };
 
@@ -1209,7 +1209,7 @@
 
             console.log("Target div and toolbar located.");
             createSmartToolbox(targetDiv, toolbar);
-            
+
             // Create action plan display after smart toolbox is initialized
             if (actionPlan) {
                 createActionPlanDisplay();
@@ -1219,12 +1219,13 @@
         // Extract the repeated code into a function for populating the toolbox
         const populateSmartToolbox = (toolbox, sourceDiv) => {
             toolbox.innerHTML = ""; // clear previous content
-            
+
             // First, collect all buttons
             const allButtons = [];
 
             // Debug the tool order before sorting
             console.log("Tool order before sorting:", toolOrder);
+            console.log("Secondary tools:", secondaryTools);
 
             // loop through children of the target toolbar
             Array.from(sourceDiv.children).forEach((child) => {
@@ -1232,7 +1233,7 @@
                 if (dropdownItems.length > 0) {
                     dropdownItems.forEach((dropdownItem) => {
                         const clonedDropdownItem = dropdownItem.cloneNode(true); // clone the dropdown item
-                        
+
                         // Fix button height to ensure consistency
                         clonedDropdownItem.style.height = "85px"; // Set fixed height
 
@@ -1273,7 +1274,7 @@
 
                             const clonedIcon = iconElement.cloneNode(true);
                             const clonedLabel = labelElement.cloneNode(true);
-                            
+
                             stackedContainer.appendChild(clonedIcon);
                             stackedContainer.appendChild(clonedLabel);
 
@@ -1317,7 +1318,7 @@
                     });
                 } else {
                     const clonedChild = child.cloneNode(true);
-                    
+
                     // Fix button height to ensure consistency
                     clonedChild.style.height = "85px"; // Set fixed height
                     clonedChild.style.width = "85px"; // Fixed width
@@ -1394,31 +1395,34 @@
                 }
             });
 
+            console.log("Primary buttons count:", primaryButtons.length);
+            console.log("Secondary buttons count:", secondaryButtons.length);
+
             // MODIFIED: Direct sorting by exact tool name matching without normalization
             if (toolOrder.length > 0) {
                 console.log("Sorting buttons based on tool order:", toolOrder);
-                
+
                 // Create a priority map using exact tool names, no normalization
                 priorityMap = new Map();
                 toolOrder.forEach((toolName, index) => {
                     priorityMap.set(toolName, index);
                     console.log(`Priority ${index}: ${toolName}`);
                 });
-                
+
                 // Sort primary buttons based on priority
                 primaryButtons.sort((a, b) => {
                     // Get the exact data-button-name
                     const aName = a.getAttribute('data-button-name');
                     const bName = b.getAttribute('data-button-name');
-                    
+
                     // Get priority values
                     const aPriority = priorityMap.get(aName);
                     const bPriority = priorityMap.get(bName);
-                    
+
                     return aPriority - bPriority;
                 });
-                
-                console.log("Primary buttons after sorting:", 
+
+                console.log("Primary buttons after sorting:",
                     primaryButtons.map(b => b.getAttribute('data-button-name')));
             }
 
@@ -1430,7 +1434,7 @@
                 divider.style.minWidth = '2px';
                 divider.style.backgroundColor = '#ddd';
                 divider.style.margin = '0 10px';
-                
+
                 // Add a "More Tools" tooltip
                 const tooltipText = document.createElement('div');
                 tooltipText.textContent = 'Additional Tools';
@@ -1438,7 +1442,7 @@
                 tooltipText.style.color = '#666';
                 tooltipText.style.transform = 'rotate(-90deg)';
                 tooltipText.style.whiteSpace = 'nowrap';
-                
+
                 divider.appendChild(tooltipText);
                 divider.style.display = 'flex';
                 divider.style.alignItems = 'center';
@@ -1449,12 +1453,12 @@
             primaryButtons.forEach(button => {
                 toolbox.appendChild(button);
             });
-            
+
             // Add divider if we have secondary buttons
             if (divider) {
                 toolbox.appendChild(divider);
             }
-            
+
             // Add secondary buttons to the toolbox
             secondaryButtons.forEach(button => {
                 toolbox.appendChild(button);
@@ -1613,30 +1617,33 @@
                     smartToolbox.style.display = "flex";
                     targetDiv.style.display = "none"; // Hide default toolbar
                     // CHANGED: Update button text to "Hide Smart Toolbox"
-                    toggleButton.innerText = "Hide Smart Toolbox"; 
+                    toggleButton.innerText = "Hide Smart Toolbox";
                 } else {
                     smartToolbox.style.display = "none";
                     targetDiv.style.display = "block";
-                    toggleButton.innerText = "Show Smart Toolbox"; 
+                    toggleButton.innerText = "Show Smart Toolbox";
                 }
             };
 
             // Create toggle button and add it to quick-menus div
             const toggleButton = document.createElement("button");
             toggleButton.innerText = "Show Smart Toolbox"; // Start in OFF state
-            
-            // ENHANCED: Styling for the toggle button
-            toggleButton.style.height = "22px"; // Make the button taller
+
+            // UPDATED: Styling for the toggle button with new height and border color
+            toggleButton.style.height = "30px"; // Make the button taller (changed from 22px)
             toggleButton.style.padding = "0 12px";
             toggleButton.style.marginLeft = "10px";
             toggleButton.style.borderRadius = "4px";
-            toggleButton.style.border = "2px solid #26C9FF"; // Bold border
+            toggleButton.style.border = "2px solid #0c546b"; // Changed border color
             toggleButton.style.background = "linear-gradient(90deg, #14708E 0%, #26C9FF 69%)"; // Gradient from popup
             toggleButton.style.color = "white"; // White text
             toggleButton.style.cursor = "pointer";
             toggleButton.style.fontSize = "12px";
             toggleButton.style.fontWeight = "600"; // Bold text
-            
+            toggleButton.style.display = "flex";
+            toggleButton.style.alignItems = "center";
+            toggleButton.style.justifyContent = "center";
+
             // Create debug button
             const debugButton = document.createElement("button");
             debugButton.innerText = "Debug Order";
@@ -1653,7 +1660,7 @@
                 const currentButtons = Array.from(smartToolbox.children);
                 createDebugOrderPopup(currentButtons, toolOrder, priorityMap);
             });
-            
+
             // Find quick-menus div and increase its width to accommodate the button
             const quickMenusDiv = document.querySelector('.quick-menus');
             if (quickMenusDiv) {
@@ -1669,10 +1676,10 @@
                 toggleButton.style.right = "10px";
                 toggleButton.style.zIndex = "10001";
                 document.body.appendChild(toggleButton);
-                
+
                 debugButton.style.position = "fixed";
                 debugButton.style.top = "10px";
-                debugButton.style.right = "130px"; // Position to the left of toggle button
+                debugButton.style.right = "170px"; // Position to the left of toggle button
                 debugButton.style.zIndex = "10001";
                 document.body.appendChild(debugButton);
             }

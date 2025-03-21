@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AI-Personalized Toolbar with Smart Toolbox and Debug Features
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Shows AI configuration popup first, then loads smart toolbox with drag-scroll functionality and advanced debugging
 // @author       Axelle Groothaert
 // @match        https://www.selfcad.com/app/*
@@ -21,6 +21,7 @@
     let toolboxData = null;
     let actionPlan = null;
     let secondaryTools = []; // Array to store secondary tools
+    let currentStepIndex = 0; // Track the current step in the workflow
 
     // Helper function to identify special buttons by analyzing their structure, class names, and content
     const identifySpecialButton = (element) => {
@@ -459,6 +460,71 @@
         });
     };
 
+    // Function to call OpenAI API with retry logic
+    const callOpenAIAPI = async (endpoint, prompt, maxRetries = 3, initialDelay = 1000) => {
+        let retries = 0;
+        let delay = initialDelay;
+
+        while (retries <= maxRetries) {
+            try {
+                console.log(`Calling OpenAI API (attempt ${retries + 1}/${maxRetries + 1})...`);
+
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer API-KEY'
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        max_tokens: endpoint === 'approaches' ? 300 : 1000,
+                        temperature: 0.7
+                    }),
+                    // Add timeout
+                    signal: AbortSignal.timeout(30000) // 30 second timeout
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (!data || !data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+                    console.error("Invalid or empty response:", data);
+                    throw new Error("Received invalid or empty response from API");
+                }
+
+                const content = data.choices[0].message.content;
+
+                if (!content || content.trim() === '') {
+                    throw new Error("API returned empty content");
+                }
+
+                console.log(`OpenAI API call successful for ${endpoint}`);
+                return content;
+            } catch (error) {
+                console.error(`API call failed (attempt ${retries + 1}/${maxRetries + 1}):`, error);
+
+                if (retries >= maxRetries) {
+                    console.error(`Max retries (${maxRetries}) reached. Giving up.`);
+                    throw error;
+                }
+
+                // Exponential backoff
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2; // Double the delay for next retry
+                retries++;
+            }
+        }
+    };
+
     // Function to call ChatGPT API for generating approaches
     const generateApproaches = async (userBuildInput) => {
         try {
@@ -479,41 +545,39 @@
                 ]
             `;
 
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer API-KEY'
-                },
-                body: JSON.stringify({
-                    model: 'gpt-4',
-                    messages: [
-                        {
-                            role: 'user',
-                            content: prompt
-                        }
-                    ],
-                    max_tokens: 300,
-                    temperature: 0.7
-                })
-            });
+            const content = await callOpenAIAPI('approaches', prompt);
 
-            const data = await response.json();
+            try {
+                // Parse the JSON response
+                return JSON.parse(content);
+            } catch (parseError) {
+                console.error("Error parsing JSON from API response:", parseError);
+                console.log("Raw response:", content);
 
-            if (data.error) {
-                throw new Error(`API Error: ${data.error.message}`);
+                // Attempt to extract JSON from text if it's embedded in other text
+                const jsonMatch = content.match(/\[\s*\{.*\}\s*\]/s);
+                if (jsonMatch) {
+                    try {
+                        return JSON.parse(jsonMatch[0]);
+                    } catch (e) {
+                        console.error("Failed to extract JSON:", e);
+                    }
+                }
+
+                // Return default approaches as fallback
+                return [
+                    {"approach": "Create using basic shapes then combine them for a unified structure."},
+                    {"approach": "Start with 2D sketches, then extrude into 3D forms for precision."},
+                    {"approach": "Begin with a base shape, then sculpt and refine with modeling tools."}
+                ];
             }
-
-            // Parse the JSON response from the API
-            const content = data.choices[0].message.content;
-            return JSON.parse(content);
         } catch (error) {
             console.error("Error generating approaches:", error);
             // Return default approaches in case of error
             return [
-                {"approach": "Error getting AI suggestions. Create using basic shapes then combine."},
-                {"approach": "Error getting AI suggestions. Use 2D sketches and extrude into 3D."},
-                {"approach": "Error getting AI suggestions. Sculpt from a basic shape."}
+                {"approach": "Create using basic shapes then combine them for a unified structure."},
+                {"approach": "Start with 2D sketches, then extrude into 3D forms for precision."},
+                {"approach": "Begin with a base shape, then sculpt and refine with modeling tools."}
             ];
         }
     };
@@ -534,6 +598,9 @@
                 Keep in mind that I'm using SelfCAD which is a 3D modeling tool.
                 Make your instructions clear and specific.
 
+                Number each step clearly (1., 2., 3., etc.) and start each step with the exact tool name that should be used.
+                For example: "1. Use the Cube tool to create the base of the object."
+
                 VERY IMPORTANT: Please include a comma-separated list at the end of your response titled "TOOL_ORDER:"
                 that lists, in order of use, all the tool names that should be used in this plan. The tool names MUST EXACTLY match
                 the data-button-name attributes of the buttons in the UI. Common tool names are: Cube, Sphere, Cylinder, Cone, Torus,
@@ -542,7 +609,7 @@
                 Example: "TOOL_ORDER: Cube, Extrusion, Fillet, Move"
             `;
 
-            // ENHANCEMENT: Add explicit instruction to ensure TOOL_ORDER section is included
+            // Add explicit instruction to ensure TOOL_ORDER section is included
             prompt += `
 
                 I MUST include a clear TOOL_ORDER: section in my response with a comma-separated list
@@ -550,39 +617,14 @@
                 Example: "TOOL_ORDER: Cube, Extrude, Fillet, Move"
             `;
 
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer API-KEY'
-                },
-                body: JSON.stringify({
-                    model: 'gpt-4',
-                    messages: [
-                        {
-                            role: 'user',
-                            content: prompt
-                        }
-                    ],
-                    max_tokens: 1000,
-                    temperature: 0.7
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.error) {
-                throw new Error(`API Error: ${data.error.message}`);
-            }
-
-            return data.choices[0].message.content;
+            return await callOpenAIAPI('actionPlan', prompt);
         } catch (error) {
             console.error("Error generating action plan:", error);
-            return "Error generating action plan. Please try again.";
+            return "Error generating action plan. Please try again later.\n\nTOOL_ORDER: Cube, Sphere, Cylinder, Scale, Move, Rotate";
         }
     };
 
-    // NEW: Function to get secondary tools from ChatGPT
+    // Function to get secondary tools from ChatGPT
     const getSecondaryTools = async (primaryTools, objectToMake) => {
         try {
             // Prepare the prompt for ChatGPT
@@ -592,7 +634,7 @@
 
                 Based on this task, what additional tools from SelfCAD might be helpful that aren't already in my main list?
 
-                Please provide a list of 3-5 tool names that aren't in my main tools list but might be helpful.
+                Please provide a list of tool names that aren't in my main tools list but might be helpful.
                 Return your answer in this format:
                 "SECONDARY_TOOLS: Tool1, Tool2, Tool3, etc."
 
@@ -600,33 +642,9 @@
                 ${JSON.stringify(toolboxData.tools.map(tool => tool.name))}
             `;
 
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer API-KEY'
-                },
-                body: JSON.stringify({
-                    model: 'gpt-4',
-                    messages: [
-                        {
-                            role: 'user',
-                            content: prompt
-                        }
-                    ],
-                    max_tokens: 500,
-                    temperature: 0.7
-                })
-            });
-
-            const data = await response.json();
-
-            if (data.error) {
-                throw new Error(`API Error: ${data.error.message}`);
-            }
+            const content = await callOpenAIAPI('secondaryTools', prompt);
 
             // Extract the secondary tools list
-            const content = data.choices[0].message.content;
             const match = content.match(/SECONDARY_TOOLS:\s*([\w\s,]+)(?:\n|$)/);
 
             if (match && match[1]) {
@@ -636,10 +654,23 @@
                 return secondaryTools.filter(tool => !primaryTools.includes(tool));
             }
 
+            // If no proper format is found, try to extract a list from the text
+            const toolMentions = toolboxData.tools
+                .map(tool => tool.name)
+                .filter(toolName =>
+                    !primaryTools.includes(toolName) &&
+                    content.includes(toolName)
+                );
+
+            if (toolMentions.length > 0) {
+                return toolMentions;
+            }
+
             return [];
         } catch (error) {
             console.error("Error getting secondary tools:", error);
-            return [];
+            // Return a few generic secondary tools as fallback
+            return ["Fillet", "Chamfer", "Boolean", "Group"];
         }
     };
 
@@ -671,9 +702,48 @@
             }
         }
 
-        // If no TOOL_ORDER section found, return empty array to prevent incorrect ordering
-        console.warn("No TOOL_ORDER section found in action plan! Returning empty array.");
-        return [];
+        // More aggressive extraction - look for any mentions of tools in numbered steps
+        const lines = actionPlanText.split('\n');
+        const numberedLines = lines.filter(line => /^\d+\./.test(line.trim()));
+
+        if (numberedLines.length > 0) {
+            const toolsFromNumberedLines = [];
+
+            for (const line of numberedLines) {
+                for (const tool of toolboxData.tools) {
+                    if (line.includes(tool.name)) {
+                        toolsFromNumberedLines.push(tool.name);
+                        break; // Only add the first tool found in each line
+                    }
+                }
+            }
+
+            if (toolsFromNumberedLines.length > 0) {
+                console.log("Extracted tools from numbered lines:", toolsFromNumberedLines);
+                return toolsFromNumberedLines;
+            }
+        }
+
+        // If no TOOL_ORDER section found, return default tools to prevent incorrect ordering
+        console.warn("No TOOL_ORDER section found in action plan! Returning default tool set.");
+        return ["Cube", "Sphere", "Cylinder", "Scale", "Move", "Rotate"];
+    };
+
+    // Function to parse the action plan into steps
+    const parseActionPlanIntoSteps = (actionPlanText) => {
+        // Skip the TOOL_ORDER section
+        const planTextWithoutToolOrder = actionPlanText.replace(/TOOL_ORDER:.*$/s, '').trim();
+
+        // Split by numbered steps
+        const stepRegex = /(\d+\.\s+.*?)(?=\d+\.\s+|$)/gs;
+        const matches = [...planTextWithoutToolOrder.matchAll(stepRegex)];
+
+        if (matches && matches.length > 0) {
+            return matches.map(match => match[1].trim());
+        }
+
+        // Fallback: split by newlines if numbered steps aren't found
+        return planTextWithoutToolOrder.split('\n').filter(line => line.trim() !== '');
     };
 
     // Initialize the app by fetching the toolbox data first
@@ -1044,6 +1114,9 @@
             generateButton.innerHTML = 'Generating <span class="button-spinner"></span>';
             generateButton.style.cursor = 'not-allowed';
 
+            // Reset the current step index
+            currentStepIndex = 0;
+
             // Get the user's build object
             const objectToMake = buildInput.value.trim() || "a generic object";
 
@@ -1088,6 +1161,9 @@
         let smartToolbox;
         let refreshTimeout;
         let toolOrder = [];
+        let actionPlanSteps = [];
+        let actionPlanDisplay = null;
+        let currentStepHighlight = null;
         // Store priorityMap at a higher scope for access by the debug button
         let priorityMap = new Map();
 
@@ -1095,6 +1171,10 @@
         if (actionPlan) {
             toolOrder = extractToolOrder(actionPlan);
             console.log("Tool order extracted:", toolOrder);
+
+            // Parse action plan into steps
+            actionPlanSteps = parseActionPlanIntoSteps(actionPlan);
+            console.log("Action plan steps:", actionPlanSteps);
 
             // Also log the raw TOOL_ORDER section from the action plan
             const toolOrderMatch = actionPlan.match(/TOOL_ORDER:\s*([\w\s,]+)(?:\n|$)/);
@@ -1104,7 +1184,7 @@
                 console.warn("No raw TOOL_ORDER section found in action plan!");
             }
 
-            // Get secondary tools immediately after extracting primary tools
+            // Get secondary tools
             if (toolOrder.length > 0 && objectToMake) {
                 console.log("Getting secondary tools...");
                 getSecondaryTools(toolOrder, objectToMake).then(tools => {
@@ -1118,6 +1198,65 @@
                 });
             }
         }
+
+        // Function to highlight the current step in the action plan display
+        const highlightCurrentStep = () => {
+            if (!actionPlanDisplay || actionPlanSteps.length === 0) return;
+
+            // Remove previous highlight if it exists
+            if (currentStepHighlight) {
+                currentStepHighlight.classList.remove('current-step');
+            }
+
+            // Create highlight element for current step if it doesn't exist
+            if (!actionPlanDisplay.querySelector('.steps-container')) {
+                // First time setup - create structured step display
+                const stepsContainer = document.createElement('div');
+                stepsContainer.className = 'steps-container';
+                stepsContainer.style.marginTop = '10px';
+
+                actionPlanSteps.forEach((step, index) => {
+                    const stepElement = document.createElement('div');
+                    stepElement.className = 'step';
+                    stepElement.dataset.stepIndex = index;
+                    stepElement.textContent = step;
+                    stepElement.style.padding = '8px';
+                    stepElement.style.marginBottom = '5px';
+                    stepElement.style.borderRadius = '4px';
+                    stepElement.style.transition = 'background-color 0.3s';
+
+                    stepsContainer.appendChild(stepElement);
+                });
+
+                // Clear existing content and add the structured steps
+                const contentElement = actionPlanDisplay.querySelector('.action-plan-content');
+                if (contentElement) {
+                    contentElement.innerHTML = '';
+                    contentElement.appendChild(stepsContainer);
+                }
+            }
+
+            // Highlight current step
+            const stepElements = actionPlanDisplay.querySelectorAll('.step');
+            if (stepElements.length > currentStepIndex) {
+                currentStepHighlight = stepElements[currentStepIndex];
+                currentStepHighlight.classList.add('current-step');
+                currentStepHighlight.style.backgroundColor = '#e6f7ff';
+                currentStepHighlight.style.border = '1px solid #91d5ff';
+
+                // Scroll to the current step
+                currentStepHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        };
+
+        // Function to advance to the next step
+        const advanceToNextStep = () => {
+            if (actionPlanSteps.length > 0 && currentStepIndex < actionPlanSteps.length - 1) {
+                currentStepIndex++;
+                highlightCurrentStep();
+                populateSmartToolbox(smartToolbox, targetDiv); // Refresh to highlight next tool
+            }
+        };
 
         // Create action plan display
         const createActionPlanDisplay = () => {
@@ -1135,6 +1274,7 @@
             actionPlanContainer.style.overflow = 'auto';
             actionPlanContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
             actionPlanContainer.style.fontFamily = "'Inter', sans-serif";
+            actionPlanContainer.className = 'action-plan-display';
 
             const titleElement = document.createElement('h3');
             titleElement.textContent = 'AI Action Plan';
@@ -1144,6 +1284,7 @@
             titleElement.style.fontWeight = '600';
 
             const contentElement = document.createElement('div');
+            contentElement.className = 'action-plan-content';
 
             // Remove the TOOL_ORDER line from display
             let displayText = actionPlan;
@@ -1156,6 +1297,20 @@
             contentElement.style.fontSize = '14px';
             contentElement.style.lineHeight = '1.4';
             contentElement.style.color = '#464646';
+
+            // Add next step button
+            const nextStepButton = document.createElement('button');
+            nextStepButton.textContent = 'Next Step';
+            nextStepButton.style.marginTop = '10px';
+            nextStepButton.style.padding = '6px 12px';
+            nextStepButton.style.backgroundColor = '#26C9FF';
+            nextStepButton.style.color = 'white';
+            nextStepButton.style.border = 'none';
+            nextStepButton.style.borderRadius = '4px';
+            nextStepButton.style.cursor = 'pointer';
+            nextStepButton.style.fontSize = '14px';
+
+            nextStepButton.addEventListener('click', advanceToNextStep);
 
             const minimizeButton = document.createElement('button');
             minimizeButton.textContent = '−';
@@ -1177,10 +1332,12 @@
             minimizeButton.addEventListener('click', () => {
                 if (isMinimized) {
                     contentElement.style.display = 'block';
+                    nextStepButton.style.display = 'block';
                     actionPlanContainer.style.height = 'auto';
                     minimizeButton.textContent = '−';
                 } else {
                     contentElement.style.display = 'none';
+                    nextStepButton.style.display = 'none';
                     actionPlanContainer.style.height = 'auto';
                     minimizeButton.textContent = '+';
                 }
@@ -1189,9 +1346,18 @@
 
             actionPlanContainer.appendChild(titleElement);
             actionPlanContainer.appendChild(contentElement);
+            actionPlanContainer.appendChild(nextStepButton);
             actionPlanContainer.appendChild(minimizeButton);
 
             document.body.appendChild(actionPlanContainer);
+
+            // Store reference for later use
+            actionPlanDisplay = actionPlanContainer;
+
+            // Set up the initial step highlighting
+            setTimeout(() => {
+                highlightCurrentStep();
+            }, 500);
         };
 
         // MODIFIED: Added check for projects-panel.hidden
@@ -1225,7 +1391,6 @@
 
             // Debug the tool order before sorting
             console.log("Tool order before sorting:", toolOrder);
-            console.log("Secondary tools:", secondaryTools);
 
             // loop through children of the target toolbar
             Array.from(sourceDiv.children).forEach((child) => {
@@ -1308,6 +1473,10 @@
                             } else {
                                 clonedDropdownItem.addEventListener("click", () => {
                                     dropdownItem.click();
+                                    // Advance to next step when a tool is clicked
+                                    if (clonedDropdownItem.classList.contains('current-tool')) {
+                                        advanceToNextStep();
+                                    }
                                     // Schedule a refresh after click
                                     scheduleToolboxRefresh();
                                 });
@@ -1363,6 +1532,10 @@
                     } else {
                         clonedChild.addEventListener("click", () => {
                             child.click();
+                            // Advance to next step when a tool is clicked
+                            if (clonedChild.classList.contains('current-tool')) {
+                                advanceToNextStep();
+                            }
                             // Schedule a refresh after click
                             scheduleToolboxRefresh();
                         });
@@ -1394,9 +1567,6 @@
                     secondaryButtons.push(button);
                 }
             });
-
-            console.log("Primary buttons count:", primaryButtons.length);
-            console.log("Secondary buttons count:", secondaryButtons.length);
 
             // MODIFIED: Direct sorting by exact tool name matching without normalization
             if (toolOrder.length > 0) {
@@ -1430,18 +1600,23 @@
             let divider = null;
             if (primaryButtons.length > 0 && secondaryButtons.length > 0) {
                 divider = document.createElement('div');
+                divider.className = 'tools-divider';
                 divider.style.height = '85px';
-                divider.style.minWidth = '2px';
-                divider.style.backgroundColor = '#ddd';
+                divider.style.minWidth = '4px'; // Slightly wider for visibility
+                divider.style.backgroundColor = '#26C9FF'; // Match the theme color
                 divider.style.margin = '0 10px';
+                divider.style.borderRadius = '2px';
+                divider.style.boxShadow = '0 0 5px rgba(38, 201, 255, 0.5)'; // Add a glow effect
 
                 // Add a "More Tools" tooltip
                 const tooltipText = document.createElement('div');
                 tooltipText.textContent = 'Additional Tools';
                 tooltipText.style.fontSize = '10px';
-                tooltipText.style.color = '#666';
+                tooltipText.style.color = '#14708E';
+                tooltipText.style.fontWeight = 'bold';
                 tooltipText.style.transform = 'rotate(-90deg)';
                 tooltipText.style.whiteSpace = 'nowrap';
+                tooltipText.style.letterSpacing = '0.5px';
 
                 divider.appendChild(tooltipText);
                 divider.style.display = 'flex';
@@ -1449,13 +1624,24 @@
                 divider.style.justifyContent = 'center';
             }
 
-            // Add primary buttons to the toolbox
-            primaryButtons.forEach(button => {
+            // Add primary buttons to the toolbox with highlighting for current step
+            primaryButtons.forEach((button, index) => {
+                const buttonName = button.getAttribute('data-button-name');
+                const toolIndex = toolOrder.indexOf(buttonName);
+
+                // Highlight current tool
+                if (toolIndex === currentStepIndex) {
+                    button.classList.add('current-tool');
+                    button.style.border = '2px solid #26C9FF';
+                    button.style.boxShadow = '0 0 8px rgba(38, 201, 255, 0.6)';
+                    button.style.backgroundColor = '#e6f7ff';
+                }
+
                 toolbox.appendChild(button);
             });
 
             // Add divider if we have secondary buttons
-            if (divider) {
+            if (divider && secondaryButtons.length > 0) {
                 toolbox.appendChild(divider);
             }
 
@@ -1629,20 +1815,17 @@
             const toggleButton = document.createElement("button");
             toggleButton.innerText = "Show Smart Toolbox"; // Start in OFF state
 
-            // UPDATED: Styling for the toggle button with new height and border color
-            toggleButton.style.height = "30px"; // Make the button taller (changed from 22px)
+            // ENHANCED: Styling for the toggle button
+            toggleButton.style.height = "22px"; // Make the button taller
             toggleButton.style.padding = "0 12px";
             toggleButton.style.marginLeft = "10px";
             toggleButton.style.borderRadius = "4px";
-            toggleButton.style.border = "2px solid #0c546b"; // Changed border color
+            toggleButton.style.border = "2px solid #26C9FF"; // Bold border
             toggleButton.style.background = "linear-gradient(90deg, #14708E 0%, #26C9FF 69%)"; // Gradient from popup
             toggleButton.style.color = "white"; // White text
             toggleButton.style.cursor = "pointer";
             toggleButton.style.fontSize = "12px";
             toggleButton.style.fontWeight = "600"; // Bold text
-            toggleButton.style.display = "flex";
-            toggleButton.style.alignItems = "center";
-            toggleButton.style.justifyContent = "center";
 
             // Create debug button
             const debugButton = document.createElement("button");
@@ -1679,7 +1862,7 @@
 
                 debugButton.style.position = "fixed";
                 debugButton.style.top = "10px";
-                debugButton.style.right = "170px"; // Position to the left of toggle button
+                debugButton.style.right = "130px"; // Position to the left of toggle button
                 debugButton.style.zIndex = "10001";
                 document.body.appendChild(debugButton);
             }

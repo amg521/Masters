@@ -32,7 +32,7 @@
 
             // Call verification function after everything is set up
             setTimeout(verifyToolNameMatching, 2000); // Give UI time to render first        // Function to create tooltips for tool buttons
-        const setupToolTooltip = (button, toolIndex, steps) => {
+const setupToolTooltip = (button, toolIndex, steps) => {
             if (toolIndex < 0 || toolIndex >= steps.length) return;
 
             let tooltipTimeout;
@@ -58,6 +58,8 @@
                     tooltip.style.lineHeight = '1.5';
                     tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
                     tooltip.innerHTML = steps[toolIndex];
+                    tooltip.style.visibility = "hidden";
+
 
                     // Add step number label
                     const stepLabel = document.createElement('div');
@@ -126,7 +128,8 @@
                     button.tooltipUpdateHandler = null;
                 }
             });
-        };// ==UserScript==
+        };
+// ==UserScript==
 // @name         AI-Personalized Toolbar with Smart Toolbox and Debug Features
 // @namespace    http://tampermonkey.net/
 // @version      1.3
@@ -601,7 +604,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer API-KEY'
+                        'Authorization': 'API KEY'
                     },
                     body: JSON.stringify({
                         model: 'gpt-4',

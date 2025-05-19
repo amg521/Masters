@@ -1,134 +1,3 @@
-// Function to verify tool name matching
-            const verifyToolNameMatching = () => {
-                console.log("\n===== TOOL NAME VERIFICATION =====");
-                console.log("Checking exact matching between TOOL_ORDER and button data-button-name attributes");
-
-                // Get all buttons with data-button-name attribute
-                const allNamedButtons = Array.from(document.querySelectorAll('[data-button-name]'))
-                    .map(btn => btn.getAttribute('data-button-name'));
-
-                console.log(`Found ${allNamedButtons.length} buttons with data-button-name attributes`);
-
-                // Check each tool in toolOrder
-                toolOrder.forEach((toolName, index) => {
-                    const matchingButtons = allNamedButtons.filter(btnName => btnName === toolName);
-                    console.log(`Tool "${toolName}" (index ${index}): ${matchingButtons.length} matching buttons found`);
-
-                    if (matchingButtons.length === 0) {
-                        console.warn(`WARNING: No buttons found with exact matching name for tool "${toolName}"`);
-                        // Try to find close matches for debugging
-                        const closeMatches = allNamedButtons.filter(btnName =>
-                            btnName.toLowerCase().includes(toolName.toLowerCase()) ||
-                            toolName.toLowerCase().includes(btnName.toLowerCase())
-                        );
-                        if (closeMatches.length > 0) {
-                            console.log(`Possible similar matches: ${closeMatches.join(', ')}`);
-                        }
-                    }
-                });
-
-                console.log("===== END VERIFICATION =====\n");
-            };
-
-            // Call verification function after everything is set up
-            setTimeout(verifyToolNameMatching, 2000); // Give UI time to render first        // Function to create tooltips for tool buttons
-const setupToolTooltip = (button, toolIndex, steps) => {
-            if (toolIndex < 0 || toolIndex >= steps.length) return;
-
-            let tooltipTimeout;
-            let tooltip = null;
-
-            button.addEventListener('mouseenter', () => {
-                // Set longer delay before showing tooltip (1.5 seconds)
-                tooltipTimeout = setTimeout(() => {
-                    // Create tooltip
-                    tooltip = document.createElement('div');
-                    tooltip.className = 'tool-tooltip';
-                    tooltip.style.position = 'fixed'; // Use fixed positioning relative to viewport
-                    tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
-                    tooltip.style.color = 'white';
-                    tooltip.style.padding = '15px';
-                    tooltip.style.borderRadius = '6px';
-                    tooltip.style.fontSize = '14px';
-                    tooltip.style.zIndex = '10001';
-                    tooltip.style.maxWidth = '350px';
-                    tooltip.style.width = 'auto';
-                    tooltip.style.whiteSpace = 'normal';
-                    tooltip.style.textAlign = 'left';
-                    tooltip.style.lineHeight = '1.5';
-                    tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-                    tooltip.innerHTML = steps[toolIndex];
-                    tooltip.style.visibility = "hidden";
-
-
-                    // Add step number label
-                    const stepLabel = document.createElement('div');
-                    stepLabel.style.fontSize = '12px';
-                    stepLabel.style.color = '#26C9FF';
-                    stepLabel.style.marginBottom = '8px';
-                    stepLabel.style.fontWeight = 'bold';
-                    stepLabel.textContent = `Step ${toolIndex + 1}`;
-                    tooltip.insertBefore(stepLabel, tooltip.firstChild);
-
-                    // Add tooltip to body (not to button) for better positioning
-                    document.body.appendChild(tooltip);
-
-                    // Position tooltip near mouse cursor
-                    const updateTooltipPosition = (e) => {
-                        // Get mouse position
-                        const mouseX = e.clientX;
-                        const mouseY = e.clientY;
-
-                        // Calculate tooltip position
-                        let left = mouseX + 15; // Offset from cursor
-                        let top = mouseY + 15;
-
-                        // Check if tooltip would go off-screen and adjust if needed
-                        const tooltipRect = tooltip.getBoundingClientRect();
-                        const viewportWidth = window.innerWidth;
-                        const viewportHeight = window.innerHeight;
-
-                        if (left + tooltipRect.width > viewportWidth) {
-                            left = mouseX - tooltipRect.width - 15;
-                        }
-
-                        if (top + tooltipRect.height > viewportHeight) {
-                            top = mouseY - tooltipRect.height - 15;
-                        }
-
-                        // Apply position
-                        tooltip.style.left = `${left}px`;
-                        tooltip.style.top = `${top}px`;
-                    };
-
-                    // Initial positioning
-                    updateTooltipPosition(event);
-
-                    // Update tooltip position on mouse move
-                    button.addEventListener('mousemove', updateTooltipPosition);
-
-                    // Store the mousemove handler
-                    button.tooltipUpdateHandler = updateTooltipPosition;
-
-                }, 1500); // 1.5 seconds delay before showing
-            });
-
-            button.addEventListener('mouseleave', () => {
-                clearTimeout(tooltipTimeout);
-
-                // Remove tooltip
-                if (tooltip && tooltip.parentNode) {
-                    tooltip.parentNode.removeChild(tooltip);
-                    tooltip = null;
-                }
-
-                // Remove the mousemove handler
-                if (button.tooltipUpdateHandler) {
-                    button.removeEventListener('mousemove', button.tooltipUpdateHandler);
-                    button.tooltipUpdateHandler = null;
-                }
-            });
-        };
 // ==UserScript==
 // @name         AI-Personalized Toolbar with Smart Toolbox and Debug Features
 // @namespace    http://tampermonkey.net/
@@ -566,6 +435,137 @@ const setupToolTooltip = (button, toolIndex, steps) => {
         document.body.appendChild(debugPopup);
     };
 
+    // Function to verify tool name matching
+    const verifyToolNameMatching = () => {
+        console.log("\n===== TOOL NAME VERIFICATION =====");
+        console.log("Checking exact matching between TOOL_ORDER and button data-button-name attributes");
+
+        // Get all buttons with data-button-name attribute
+        const allNamedButtons = Array.from(document.querySelectorAll('[data-button-name]'))
+            .map(btn => btn.getAttribute('data-button-name'));
+
+        console.log(`Found ${allNamedButtons.length} buttons with data-button-name attributes`);
+
+        // Check each tool in toolOrder
+        toolOrder.forEach((toolName, index) => {
+            const matchingButtons = allNamedButtons.filter(btnName => btnName === toolName);
+            console.log(`Tool "${toolName}" (index ${index}): ${matchingButtons.length} matching buttons found`);
+
+            if (matchingButtons.length === 0) {
+                console.warn(`WARNING: No buttons found with exact matching name for tool "${toolName}"`);
+                // Try to find close matches for debugging
+                const closeMatches = allNamedButtons.filter(btnName =>
+                    btnName.toLowerCase().includes(toolName.toLowerCase()) ||
+                    toolName.toLowerCase().includes(btnName.toLowerCase())
+                );
+                if (closeMatches.length > 0) {
+                    console.log(`Possible similar matches: ${closeMatches.join(', ')}`);
+                }
+            }
+        });
+
+        console.log("===== END VERIFICATION =====\n");
+    };
+
+    // Function to create tooltips for tool buttons
+    const setupToolTooltip = (button, toolIndex, steps) => {
+        if (toolIndex < 0 || toolIndex >= steps.length) return;
+
+        let tooltipTimeout;
+        let tooltip = null;
+
+        button.addEventListener('mouseenter', () => {
+            // Set longer delay before showing tooltip (1.5 seconds)
+            tooltipTimeout = setTimeout(() => {
+                // Create tooltip
+                tooltip = document.createElement('div');
+                tooltip.className = 'tool-tooltip';
+                tooltip.style.position = 'fixed'; // Use fixed positioning relative to viewport
+                tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+                tooltip.style.color = 'white';
+                tooltip.style.padding = '15px';
+                tooltip.style.borderRadius = '6px';
+                tooltip.style.fontSize = '14px';
+                tooltip.style.zIndex = '10001';
+                tooltip.style.maxWidth = '350px';
+                tooltip.style.width = 'auto';
+                tooltip.style.whiteSpace = 'normal';
+                tooltip.style.textAlign = 'left';
+                tooltip.style.lineHeight = '1.5';
+                tooltip.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                tooltip.innerHTML = steps[toolIndex];
+                tooltip.style.visibility = "hidden";
+
+
+                // Add step number label
+                const stepLabel = document.createElement('div');
+                stepLabel.style.fontSize = '12px';
+                stepLabel.style.color = '#26C9FF';
+                stepLabel.style.marginBottom = '8px';
+                stepLabel.style.fontWeight = 'bold';
+                stepLabel.textContent = `Step ${toolIndex + 1}`;
+                tooltip.insertBefore(stepLabel, tooltip.firstChild);
+
+                // Add tooltip to body (not to button) for better positioning
+                document.body.appendChild(tooltip);
+
+                // Position tooltip near mouse cursor
+                const updateTooltipPosition = (e) => {
+                    // Get mouse position
+                    const mouseX = e.clientX;
+                    const mouseY = e.clientY;
+
+                    // Calculate tooltip position
+                    let left = mouseX + 15; // Offset from cursor
+                    let top = mouseY + 15;
+
+                    // Check if tooltip would go off-screen and adjust if needed
+                    const tooltipRect = tooltip.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth;
+                    const viewportHeight = window.innerHeight;
+
+                    if (left + tooltipRect.width > viewportWidth) {
+                        left = mouseX - tooltipRect.width - 15;
+                    }
+
+                    if (top + tooltipRect.height > viewportHeight) {
+                        top = mouseY - tooltipRect.height - 15;
+                    }
+
+                    // Apply position
+                    tooltip.style.left = `${left}px`;
+                    tooltip.style.top = `${top}px`;
+                };
+
+                // Initial positioning
+                updateTooltipPosition(event);
+
+                // Update tooltip position on mouse move
+                button.addEventListener('mousemove', updateTooltipPosition);
+
+                // Store the mousemove handler
+                button.tooltipUpdateHandler = updateTooltipPosition;
+
+            }, 1500); // 1.5 seconds delay before showing
+        });
+
+        button.addEventListener('mouseleave', () => {
+            clearTimeout(tooltipTimeout);
+
+            // Remove tooltip
+            if (tooltip && tooltip.parentNode) {
+                tooltip.parentNode.removeChild(tooltip);
+                tooltip = null;
+            }
+
+            // Remove the mousemove handler
+            if (button.tooltipUpdateHandler) {
+                button.removeEventListener('mousemove', button.tooltipUpdateHandler);
+                button.tooltipUpdateHandler = null;
+            }
+        });
+    };
+
     // Fetch the toolbox JSON from GitHub
     const fetchToolboxData = async () => {
         return new Promise((resolve, reject) => {
@@ -896,6 +896,17 @@ const setupToolTooltip = (button, toolIndex, steps) => {
 
         // Fallback: split by newlines if numbered steps aren't found
         return planTextWithoutToolOrder.split('\n').filter(line => line.trim() !== '');
+    };
+
+    // Extract step descriptions from action plan steps
+    const extractStepDescriptions = (actionPlanSteps) => {
+        return actionPlanSteps.map(step => {
+            // Remove the step number prefix and any leading tool name
+            const withoutNumber = step.replace(/^\d+\.\s+/, '');
+            // Try to find the actual instruction, skipping the tool name mention
+            const withoutToolMention = withoutNumber.replace(/^Use\s+the\s+\w+\s+tool\s+to\s+/, '');
+            return withoutToolMention;
+        });
     };
 
     // Initialize the app by fetching the toolbox data first
@@ -1314,6 +1325,7 @@ const setupToolTooltip = (button, toolIndex, steps) => {
         let refreshTimeout;
         let toolOrder = [];
         let actionPlanSteps = [];
+        let stepDescriptions = [];
         let actionPlanDisplay = null;
         let currentStepHighlight = null;
         // Store priorityMap at a higher scope for access by the debug button
@@ -1327,6 +1339,10 @@ const setupToolTooltip = (button, toolIndex, steps) => {
             // Parse action plan into steps
             actionPlanSteps = parseActionPlanIntoSteps(actionPlan);
             console.log("Action plan steps:", actionPlanSteps);
+
+            // Extract step descriptions
+            stepDescriptions = extractStepDescriptions(actionPlanSteps);
+            console.log("Step descriptions:", stepDescriptions);
 
             // Also log the raw TOOL_ORDER section from the action plan
             const toolOrderMatch = actionPlan.match(/TOOL_ORDER:\s*([\w\s,]+)(?:\n|$)/);
@@ -1408,178 +1424,66 @@ const setupToolTooltip = (button, toolIndex, steps) => {
         const advanceToNextStep = () => {
             if (actionPlanSteps.length > 0 && currentStepIndex < actionPlanSteps.length - 1) {
                 currentStepIndex++;
-                highlightCurrentStep();
                 populateSmartToolbox(smartToolbox, targetDiv); // Refresh to highlight next tool
             }
         };
 
-        // Create action plan display
-        const createActionPlanDisplay = () => {
-            const actionPlanContainer = document.createElement('div');
-            actionPlanContainer.style.position = 'fixed';
-            actionPlanContainer.style.bottom = '20px';
-            actionPlanContainer.style.right = '20px';
-            actionPlanContainer.style.width = '300px';
-            actionPlanContainer.style.maxHeight = '400px';
-            actionPlanContainer.style.backgroundColor = 'white';
-            actionPlanContainer.style.border = '1px solid #D9D9D9';
-            actionPlanContainer.style.borderRadius = '8px';
-            actionPlanContainer.style.padding = '16px';
-            actionPlanContainer.style.zIndex = '10000';
-            actionPlanContainer.style.overflow = 'auto';
-            actionPlanContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-            actionPlanContainer.style.fontFamily = "'Inter', sans-serif";
-            actionPlanContainer.className = 'action-plan-display';
+        // Create stepper component
+        const createStepper = (container, toolOrder) => {
+            const stepperContainer = document.createElement('div');
+            stepperContainer.className = 'stepper-container';
+            stepperContainer.style.display = 'flex';
+            stepperContainer.style.alignItems = 'center';
+            stepperContainer.style.justifyContent = 'space-between';
+            stepperContainer.style.marginBottom = '8px';
+            stepperContainer.style.padding = '0 10px';
+            stepperContainer.style.width = '100%';
+            stepperContainer.style.boxSizing = 'border-box';
 
-            // Make resizable with additional explicit CSS properties
-            actionPlanContainer.style.resize = 'both';
-            actionPlanContainer.style.minWidth = '200px';
-            actionPlanContainer.style.minHeight = '150px';
-            actionPlanContainer.style.overflow = 'auto'; // Required for resize to work
+            // Create step buttons with lines between them
+            toolOrder.forEach((tool, index) => {
+                // Create the circle
+                const step = document.createElement('div');
+                step.className = 'step-indicator';
+                step.dataset.step = index + 1;
+                step.style.width = '36px';
+                step.style.height = '36px';
+                step.style.borderRadius = '50%';
+                step.style.backgroundColor = index <= currentStepIndex ? '#14708E' : '#D9D9D9';
+                step.style.color = 'white';
+                step.style.display = 'flex';
+                step.style.alignItems = 'center';
+                step.style.justifyContent = 'center';
+                step.style.fontWeight = 'bold';
+                step.style.fontSize = '16px';
+                step.style.fontFamily = "'Inter', sans-serif";
+                step.style.zIndex = '2';
+                step.textContent = index + 1;
 
-            // Add a header area for dragging
-            const headerArea = document.createElement('div');
-            headerArea.style.position = 'relative';
-            headerArea.style.cursor = 'move'; // Show move cursor
-            headerArea.style.marginBottom = '12px';
-            headerArea.style.paddingBottom = '8px';
-            headerArea.style.borderBottom = '1px solid #eee';
+                stepperContainer.appendChild(step);
 
-            const titleElement = document.createElement('h3');
-            titleElement.textContent = 'AI Action Plan';
-            titleElement.style.marginTop = '0';
-            titleElement.style.marginBottom = '4px';
-            titleElement.style.fontSize = '16px';
-            titleElement.style.fontWeight = '600';
+                // Add connector line if not the last step
+                if (index < toolOrder.length - 1) {
+                    const line = document.createElement('div');
+                    line.className = 'step-line';
+                    line.style.flex = '1';
+                    line.style.height = '2px';
+                    line.style.backgroundColor = index < currentStepIndex ? '#14708E' : '#D9D9D9';
+                    line.style.zIndex = '1';
 
-            headerArea.appendChild(titleElement);
-
-            const contentElement = document.createElement('div');
-            contentElement.className = 'action-plan-content';
-
-            // Remove the TOOL_ORDER line from display
-            let displayText = actionPlan;
-            const toolOrderIndex = displayText.indexOf("TOOL_ORDER:");
-            if (toolOrderIndex !== -1) {
-                displayText = displayText.substring(0, toolOrderIndex);
-            }
-
-            contentElement.innerHTML = displayText.replace(/\n/g, '<br>');
-            contentElement.style.fontSize = '14px';
-            contentElement.style.lineHeight = '1.4';
-            contentElement.style.color = '#464646';
-
-            // Add next step button
-            const nextStepButton = document.createElement('button');
-            nextStepButton.textContent = 'Next Step';
-            nextStepButton.style.marginTop = '10px';
-            nextStepButton.style.padding = '6px 12px';
-            nextStepButton.style.backgroundColor = '#26C9FF';
-            nextStepButton.style.color = 'white';
-            nextStepButton.style.border = 'none';
-            nextStepButton.style.borderRadius = '4px';
-            nextStepButton.style.cursor = 'pointer';
-            nextStepButton.style.fontSize = '14px';
-
-            nextStepButton.addEventListener('click', advanceToNextStep);
-
-            const minimizeButton = document.createElement('button');
-            minimizeButton.textContent = '−';
-            minimizeButton.style.position = 'absolute';
-            minimizeButton.style.top = '0';
-            minimizeButton.style.right = '0';
-            minimizeButton.style.backgroundColor = 'transparent';
-            minimizeButton.style.border = 'none';
-            minimizeButton.style.fontSize = '16px';
-            minimizeButton.style.cursor = 'pointer';
-            minimizeButton.style.width = '24px';
-            minimizeButton.style.height = '24px';
-            minimizeButton.style.borderRadius = '50%';
-            minimizeButton.style.display = 'flex';
-            minimizeButton.style.justifyContent = 'center';
-            minimizeButton.style.alignItems = 'center';
-
-            headerArea.appendChild(minimizeButton);
-
-            let isMinimized = false;
-            minimizeButton.addEventListener('click', () => {
-                if (isMinimized) {
-                    contentElement.style.display = 'block';
-                    nextStepButton.style.display = 'block';
-                    actionPlanContainer.style.height = 'auto';
-                    minimizeButton.textContent = '−';
-                } else {
-                    contentElement.style.display = 'none';
-                    nextStepButton.style.display = 'none';
-                    actionPlanContainer.style.height = 'auto';
-                    minimizeButton.textContent = '+';
+                    stepperContainer.appendChild(line);
                 }
-                isMinimized = !isMinimized;
             });
 
-            actionPlanContainer.appendChild(headerArea);
-            actionPlanContainer.appendChild(contentElement);
-            actionPlanContainer.appendChild(nextStepButton);
-
-            document.body.appendChild(actionPlanContainer);
-
-            // Make action plan draggable
-            let isDragging = false;
-            let offsetX, offsetY;
-
-            headerArea.addEventListener('mousedown', function(e) {
-                isDragging = true;
-                offsetX = e.clientX - actionPlanContainer.getBoundingClientRect().left;
-                offsetY = e.clientY - actionPlanContainer.getBoundingClientRect().top;
-            });
-
-            document.addEventListener('mousemove', function(e) {
-                if (!isDragging) return;
-
-                actionPlanContainer.style.left = (e.clientX - offsetX) + 'px';
-                actionPlanContainer.style.top = (e.clientY - offsetY) + 'px';
-                actionPlanContainer.style.right = 'auto';
-                actionPlanContainer.style.bottom = 'auto';
-            });
-
-            document.addEventListener('mouseup', function() {
-                isDragging = false;
-            });
-
-            // Store reference for later use
-            actionPlanDisplay = actionPlanContainer;
-
-            // Set up the initial step highlighting
-            setTimeout(() => {
-                highlightCurrentStep();
-            }, 500);
-        };
-
-        // MODIFIED: Added check for projects-panel.hidden
-        const waitForTargetDiv = () => {
-            targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
-            const toolbar = document.getElementById("headerToolbarMenu");
-            const projectsPanel = document.querySelector('.projects-panel'); // NEW
-
-            // MODIFIED condition to check projects-panel state
-            if (!targetDiv || !toolbar || !projectsPanel || !projectsPanel.classList.contains('hidden')) {
-                console.log("Target div, toolbar, or projects panel not found/hidden. Retrying...");
-                setTimeout(waitForTargetDiv, 500);
-                return;
-            }
-
-            console.log("Target div and toolbar located.");
-            createSmartToolbox(targetDiv, toolbar);
-
-            // Create action plan display after smart toolbox is initialized
-            if (actionPlan) {
-                createActionPlanDisplay();
-            }
+            container.appendChild(stepperContainer);
         };
 
         // Extract the repeated code into a function for populating the toolbox
         const populateSmartToolbox = (toolbox, sourceDiv) => {
             toolbox.innerHTML = ""; // clear previous content
+
+            // Create stepper at the top
+            createStepper(toolbox, toolOrder);
 
             // First, collect all buttons
             const allButtons = [];
@@ -1631,6 +1535,7 @@ const setupToolTooltip = (button, toolIndex, steps) => {
                             stackedContainer.style.alignItems = "center";
                             stackedContainer.style.justifyContent = "center";
                             stackedContainer.style.height = "100%";
+                            stackedContainer.className = "button-content";
 
                             const clonedIcon = iconElement.cloneNode(true);
                             const clonedLabel = labelElement.cloneNode(true);
@@ -1663,6 +1568,7 @@ const setupToolTooltip = (button, toolIndex, steps) => {
                             clonedDropdownItem.style.width = "85px"; // Fixed width
                             clonedDropdownItem.style.maxWidth = "85px"; // Maximum width
                             clonedDropdownItem.style.boxSizing = "border-box"; // Include padding in width calculation
+                            clonedDropdownItem.style.transition = "all 0.3s ease";
 
                             // Add disabled styling if original item is disabled
                             if (dropdownItem.classList.contains('disabled')) {
@@ -1701,6 +1607,7 @@ const setupToolTooltip = (button, toolIndex, steps) => {
                     clonedChild.style.flexDirection = "column";
                     clonedChild.style.alignItems = "center";
                     clonedChild.style.justifyContent = "center";
+                    clonedChild.style.transition = "all 0.3s ease";
 
                     // Extract button name - try multiple possible selectors
                     let buttonName = "";
@@ -1819,16 +1726,67 @@ const setupToolTooltip = (button, toolIndex, steps) => {
                 });
             }
 
+            // Create button container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.alignItems = 'center';
+            buttonContainer.style.justifyContent = 'flex-start';
+            buttonContainer.style.overflowX = 'auto';
+            buttonContainer.style.overflowY = 'hidden';
+            buttonContainer.style.width = '100%';
+            buttonContainer.style.padding = '0 10px';
+
             // Create a collapsible button for additional tools
             let additionalToolsToggle = null;
             let secondaryToolsContainer = null;
 
-            if (primaryButtons.length > 0 && secondaryButtons.length > 0) {
-                // Create the toggle button
+            // Add primary buttons to the toolbox with highlighting for current step
+            primaryButtons.forEach((button, index) => {
+                const buttonName = button.getAttribute('data-button-name');
+                const toolIndex = toolOrder.indexOf(buttonName);
+
+                // Special styling for current step button
+                if (toolIndex === currentStepIndex) {
+                    button.classList.add('current-tool');
+
+                    // Expand the button horizontally and show the step description
+                    button.style.width = 'auto';
+                    button.style.maxWidth = '300px'; // Set a reasonable max width
+                    button.style.border = '2px solid #26C9FF';
+                    button.style.boxShadow = '0 0 8px rgba(38, 201, 255, 0.6)';
+                    button.style.backgroundColor = '#e6f7ff';
+
+                    // Add step description
+                    if (stepDescriptions && stepDescriptions[toolIndex]) {
+                        const descriptionElement = document.createElement('div');
+                        descriptionElement.className = 'step-description';
+                        descriptionElement.textContent = stepDescriptions[toolIndex];
+                        descriptionElement.style.fontSize = '12px';
+                        descriptionElement.style.color = '#14708E';
+                        descriptionElement.style.marginTop = '5px';
+                        descriptionElement.style.textAlign = 'center';
+                        descriptionElement.style.padding = '0 10px';
+
+                        const buttonContent = button.querySelector('.button-content');
+                        if (buttonContent) {
+                            buttonContent.appendChild(descriptionElement);
+                        } else {
+                            button.appendChild(descriptionElement);
+                        }
+                    }
+                }
+
+                buttonContainer.appendChild(button);
+            });
+
+            if (secondaryButtons.length > 0) {
+                // Create the extra tools button
                 additionalToolsToggle = document.createElement('div');
                 additionalToolsToggle.className = 'additional-tools-toggle';
                 additionalToolsToggle.style.height = '85px';
-                additionalToolsToggle.style.minWidth = '100px';
+                additionalToolsToggle.style.minWidth = '85px';
+                additionalToolsToggle.style.maxWidth = '120px';
                 additionalToolsToggle.style.backgroundColor = '#14708E'; // Dark blue theme color
                 additionalToolsToggle.style.padding = '0 15px'; // Add padding
                 additionalToolsToggle.style.margin = '0 5px';
@@ -1836,99 +1794,65 @@ const setupToolTooltip = (button, toolIndex, steps) => {
                 additionalToolsToggle.style.boxShadow = '0 0 5px rgba(38, 201, 255, 0.5)';
                 additionalToolsToggle.style.cursor = 'pointer';
                 additionalToolsToggle.style.position = 'relative';
-
-                // Add plus icon and text in a column layout
-                const toggleContent = document.createElement('div');
-                toggleContent.style.display = 'flex';
-                toggleContent.style.flexDirection = 'column';
-                toggleContent.style.alignItems = 'center';
-                toggleContent.style.justifyContent = 'center';
-                toggleContent.style.height = '100%';
-
-                const plusSign = document.createElement('div');
-                plusSign.textContent = '+';
-                plusSign.style.fontSize = '30px'; // Bigger plus sign
-                plusSign.style.fontWeight = 'bold';
-                plusSign.style.color = 'white';
-                plusSign.style.lineHeight = '1';
-
-                const toolsText = document.createElement('div');
-                toolsText.textContent = 'Extra Tools';
-                toolsText.style.fontSize = '12px';
-                toolsText.style.color = 'white';
-                toolsText.style.fontWeight = 'bold';
-                toolsText.style.marginTop = '8px';
-
-                toggleContent.appendChild(plusSign);
-                toggleContent.appendChild(toolsText);
-
-                additionalToolsToggle.appendChild(toggleContent);
+                additionalToolsToggle.style.color = 'white';
                 additionalToolsToggle.style.display = 'flex';
+                additionalToolsToggle.style.flexDirection = 'column';
                 additionalToolsToggle.style.alignItems = 'center';
                 additionalToolsToggle.style.justifyContent = 'center';
+                additionalToolsToggle.innerHTML = `
+                    <div style="font-size:24px; margin-bottom:5px;">+</div>
+                    <div style="font-size:12px;">Extra tools</div>
+                `;
 
-                // Create container for secondary tools (initially hidden)
+                buttonContainer.appendChild(additionalToolsToggle);
+
+                // Create container for secondary tools (separate from main container)
                 secondaryToolsContainer = document.createElement('div');
                 secondaryToolsContainer.className = 'secondary-tools-container';
                 secondaryToolsContainer.style.display = 'none'; // Hidden by default
-                secondaryToolsContainer.style.height = '85px';
+                secondaryToolsContainer.style.position = 'absolute';
+                secondaryToolsContainer.style.top = '140px'; // Position below the main toolbar
+                secondaryToolsContainer.style.left = '0';
+                secondaryToolsContainer.style.width = '100%';
                 secondaryToolsContainer.style.backgroundColor = 'white';
                 secondaryToolsContainer.style.border = '1px solid #ddd';
                 secondaryToolsContainer.style.borderRadius = '4px';
-                secondaryToolsContainer.style.padding = '5px';
+                secondaryToolsContainer.style.padding = '10px';
                 secondaryToolsContainer.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
-                secondaryToolsContainer.style.marginLeft = '5px';
+                secondaryToolsContainer.style.zIndex = '9998';
                 secondaryToolsContainer.style.display = 'none'; // Initially hidden
-                secondaryToolsContainer.style.flexDirection = 'row';
-                secondaryToolsContainer.style.flexWrap = 'nowrap';
-                secondaryToolsContainer.style.alignItems = 'center';
-                secondaryToolsContainer.style.overflow = 'auto';
-
-                // Toggle functionality
-                additionalToolsToggle.addEventListener('click', () => {
-                    if (secondaryToolsContainer.style.display === 'none') {
-                        secondaryToolsContainer.style.display = 'flex';
-                        plusSign.textContent = '-';
-                        toolsText.textContent = 'Collapse tools';
-                    } else {
-                        secondaryToolsContainer.style.display = 'none';
-                        plusSign.textContent = '+';
-                        toolsText.textContent = 'Extra Tools';
-                    }
-                });
-            }
-
-            // Add primary buttons to the toolbox with highlighting for current step
-            primaryButtons.forEach((button, index) => {
-                const buttonName = button.getAttribute('data-button-name');
-                const toolIndex = toolOrder.indexOf(buttonName);
-
-                // Highlight current tool
-                if (toolIndex === currentStepIndex) {
-                    button.classList.add('current-tool');
-                    button.style.border = '2px solid #26C9FF';
-                    button.style.boxShadow = '0 0 8px rgba(38, 201, 255, 0.6)';
-                    button.style.backgroundColor = '#e6f7ff';
-                }
-
-                // Add tooltip showing the corresponding step
-                setupToolTooltip(button, toolIndex, actionPlanSteps);
-
-                toolbox.appendChild(button);
-            });
-
-            // Add the additional tools toggle and container
-            if (additionalToolsToggle && secondaryButtons.length > 0) {
-                toolbox.appendChild(additionalToolsToggle);
+                secondaryToolsContainer.style.flexWrap = 'wrap';
+                secondaryToolsContainer.style.justifyContent = 'center';
 
                 // Add secondary buttons to the secondary tools container
                 secondaryButtons.forEach(button => {
                     secondaryToolsContainer.appendChild(button);
                 });
 
-                // Add the secondary tools container right after the toggle in the DOM
-                toolbox.appendChild(secondaryToolsContainer);
+                // Toggle functionality
+                additionalToolsToggle.addEventListener('click', () => {
+                    if (secondaryToolsContainer.style.display === 'none') {
+                        secondaryToolsContainer.style.display = 'flex';
+                        additionalToolsToggle.innerHTML = `
+                            <div style="font-size:24px; margin-bottom:5px;">-</div>
+                            <div style="font-size:12px;">Close</div>
+                        `;
+                    } else {
+                        secondaryToolsContainer.style.display = 'none';
+                        additionalToolsToggle.innerHTML = `
+                            <div style="font-size:24px; margin-bottom:5px;">+</div>
+                            <div style="font-size:12px;">Extra tools</div>
+                        `;
+                    }
+                });
+
+                document.body.appendChild(secondaryToolsContainer);
             }
+
+            toolbox.appendChild(buttonContainer);
+
+            // Call the verification function after everything is set up
+            setTimeout(verifyToolNameMatching, 2000);
 
             console.log("All buttons added to the smart toolbox in recommended order.");
         };
@@ -2009,28 +1933,24 @@ const setupToolTooltip = (button, toolIndex, steps) => {
             // create the smart toolbox container
             smartToolbox = document.createElement("div");
             smartToolbox.id = "smart-toolbox";
-            smartToolbox.style.display = "none"; // initially hidden
+            // CHANGED: Display flex by default instead of none
+            smartToolbox.style.display = "flex";
+            smartToolbox.style.flexDirection = "column";
             smartToolbox.style.position = "absolute";
             smartToolbox.style.top = `${rect.top + window.scrollY}px`;
             smartToolbox.style.left = `${rect.left + window.scrollX}px`;
             smartToolbox.style.width = `${rect.width}px`;
-            smartToolbox.style.height = `${rect.height}px`;
             smartToolbox.style.zIndex = "9999";
-            smartToolbox.style.overflowX = "auto"; // enable scrolling
-            smartToolbox.style.overflowY = "hidden";
-            smartToolbox.style.whiteSpace = "nowrap"; // ensure buttons stay in a row
             smartToolbox.style.backgroundColor = "white";
-            smartToolbox.style.padding = "0px";
-            smartToolbox.style.display = "none";
-
-            smartToolbox.style.flexWrap = "nowrap";
-            smartToolbox.style.alignItems = "center";
-            smartToolbox.style.justifyContent = "flex-start";
+            smartToolbox.style.padding = "10px 0";
             smartToolbox.style.cursor = "grab";
 
             // append the smart toolbox to the document body
             document.body.appendChild(smartToolbox);
             console.log("Smart toolbox container added to the page.");
+
+            // Hide the default toolbar
+            targetDiv.style.display = "none";
 
             // function to update width on browser resize
             const updateSmartToolboxSize = () => {
@@ -2050,28 +1970,31 @@ const setupToolTooltip = (button, toolIndex, steps) => {
             let scrollLeft;
 
             smartToolbox.addEventListener("mousedown", (e) => {
+                const buttonContainer = smartToolbox.querySelector('.button-container');
+                if (!buttonContainer) return;
+
                 isDragging = true;
-                smartToolbox.style.cursor = "grabbing"; // indicate active dragging
-                startX = e.pageX - smartToolbox.offsetLeft;
-                scrollLeft = smartToolbox.scrollLeft;
+                buttonContainer.style.cursor = "grabbing"; // indicate active dragging
+                startX = e.pageX - buttonContainer.offsetLeft;
+                scrollLeft = buttonContainer.scrollLeft;
                 e.preventDefault(); // prevent text selection
             });
 
-            smartToolbox.addEventListener("mouseup", () => {
+            document.addEventListener("mouseup", () => {
+                const buttonContainer = smartToolbox.querySelector('.button-container');
+                if (!buttonContainer) return;
+
                 isDragging = false;
-                smartToolbox.style.cursor = "grab"; // return to normal cursor
+                buttonContainer.style.cursor = "grab"; // return to normal cursor
             });
 
-            smartToolbox.addEventListener("mouseleave", () => {
-                isDragging = false;
-                smartToolbox.style.cursor = "grab";
-            });
+            document.addEventListener("mousemove", (e) => {
+                const buttonContainer = smartToolbox.querySelector('.button-container');
+                if (!buttonContainer || !isDragging) return;
 
-            smartToolbox.addEventListener("mousemove", (e) => {
-                if (!isDragging) return;
-                const x = e.pageX - smartToolbox.offsetLeft;
+                const x = e.pageX - buttonContainer.offsetLeft;
                 const walk = (x - startX) * 2; // adjust speed
-                smartToolbox.scrollLeft = scrollLeft - walk;
+                buttonContainer.scrollLeft = scrollLeft - walk;
             });
 
             // function to toggle toolbox visibility and populate it
@@ -2080,20 +2003,20 @@ const setupToolTooltip = (button, toolIndex, steps) => {
                     // Populate the smart toolbox using the extracted function
                     populateSmartToolbox(smartToolbox, targetDiv);
 
-                    smartToolbox.style.display = "flex";
+                    smartToolbox.style.display = "flex"; // Changed to flex for column layout
                     targetDiv.style.display = "none"; // Hide default toolbar
-                    // CHANGED: Update button text to "Hide Smart Toolbox"
-                    toggleButton.innerText = "Hide Smart Toolbox";
+                    toggleButton.innerText = "Default view"; // Changed text order
                 } else {
                     smartToolbox.style.display = "none";
                     targetDiv.style.display = "block";
-                    toggleButton.innerText = "Show Smart Toolbox";
+                    toggleButton.innerText = "Smart toolbox";
                 }
             };
 
             // Create toggle button and add it to quick-menus div
             const toggleButton = document.createElement("button");
-            toggleButton.innerText = "Show Smart Toolbox"; // Start in OFF state
+            // CHANGED: Initial text now "Default view" since we start with smart toolbox visible
+            toggleButton.innerText = "Default view";
 
             // ENHANCED: Styling for the toggle button
             toggleButton.style.height = "30px"; // Make the button taller
@@ -2120,7 +2043,7 @@ const setupToolTooltip = (button, toolIndex, steps) => {
 
             debugButton.addEventListener("click", () => {
                 // We need to capture the current state when the button is clicked
-                const currentButtons = Array.from(smartToolbox.children);
+                const currentButtons = Array.from(smartToolbox.querySelectorAll('[data-button-name]'));
                 createDebugOrderPopup(currentButtons, toolOrder, priorityMap);
             });
 
@@ -2151,6 +2074,26 @@ const setupToolTooltip = (button, toolIndex, steps) => {
 
             // Setup observers for UI interactions
             setupInteractionObservers();
+
+            // Populate the toolbox initially
+            populateSmartToolbox(smartToolbox, targetDiv);
+        };
+
+        // MODIFIED: Added check for projects-panel.hidden
+        const waitForTargetDiv = () => {
+            targetDiv = document.querySelector(".tool-items.fix-toolbar-width.ui-draggable.ui-draggable-handle");
+            const toolbar = document.getElementById("headerToolbarMenu");
+            const projectsPanel = document.querySelector('.projects-panel'); // NEW
+
+            // MODIFIED condition to check projects-panel state
+            if (!targetDiv || !toolbar || !projectsPanel || !projectsPanel.classList.contains('hidden')) {
+                console.log("Target div, toolbar, or projects panel not found/hidden. Retrying...");
+                setTimeout(waitForTargetDiv, 500);
+                return;
+            }
+
+            console.log("Target div and toolbar located.");
+            createSmartToolbox(targetDiv, toolbar);
         };
 
         waitForTargetDiv();

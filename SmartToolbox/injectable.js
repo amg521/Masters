@@ -1,4 +1,28 @@
-// ==UserScript==
+            // Position the steppers to align with the buttons
+            setTimeout(() => {
+                if (container.stepElements) {
+                    const buttonContainer = toolbox.querySelector('.button-container');
+                    if (buttonContainer) {
+                        primaryButtons.forEach((button, index) => {
+                            const buttonName = button.getAttribute('data-button-name');
+                            const toolIndex = toolOrder.indexOf(buttonName);
+
+                            if (toolIndex >= 0 && toolIndex < container.stepElements.length) {
+                                const stepElement = container.stepElements[toolIndex];
+                                const buttonRect = button.getBoundingClientRect();
+                                const containerRect = buttonContainer.getBoundingClientRect();
+
+                                // Calculate the center position of the button relative to the container
+                                const buttonCenterX = buttonRect.left + (buttonRect.width / 2) - containerRect.left;
+
+                                // Apply the position to the step element
+                                stepElement.style.left = `${buttonCenterX}px`;
+                                stepElement.style.transform = 'translateX(-50%)';
+                            }
+                        });
+                    }
+                }
+            }, 100); // Small delay to ensure buttons are rendered// ==UserScript==
 // @name         AI-Personalized Toolbar with Smart Toolbox and Debug Features
 // @namespace    http://tampermonkey.net/
 // @version      1.3
@@ -1434,14 +1458,49 @@
             stepperContainer.className = 'stepper-container';
             stepperContainer.style.display = 'flex';
             stepperContainer.style.alignItems = 'center';
-            stepperContainer.style.justifyContent = 'space-between';
-            stepperContainer.style.marginBottom = '8px';
             stepperContainer.style.padding = '0 10px';
+            stepperContainer.style.marginBottom = '15px';
             stepperContainer.style.width = '100%';
             stepperContainer.style.boxSizing = 'border-box';
+            stepperContainer.style.position = 'relative';
 
-            // Create step buttons with lines between them
+            // Create connector lines first (background)
+            const connectorLine = document.createElement('div');
+            connectorLine.className = 'connector-line';
+            connectorLine.style.position = 'absolute';
+            connectorLine.style.top = '18px'; // Center of the circles
+            connectorLine.style.left = '10px';
+            connectorLine.style.right = '10px';
+            connectorLine.style.height = '2px';
+            connectorLine.style.backgroundColor = '#D9D9D9';
+            connectorLine.style.zIndex = '1';
+            stepperContainer.appendChild(connectorLine);
+
+            // Create a holder div for the circles
+            const circlesContainer = document.createElement('div');
+            circlesContainer.className = 'circles-container';
+            circlesContainer.style.display = 'flex';
+            circlesContainer.style.width = '100%';
+            circlesContainer.style.position = 'relative';
+            circlesContainer.style.justifyContent = 'space-between';
+            circlesContainer.style.zIndex = '2';
+            stepperContainer.appendChild(circlesContainer);
+
+            // Store references to the circles
+            const stepCircles = [];
+
+            // Create step buttons (circles)
             toolOrder.forEach((tool, index) => {
+                // Create the circle wrapper for positioning
+                const circleWrapper = document.createElement('div');
+                circleWrapper.className = 'circle-wrapper';
+                circleWrapper.dataset.tool = tool;
+                circleWrapper.dataset.index = index;
+                circleWrapper.style.display = 'flex';
+                circleWrapper.style.justifyContent = 'center';
+                circleWrapper.style.position = 'relative';
+                circleWrapper.style.width = '36px';
+
                 // Create the circle
                 const step = document.createElement('div');
                 step.className = 'step-indicator';
@@ -1460,22 +1519,34 @@
                 step.style.zIndex = '2';
                 step.textContent = index + 1;
 
-                stepperContainer.appendChild(step);
-
-                // Add connector line if not the last step
-                if (index < toolOrder.length - 1) {
-                    const line = document.createElement('div');
-                    line.className = 'step-line';
-                    line.style.flex = '1';
-                    line.style.height = '2px';
-                    line.style.backgroundColor = index < currentStepIndex ? '#14708E' : '#D9D9D9';
-                    line.style.zIndex = '1';
-
-                    stepperContainer.appendChild(line);
-                }
+                circleWrapper.appendChild(step);
+                circlesContainer.appendChild(circleWrapper);
+                stepCircles.push({ wrapper: circleWrapper, circle: step, tool });
             });
 
+            // Add completed line (foreground) after circles are added
+            if (currentStepIndex > 0 && stepCircles.length > 1) {
+                // Get the positions of the first and current step circles
+                const firstCircle = stepCircles[0].wrapper;
+                const currentCircle = stepCircles[Math.min(currentStepIndex, stepCircles.length - 1)].wrapper;
+
+                const completedLine = document.createElement('div');
+                completedLine.className = 'completed-line';
+                completedLine.style.position = 'absolute';
+                completedLine.style.top = '18px'; // Center of the circles
+                completedLine.style.left = '28px'; // Start at the center of first circle
+                completedLine.style.height = '2px';
+                completedLine.style.backgroundColor = '#14708E';
+                completedLine.style.zIndex = '1';
+
+                // Width will be set later when buttons are positioned
+                stepperContainer.appendChild(completedLine);
+                stepperContainer.completedLine = completedLine;
+            }
+
             container.appendChild(stepperContainer);
+            container.stepperContainer = stepperContainer;
+            container.stepCircles = stepCircles;
         };
 
         // Extract the repeated code into a function for populating the toolbox
@@ -1736,6 +1807,7 @@
             buttonContainer.style.overflowY = 'hidden';
             buttonContainer.style.width = '100%';
             buttonContainer.style.padding = '0 10px';
+            buttonContainer.style.position = 'relative';
 
             // Create a collapsible button for additional tools
             let additionalToolsToggle = null;
@@ -1752,28 +1824,60 @@
 
                     // Expand the button horizontally and show the step description
                     button.style.width = 'auto';
-                    button.style.maxWidth = '300px'; // Set a reasonable max width
+                    button.style.maxWidth = '350px'; // Set a reasonable max width
                     button.style.border = '2px solid #26C9FF';
                     button.style.boxShadow = '0 0 8px rgba(38, 201, 255, 0.6)';
                     button.style.backgroundColor = '#e6f7ff';
 
-                    // Add step description
-                    if (stepDescriptions && stepDescriptions[toolIndex]) {
-                        const descriptionElement = document.createElement('div');
-                        descriptionElement.className = 'step-description';
-                        descriptionElement.textContent = stepDescriptions[toolIndex];
-                        descriptionElement.style.fontSize = '12px';
-                        descriptionElement.style.color = '#14708E';
-                        descriptionElement.style.marginTop = '5px';
-                        descriptionElement.style.textAlign = 'center';
-                        descriptionElement.style.padding = '0 10px';
+                    // Completely restructure the button content for the expanded view
+                    const originalContent = button.querySelector('.button-content');
+                    if (originalContent && stepDescriptions && stepDescriptions[toolIndex]) {
+                        // Save the original content
+                        const clonedContent = originalContent.cloneNode(true);
 
-                        const buttonContent = button.querySelector('.button-content');
-                        if (buttonContent) {
-                            buttonContent.appendChild(descriptionElement);
-                        } else {
-                            button.appendChild(descriptionElement);
-                        }
+                        // Clear and set up horizontal layout
+                        button.innerHTML = '';
+                        button.style.display = 'flex';
+                        button.style.flexDirection = 'row';
+                        button.style.alignItems = 'center';
+                        button.style.justifyContent = 'flex-start';
+                        button.style.padding = '0 10px';
+
+                        // Left side content (original stacked icon and name)
+                        const leftSide = document.createElement('div');
+                        leftSide.className = 'button-content left-side';
+                        leftSide.style.display = 'flex';
+                        leftSide.style.flexDirection = 'column';
+                        leftSide.style.alignItems = 'center';
+                        leftSide.style.justifyContent = 'center';
+                        leftSide.style.minWidth = '85px';
+                        leftSide.style.height = '100%';
+                        leftSide.style.padding = '4px 6px';
+                        leftSide.appendChild(clonedContent);
+
+                        // Divider
+                        const divider = document.createElement('div');
+                        divider.className = 'vertical-divider';
+                        divider.style.width = '1px';
+                        divider.style.height = '60px';
+                        divider.style.backgroundColor = '#D9D9D9';
+                        divider.style.margin = '0 10px';
+
+                        // Right side content (step description)
+                        const rightSide = document.createElement('div');
+                        rightSide.className = 'step-description right-side';
+                        rightSide.style.flex = '1';
+                        rightSide.style.fontSize = '12px';
+                        rightSide.style.color = '#14708E';
+                        rightSide.style.textAlign = 'left';
+                        rightSide.style.padding = '0 10px';
+                        rightSide.style.maxWidth = '230px';
+                        rightSide.textContent = stepDescriptions[toolIndex];
+
+                        // Add all elements to the button
+                        button.appendChild(leftSide);
+                        button.appendChild(divider);
+                        button.appendChild(rightSide);
                     }
                 }
 
@@ -1851,6 +1955,59 @@
 
             toolbox.appendChild(buttonContainer);
 
+            // Position the stepper circles to align with the buttons
+            setTimeout(() => {
+                if (toolbox.stepCircles && toolbox.stepCircles.length > 0) {
+                    const buttonContainer = toolbox.querySelector('.button-container');
+                    if (buttonContainer) {
+                        // Get all necessary elements
+                        const stepperContainer = toolbox.stepperContainer;
+                        const stepCircles = toolbox.stepCircles;
+                        const completedLine = stepperContainer.completedLine;
+
+                        // Get positions of all buttons
+                        const buttonPositions = [];
+                        primaryButtons.forEach((button, index) => {
+                            const buttonName = button.getAttribute('data-button-name');
+                            const toolIndex = toolOrder.indexOf(buttonName);
+
+                            if (toolIndex >= 0) {
+                                const buttonRect = button.getBoundingClientRect();
+                                const center = buttonRect.left + (buttonRect.width / 2);
+                                buttonPositions[toolIndex] = center;
+                            }
+                        });
+
+                        // Ensure all buttons have positions
+                        if (buttonPositions.length === stepCircles.length) {
+                            const firstPos = buttonPositions[0];
+
+                            // Now position each circle directly above its button
+                            stepCircles.forEach((item, index) => {
+                                const wrapper = item.wrapper;
+                                const buttonCenter = buttonPositions[index];
+
+                                if (buttonCenter) {
+                                    const containerRect = stepperContainer.getBoundingClientRect();
+                                    const leftOffset = buttonCenter - containerRect.left;
+
+                                    // Position wrapper to match the button center
+                                    wrapper.style.position = 'absolute';
+                                    wrapper.style.left = `${leftOffset}px`;
+                                    wrapper.style.transform = 'translateX(-50%)';
+                                }
+                            });
+
+                            // Position the completed line
+                            if (completedLine && currentStepIndex > 0) {
+                                const currentPos = buttonPositions[currentStepIndex];
+                                completedLine.style.width = `${currentPos - firstPos}px`;
+                            }
+                        }
+                    }
+                }
+            }, 300); // Allow time for buttons to render
+
             // Call the verification function after everything is set up
             setTimeout(verifyToolNameMatching, 2000);
 
@@ -1868,11 +2025,16 @@
 
             // Set a new timeout for refresh (300ms delay to ensure UI has updated)
             refreshTimeout = setTimeout(() => {
-                if (smartToolbox && smartToolbox.style.display !== "none" && targetDiv) {
+                if (smartToolbox && targetDiv) {
                     console.log("Refreshing toolbox...");
                     populateSmartToolbox(smartToolbox, targetDiv);
                 }
             }, 300);
+        };
+
+        // Set up window resize handler to maintain stepper alignment
+        const handleResize = () => {
+            scheduleToolboxRefresh();
         };
 
         // Function to observe app interactions and refresh toolbox
@@ -1961,7 +2123,7 @@
             };
 
             // listen for window resize events
-            window.addEventListener("resize", updateSmartToolboxSize);
+            window.addEventListener("resize", handleResize);
             updateSmartToolboxSize(); // run immediately on initialization
 
             // enable click-and-drag scrolling

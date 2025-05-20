@@ -1603,14 +1603,14 @@
             stepperContainer.className = 'stepper-container';
             stepperContainer.style.display = 'flex';
             stepperContainer.style.position = 'relative';
-            stepperContainer.style.marginBottom = '8px';
-            stepperContainer.style.padding = '10px 10px 0';
+            stepperContainer.style.marginBottom = '4px'; // REDUCED space between stepper and buttons
+            stepperContainer.style.padding = '0 10px'; // REDUCED padding on top from 10px to 0px
             stepperContainer.style.width = '100%';
             stepperContainer.style.boxSizing = 'border-box';
 
-            // Placeholder for the stepper's height
+            // Placeholder for the stepper's height - REDUCED from 36px to 30px
             const spacer = document.createElement('div');
-            spacer.style.height = '36px';
+            spacer.style.height = '30px';
             stepperContainer.appendChild(spacer);
 
             container.appendChild(stepperContainer);
@@ -1621,27 +1621,44 @@
             connectorLine.style.position = 'absolute';
             connectorLine.style.height = '2px';
             connectorLine.style.backgroundColor = '#D9D9D9';
-            connectorLine.style.top = '18px'; // Center of circles
+            connectorLine.style.top = '15px'; // ADJUSTED from 18px to 15px (center of circles)
             connectorLine.style.left = '20px'; // Start a bit indented
             connectorLine.style.right = '20px'; // End a bit indented
             stepperContainer.appendChild(connectorLine);
 
+            // Create CSS for smooth animations
+            if (!document.getElementById('stepper-animations')) {
+                const styleElement = document.createElement('style');
+                styleElement.id = 'stepper-animations';
+                styleElement.textContent = `
+                    .step-indicator {
+                        transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1) !important;
+                    }
+                    .step-connector.completed {
+                        transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                                    width 0.6s cubic-bezier(0.22, 1, 0.36, 1) !important;
+                    }
+                `;
+                document.head.appendChild(styleElement);
+            }
+
             // This function will be called after buttons are added to align step indicators with buttons
             return () => {
-                // Store old positions for animation reference
-                const stepPositions = new Map();
-                const existingSteps = stepperContainer.querySelectorAll('.step-indicator');
-                existingSteps.forEach(step => {
-                    const stepNum = parseInt(step.dataset.step);
-                    if (step.style.left) {
-                        stepPositions.set(stepNum, parseFloat(step.style.left));
-                    }
-                });
+                // Store old positions and elements to keep them in the DOM during transition
+                const oldStepElements = Array.from(stepperContainer.querySelectorAll('.step-indicator'));
+                const oldStepData = oldStepElements.map(elem => ({
+                    element: elem,
+                    step: parseInt(elem.dataset.step),
+                    left: parseFloat(elem.style.left) || 0
+                }));
 
-                // Clear any previous step indicators
-                existingSteps.forEach(elem => elem.remove());
-                const existingConnectors = stepperContainer.querySelectorAll('.step-connector:not(.main-connector)');
-                existingConnectors.forEach(elem => elem.remove());
+                const oldConnectorElements = Array.from(stepperContainer.querySelectorAll('.step-connector:not(.main-connector)'));
+                oldConnectorElements.forEach(elem => {
+                    elem.style.opacity = "0";
+                    setTimeout(() => {
+                        if (elem.parentNode) elem.parentNode.removeChild(elem);
+                    }, 600); // Remove after transition completes
+                });
 
                 // Get button positions from the button container
                 const buttons = buttonContainer.querySelectorAll('[data-button-name]');
@@ -1659,89 +1676,113 @@
                 // Sort by tool index to ensure consistent left-to-right ordering
                 const sortedIndices = Array.from(buttonsByToolIndex.keys()).sort((a, b) => a - b);
 
+                // Track new step positions for connecting lines
+                const stepPositions = [];
+
                 // Now add step indicators directly attached to each button IN ORDER
                 sortedIndices.forEach((toolIndex, displayIndex) => {
                     const button = buttonsByToolIndex.get(toolIndex);
                     if (!button) return;
 
-                    // Create step indicator
-                    const step = document.createElement('div');
-                    step.className = 'step-indicator';
-                    step.dataset.step = toolIndex + 1; // 1-based for display
-                    step.textContent = toolIndex + 1;
-
-                    // Style the step indicator
-                    step.style.width = '36px';
-                    step.style.height = '36px';
-                    step.style.borderRadius = '50%';
-                    step.style.backgroundColor = toolIndex <= currentStepIndex ? '#14708E' : '#D9D9D9';
-                    step.style.color = 'white';
-                    step.style.display = 'flex';
-                    step.style.alignItems = 'center';
-                    step.style.justifyContent = 'center';
-                    step.style.fontWeight = 'bold';
-                    step.style.fontSize = '16px';
-                    step.style.fontFamily = "'Inter', sans-serif";
-                    step.style.position = 'absolute';
-                    step.style.zIndex = '2';
-
-                    // Get button measurements for centering
+                    // Get measurements for this position
                     const buttonRect = button.getBoundingClientRect();
                     const containerRect = buttonContainer.getBoundingClientRect();
-
-                    // Calculate horizontal center position of the button relative to container
                     const buttonLeft = buttonRect.left - containerRect.left;
                     const buttonCenter = buttonLeft + (buttonRect.width / 2);
 
-                    // Setup for animation - if we have old position, animate from there to here
-                    if (stepPositions.has(toolIndex + 1)) {
-                        const oldLeft = stepPositions.get(toolIndex + 1);
+                    // Check if we have an existing element for this step
+                    const existingElemData = oldStepData.find(data => data.step === toolIndex + 1);
+                    let step;
 
-                        // Set initial position off-screen (for animation)
-                        step.style.left = `${oldLeft}px`;
-                        step.style.top = '0';
-                        step.style.transition = 'left 0.4s ease-in-out';
+                    if (existingElemData) {
+                        // Update existing element instead of creating a new one
+                        step = existingElemData.element;
+                        // Remove from oldStepData so we don't remove it later
+                        oldStepData.splice(oldStepData.indexOf(existingElemData), 1);
 
-                        // Append to DOM before animation
-                        stepperContainer.appendChild(step);
+                        // Update styling if needed
+                        step.style.backgroundColor = toolIndex <= currentStepIndex ? '#14708E' : '#D9D9D9';
 
-                        // Force reflow to ensure transition works
-                        step.offsetHeight;
-
-                        // Apply new position
-                        step.style.left = `${buttonCenter - 18}px`;
+                        // Animate to new position
+                        step.style.left = `${buttonCenter - 15}px`; // 15px is half of the step width
                     } else {
-                        // No previous position, just place directly
-                        step.style.left = `${buttonCenter - 18}px`;
+                        // Create a new step indicator
+                        step = document.createElement('div');
+                        step.className = 'step-indicator';
+                        step.dataset.step = toolIndex + 1; // 1-based for display
+                        step.textContent = toolIndex + 1;
+
+                        // Style the step indicator
+                        step.style.width = '30px'; // REDUCED from 36px to 30px
+                        step.style.height = '30px'; // REDUCED from 36px to 30px
+                        step.style.borderRadius = '50%';
+                        step.style.backgroundColor = toolIndex <= currentStepIndex ? '#14708E' : '#D9D9D9';
+                        step.style.color = 'white';
+                        step.style.display = 'flex';
+                        step.style.alignItems = 'center';
+                        step.style.justifyContent = 'center';
+                        step.style.fontWeight = 'bold';
+                        step.style.fontSize = '14px'; // REDUCED from 16px to 14px
+                        step.style.fontFamily = "'Inter', sans-serif";
+                        step.style.position = 'absolute';
+                        step.style.zIndex = '2';
+                        step.style.opacity = '0'; // Start invisible for fade-in
+
+                        // Position off-screen initially
+                        step.style.left = `${buttonCenter - 15 - 50}px`; // Slide in from left
                         step.style.top = '0';
+
                         stepperContainer.appendChild(step);
+
+                        // Force reflow then animate in
+                        step.offsetHeight; // Force reflow
+                        step.style.opacity = '1';
+                        step.style.left = `${buttonCenter - 15}px`;
                     }
 
-                    // Add connecting lines for completed steps
-                    if (displayIndex > 0) {
-                        const prevToolIndex = sortedIndices[displayIndex - 1];
-                        const prevButton = buttonsByToolIndex.get(prevToolIndex);
-
-                        if (prevButton) {
-                            const prevButtonRect = prevButton.getBoundingClientRect();
-                            const prevButtonLeft = prevButtonRect.left - containerRect.left;
-                            const prevButtonCenter = prevButtonLeft + (prevButtonRect.width / 2);
-
-                            const completedLine = document.createElement('div');
-                            completedLine.className = 'step-connector completed';
-                            completedLine.style.position = 'absolute';
-                            completedLine.style.height = '2px';
-                            completedLine.style.backgroundColor = prevToolIndex <= currentStepIndex ? '#14708E' : '#D9D9D9';
-                            completedLine.style.top = '18px'; // Center of circles
-                            completedLine.style.left = `${prevButtonCenter}px`;
-                            completedLine.style.width = `${buttonCenter - prevButtonCenter}px`;
-                            completedLine.style.zIndex = '1';
-                            completedLine.style.transition = 'width 0.4s ease-in-out, left 0.4s ease-in-out';
-
-                            stepperContainer.appendChild(completedLine);
-                        }
-                    }
+                    // Store position data for connector lines
+                    stepPositions.push({
+                        toolIndex: toolIndex,
+                        center: buttonCenter,
+                        completed: toolIndex <= currentStepIndex
+                    });
                 });
+
+                // Remove any remaining old steps with fade-out
+                oldStepData.forEach(data => {
+                    data.element.style.opacity = "0";
+                    setTimeout(() => {
+                        if (data.element.parentNode) {
+                            data.element.parentNode.removeChild(data.element);
+                        }
+                    }, 600); // Remove after transition completes
+                });
+
+                // Sort positions to ensure correct order for drawing lines
+                stepPositions.sort((a, b) => a.toolIndex - b.toolIndex);
+
+                // Add connecting lines
+                for (let i = 1; i < stepPositions.length; i++) {
+                    const prev = stepPositions[i - 1];
+                    const curr = stepPositions[i];
+
+                    const completedLine = document.createElement('div');
+                    completedLine.className = 'step-connector completed';
+                    completedLine.style.position = 'absolute';
+                    completedLine.style.height = '2px';
+                    completedLine.style.backgroundColor = prev.completed ? '#14708E' : '#D9D9D9';
+                    completedLine.style.top = '15px'; // ADJUSTED to match main connector
+                    completedLine.style.left = `${prev.center}px`;
+                    completedLine.style.width = `${curr.center - prev.center}px`;
+                    completedLine.style.zIndex = '1';
+                    completedLine.style.opacity = '0'; // Start invisible
+
+                    stepperContainer.appendChild(completedLine);
+
+                    // Force reflow then animate in
+                    completedLine.offsetHeight; // Force reflow
+                    completedLine.style.opacity = '1';
+                }
             };
         };
 

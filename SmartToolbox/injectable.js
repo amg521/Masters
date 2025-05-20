@@ -965,23 +965,16 @@
 
                 .close-button {
                     position: absolute;
-                    top: 12px;
+                    top: 10px;
                     right: 12px;
-                    width: 24px;
-                    height: 24px;
                     cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 50%;
-                    background-color: #f0f0f0;
+                    font-size: 24px;
                     color: #666;
-                    font-size: 18px;
                     line-height: 1;
+                    background: none;
                 }
 
                 .close-button:hover {
-                    background-color: #e0e0e0;
                     color: #333;
                 }
 
@@ -1152,7 +1145,7 @@
             </style>
 
             <div class="container">
-                <div class="close-button">×</div>
+                <div class="close-button" style="position: absolute; top: 10px; right: 12px; cursor: pointer; font-size: 24px; color: #666; line-height: 1; background: none;">×</div>
                 <h1>Let AI personalize your toolbar</h1>
                 <p>Don't worry- the default toolbar will be untouched</p>
 
@@ -1512,10 +1505,13 @@
             let textWidth = 180; // base width
             if (stepDescriptions && stepDescriptions[toolIndex]) {
                 const textLength = stepDescriptions[toolIndex].length;
-                if (textLength > 70) {
-                    textWidth = 250; // wider for long descriptions
-                } else if (textLength > 40) {
-                    textWidth = 220; // medium width for medium descriptions
+                const charPerLine = 35; // approximate characters per line based on font size
+                const lines = Math.ceil(textLength / charPerLine);
+                // Adjust width based on estimated lines to keep at max 3 lines
+                if (lines > 2) {
+                    textWidth = 300; // wider for longer text that would wrap to 3+ lines
+                } else if (lines > 1) {
+                    textWidth = 220; // medium width for 2 lines
                 }
             }
             button.style.maxWidth = `${textWidth + 120}px`; // add space for icon, divider, etc.
@@ -1538,10 +1534,15 @@
                 const divider = document.createElement('div');
                 divider.className = 'button-divider';
                 divider.style.width = '1px'; // ensure divider is thin
+                divider.style.minWidth = '1px'; // force minimum width
+                divider.style.maxWidth = '1px'; // force maximum width
                 divider.style.height = '60px';
                 divider.style.backgroundColor = '#ddd';
                 divider.style.margin = '0 10px';
+                divider.style.padding = '0'; // ensure no padding
                 divider.style.flexShrink = '0'; // prevent shrinking
+                divider.style.flexGrow = '0'; // prevent growing
+                divider.style.boxSizing = 'border-box'; // include borders in width calculation
                 button.appendChild(divider);
             }
 
@@ -1639,6 +1640,7 @@
                     step.style.fontFamily = "'Inter', sans-serif";
                     step.style.position = 'absolute';
                     step.style.zIndex = '2';
+                    step.style.transition = 'left 0.5s ease, top 0.5s ease'; // Add transition for position changes
 
                     // Get button measurements for centering
                     const buttonRect = button.getBoundingClientRect();
@@ -1668,6 +1670,7 @@
                         completedLine.style.left = `${prevButtonCenter}px`;
                         completedLine.style.width = `${buttonCenter - prevButtonCenter}px`;
                         completedLine.style.zIndex = '1';
+                        completedLine.style.transition = 'width 0.5s ease, left 0.5s ease'; // Add transitions
 
                         stepperContainer.appendChild(completedLine);
                     }
@@ -1971,7 +1974,7 @@
             // Create stepper above the button container
             const updateStepperPositions = createStepper(toolbox, toolOrder, buttonContainer);
 
-            // Add primary buttons to the toolbox
+            // Add primary buttons to the toolbox in correct order from left to right
             primaryButtons.forEach((button, index) => {
                 // If this button corresponds to the current step, expand it
                 if (index === currentStepIndex) {
@@ -2065,8 +2068,7 @@
 
             // Measure the height of the toolbox for adjusting sidebar positions
             setTimeout(() => {
-                toolboxHeight = toolbox.offsetHeight;
-                adjustSidebars(toolboxHeight);
+                adjustSidebars();
             }, 100);
 
             // Call the verification function after everything is set up
@@ -2098,8 +2100,8 @@
             const leftSidebar = document.getElementById('left-sidebar');
             const rightWrapper = document.getElementById('wrapper-right');
 
-            // Get the exact height of the smart toolbox
-            const actualHeight = height || (smartToolbox ? smartToolbox.offsetHeight : 0);
+            // Get the exact height of the smart toolbox using getBoundingClientRect for more precision
+            const actualHeight = height || (smartToolbox ? smartToolbox.getBoundingClientRect().height : 0);
 
             if (leftSidebar) {
                 leftSidebar.style.marginTop = `${actualHeight}px`;

@@ -1505,35 +1505,41 @@
             let textWidth = 0;
             if (stepDescriptions && stepDescriptions[toolIndex]) {
                 const description = stepDescriptions[toolIndex];
-                // Use different calculation approach based on actual text
+
+                // More accurate width calculation for exactly 3 lines max
                 const fontSize = 12; // font size in px
                 const avgCharWidth = fontSize * 0.6; // approximate character width in pixels
-                const maxCharsPerLine = 40; // want around 3 lines max
+                const charsPerLine = 35; // target characters per line
+                const maxLines = 3; // we want maximum 3 lines
+
+                // Calculate width needed for the text to fit in 3 lines
                 const totalChars = description.length;
+                const minCharsPerLine = Math.ceil(totalChars / maxLines);
 
-                // Calculate how many lines this text would take at different widths
-                const calculateLines = (width) => {
-                    const charsPerLine = Math.floor(width / avgCharWidth);
-                    return Math.ceil(totalChars / charsPerLine);
-                };
+                // Start with a minimum width, then increase if needed
+                textWidth = Math.max(180, minCharsPerLine * avgCharWidth);
 
-                // Find the right width that gives us about 3 lines
-                for (let width = 120; width <= 300; width += 10) {
-                    const lines = calculateLines(width);
-                    if (lines <= 3) {
-                        textWidth = width;
-                        break;
-                    }
+                // Cap width at a reasonable maximum
+                textWidth = Math.min(textWidth, 300);
+
+                // Simulate line breaks to verify line count
+                const estimatedLines = Math.ceil(totalChars / (textWidth / avgCharWidth));
+
+                // Log for debugging
+                console.log(`Text: "${description.substring(0, 20)}..."`);
+                console.log(`Length: ${totalChars} chars, Width: ${textWidth}px, Estimated lines: ${estimatedLines}`);
+
+                // Adjust if not within target (should be 2-3 lines)
+                if (estimatedLines > 3) {
+                    // Need more width to get to 3 lines
+                    textWidth = Math.ceil(totalChars / 3) * avgCharWidth;
+                    console.log(`Adjusted width to ${textWidth}px to target 3 lines`);
+                } else if (estimatedLines === 1 && textWidth > 180) {
+                    // Single line can use default minimum width
+                    textWidth = 180;
                 }
-
-                // If we couldn't find a good fit, use max width
-                if (textWidth === 0) {
-                    textWidth = 300;
-                }
-
-                console.log(`Calculated width for "${description.substring(0, 20)}...": ${textWidth}px, estimated lines: ${calculateLines(textWidth)}`);
             } else {
-                textWidth = 150; // default width if no description
+                textWidth = 180; // default width if no description
             }
 
             // Set the button width
@@ -1581,16 +1587,26 @@
                     description = description.charAt(0).toUpperCase() + description.slice(1);
                 }
 
+                // Create wrapper to center the description vertically
+                const descriptionWrapper = document.createElement('div');
+                descriptionWrapper.className = 'description-wrapper';
+                descriptionWrapper.style.display = 'flex';
+                descriptionWrapper.style.flexDirection = 'column';
+                descriptionWrapper.style.justifyContent = 'center'; // Center vertically
+                descriptionWrapper.style.height = '100%';
+                descriptionWrapper.style.width = `${textWidth}px`;
+
                 const descriptionElement = document.createElement('div');
                 descriptionElement.className = 'step-description';
                 descriptionElement.textContent = description;
                 descriptionElement.style.fontSize = '12px';
                 descriptionElement.style.color = '#14708E';
-                descriptionElement.style.width = `${textWidth}px`;
                 descriptionElement.style.padding = '5px';
                 descriptionElement.style.lineHeight = '1.4';
-                descriptionElement.style.transition = 'width 0.3s ease';
-                button.appendChild(descriptionElement);
+                descriptionElement.style.minHeight = '16px'; // Ensure it's always visible
+
+                descriptionWrapper.appendChild(descriptionElement);
+                button.appendChild(descriptionWrapper);
             }
 
             // Update the tracked expanded button
@@ -1615,6 +1631,9 @@
 
             container.appendChild(stepperContainer);
 
+            // Track previous step index for animation decisions
+            let previousStepIndex = currentStepIndex;
+
             // First create the connector line that spans the entire width
             const connectorLine = document.createElement('div');
             connectorLine.className = 'step-connector main-connector';
@@ -1626,38 +1645,21 @@
             connectorLine.style.right = '20px'; // End a bit indented
             stepperContainer.appendChild(connectorLine);
 
-            // Create CSS for smooth animations
-            if (!document.getElementById('stepper-animations')) {
-                const styleElement = document.createElement('style');
-                styleElement.id = 'stepper-animations';
-                styleElement.textContent = `
-                    .step-indicator {
-                        transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1) !important;
-                    }
-                    .step-connector.completed {
-                        transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1),
-                                    width 0.6s cubic-bezier(0.22, 1, 0.36, 1) !important;
-                    }
-                `;
-                document.head.appendChild(styleElement);
-            }
-
             // This function will be called after buttons are added to align step indicators with buttons
             return () => {
-                // Store old positions and elements to keep them in the DOM during transition
-                const oldStepElements = Array.from(stepperContainer.querySelectorAll('.step-indicator'));
-                const oldStepData = oldStepElements.map(elem => ({
-                    element: elem,
-                    step: parseInt(elem.dataset.step),
-                    left: parseFloat(elem.style.left) || 0
-                }));
+                // Check if the step index has changed - only animate if it has
+                const stepIndexChanged = previousStepIndex !== currentStepIndex;
 
-                const oldConnectorElements = Array.from(stepperContainer.querySelectorAll('.step-connector:not(.main-connector)'));
-                oldConnectorElements.forEach(elem => {
-                    elem.style.opacity = "0";
-                    setTimeout(() => {
-                        if (elem.parentNode) elem.parentNode.removeChild(elem);
-                    }, 600); // Remove after transition completes
+                // Find existing step elements to preserve them
+                const existingSteps = Array.from(stepperContainer.querySelectorAll('.step-indicator'));
+                const stepElements = new Map();
+
+                existingSteps.forEach(elem => {
+                    const stepNum = parseInt(elem.dataset.step);
+                    stepElements.set(stepNum, {
+                        element: elem,
+                        left: parseFloat(elem.style.left) || 0
+                    });
                 });
 
                 // Get button positions from the button container
@@ -1676,113 +1678,113 @@
                 // Sort by tool index to ensure consistent left-to-right ordering
                 const sortedIndices = Array.from(buttonsByToolIndex.keys()).sort((a, b) => a - b);
 
-                // Track new step positions for connecting lines
-                const stepPositions = [];
-
-                // Now add step indicators directly attached to each button IN ORDER
-                sortedIndices.forEach((toolIndex, displayIndex) => {
+                // First pass: Calculate all the positions without updating elements
+                const positionData = sortedIndices.map((toolIndex, displayIndex) => {
                     const button = buttonsByToolIndex.get(toolIndex);
-                    if (!button) return;
+                    if (!button) return null;
 
-                    // Get measurements for this position
                     const buttonRect = button.getBoundingClientRect();
                     const containerRect = buttonContainer.getBoundingClientRect();
                     const buttonLeft = buttonRect.left - containerRect.left;
                     const buttonCenter = buttonLeft + (buttonRect.width / 2);
 
-                    // Check if we have an existing element for this step
-                    const existingElemData = oldStepData.find(data => data.step === toolIndex + 1);
-                    let step;
-
-                    if (existingElemData) {
-                        // Update existing element instead of creating a new one
-                        step = existingElemData.element;
-                        // Remove from oldStepData so we don't remove it later
-                        oldStepData.splice(oldStepData.indexOf(existingElemData), 1);
-
-                        // Update styling if needed
-                        step.style.backgroundColor = toolIndex <= currentStepIndex ? '#14708E' : '#D9D9D9';
-
-                        // Animate to new position
-                        step.style.left = `${buttonCenter - 15}px`; // 15px is half of the step width
-                    } else {
-                        // Create a new step indicator
-                        step = document.createElement('div');
-                        step.className = 'step-indicator';
-                        step.dataset.step = toolIndex + 1; // 1-based for display
-                        step.textContent = toolIndex + 1;
-
-                        // Style the step indicator
-                        step.style.width = '30px'; // REDUCED from 36px to 30px
-                        step.style.height = '30px'; // REDUCED from 36px to 30px
-                        step.style.borderRadius = '50%';
-                        step.style.backgroundColor = toolIndex <= currentStepIndex ? '#14708E' : '#D9D9D9';
-                        step.style.color = 'white';
-                        step.style.display = 'flex';
-                        step.style.alignItems = 'center';
-                        step.style.justifyContent = 'center';
-                        step.style.fontWeight = 'bold';
-                        step.style.fontSize = '14px'; // REDUCED from 16px to 14px
-                        step.style.fontFamily = "'Inter', sans-serif";
-                        step.style.position = 'absolute';
-                        step.style.zIndex = '2';
-                        step.style.opacity = '0'; // Start invisible for fade-in
-
-                        // Position off-screen initially
-                        step.style.left = `${buttonCenter - 15 - 50}px`; // Slide in from left
-                        step.style.top = '0';
-
-                        stepperContainer.appendChild(step);
-
-                        // Force reflow then animate in
-                        step.offsetHeight; // Force reflow
-                        step.style.opacity = '1';
-                        step.style.left = `${buttonCenter - 15}px`;
-                    }
-
-                    // Store position data for connector lines
-                    stepPositions.push({
-                        toolIndex: toolIndex,
-                        center: buttonCenter,
+                    return {
+                        toolIndex,
+                        displayIndex,
+                        buttonCenter,
                         completed: toolIndex <= currentStepIndex
-                    });
+                    };
+                }).filter(Boolean);
+
+                // Handle the connecting lines first (they go underneath the circles)
+                const existingConnectors = stepperContainer.querySelectorAll('.step-connector:not(.main-connector)');
+                existingConnectors.forEach(elem => {
+                    elem.parentNode.removeChild(elem);
                 });
 
-                // Remove any remaining old steps with fade-out
-                oldStepData.forEach(data => {
-                    data.element.style.opacity = "0";
-                    setTimeout(() => {
-                        if (data.element.parentNode) {
-                            data.element.parentNode.removeChild(data.element);
-                        }
-                    }, 600); // Remove after transition completes
-                });
-
-                // Sort positions to ensure correct order for drawing lines
-                stepPositions.sort((a, b) => a.toolIndex - b.toolIndex);
-
-                // Add connecting lines
-                for (let i = 1; i < stepPositions.length; i++) {
-                    const prev = stepPositions[i - 1];
-                    const curr = stepPositions[i];
+                // Add connecting lines in their final positions
+                for (let i = 1; i < positionData.length; i++) {
+                    const prev = positionData[i - 1];
+                    const curr = positionData[i];
 
                     const completedLine = document.createElement('div');
                     completedLine.className = 'step-connector completed';
                     completedLine.style.position = 'absolute';
                     completedLine.style.height = '2px';
                     completedLine.style.backgroundColor = prev.completed ? '#14708E' : '#D9D9D9';
-                    completedLine.style.top = '15px'; // ADJUSTED to match main connector
-                    completedLine.style.left = `${prev.center}px`;
-                    completedLine.style.width = `${curr.center - prev.center}px`;
+                    completedLine.style.top = '15px';
+                    completedLine.style.left = `${prev.buttonCenter}px`;
+                    completedLine.style.width = `${curr.buttonCenter - prev.buttonCenter}px`;
                     completedLine.style.zIndex = '1';
-                    completedLine.style.opacity = '0'; // Start invisible
 
                     stepperContainer.appendChild(completedLine);
-
-                    // Force reflow then animate in
-                    completedLine.offsetHeight; // Force reflow
-                    completedLine.style.opacity = '1';
                 }
+
+                // Second pass: Update or create all step elements
+                positionData.forEach(data => {
+                    const existingData = stepElements.get(data.toolIndex + 1);
+
+                    // Determine if this specific step should animate
+                    const shouldAnimate = stepIndexChanged &&
+                                        (data.toolIndex === currentStepIndex ||
+                                         data.toolIndex === previousStepIndex);
+
+                    // Create or update the step indicator
+                    let step;
+                    if (existingData) {
+                        // Use existing element
+                        step = existingData.element;
+                        stepElements.delete(data.toolIndex + 1); // Remove from map
+
+                        // Update color based on current status
+                        step.style.backgroundColor = data.completed ? '#14708E' : '#D9D9D9';
+
+                        if (shouldAnimate) {
+                            // Animated transition to new position
+                            step.style.transition = 'left 0.5s ease-in-out';
+                            step.style.left = `${data.buttonCenter - 15}px`;
+                        } else {
+                            // Immediate position update
+                            step.style.transition = 'none';
+                            step.style.left = `${data.buttonCenter - 15}px`;
+                        }
+                    } else {
+                        // Create new element
+                        step = document.createElement('div');
+                        step.className = 'step-indicator';
+                        step.dataset.step = data.toolIndex + 1;
+                        step.textContent = data.toolIndex + 1;
+
+                        // Style
+                        step.style.width = '30px';
+                        step.style.height = '30px';
+                        step.style.borderRadius = '50%';
+                        step.style.backgroundColor = data.completed ? '#14708E' : '#D9D9D9';
+                        step.style.color = 'white';
+                        step.style.display = 'flex';
+                        step.style.alignItems = 'center';
+                        step.style.justifyContent = 'center';
+                        step.style.fontWeight = 'bold';
+                        step.style.fontSize = '14px';
+                        step.style.fontFamily = "'Inter', sans-serif";
+                        step.style.position = 'absolute';
+                        step.style.zIndex = '2';
+                        step.style.top = '0';
+
+                        // Position immediately
+                        step.style.left = `${data.buttonCenter - 15}px`;
+
+                        stepperContainer.appendChild(step);
+                    }
+                });
+
+                // Remove any remaining old steps
+                stepElements.forEach(data => {
+                    stepperContainer.removeChild(data.element);
+                });
+
+                // Update the previous step index for next comparison
+                previousStepIndex = currentStepIndex;
             };
         };
 
@@ -1868,6 +1870,10 @@
                                 clonedLabel.style.opacity = "1";
                                 clonedLabel.style.transition = "none";
                                 clonedLabel.style.paddingTop = "6px";
+                                clonedLabel.style.whiteSpace = "nowrap"; // Prevent text wrapping in button name
+                                clonedLabel.style.overflow = "hidden";
+                                clonedLabel.style.textOverflow = "ellipsis";
+                                clonedLabel.style.maxWidth = "80px"; // Prevent excessively long button names
                             }
 
                             clonedDropdownItem.innerHTML = "";

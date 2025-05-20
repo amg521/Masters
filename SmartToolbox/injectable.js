@@ -1500,21 +1500,47 @@
 
             // Apply expanded styling
             button.classList.add('current-tool');
-            button.style.width = 'auto';
-            // Calculate appropriate width based on text length
-            let textWidth = 180; // base width
+
+            // Calculate appropriate width based on text length for this specific button
+            let textWidth = 0;
             if (stepDescriptions && stepDescriptions[toolIndex]) {
-                const textLength = stepDescriptions[toolIndex].length;
-                const charPerLine = 35; // approximate characters per line based on font size
-                const lines = Math.ceil(textLength / charPerLine);
-                // Adjust width based on estimated lines to keep at max 3 lines
-                if (lines > 2) {
-                    textWidth = 300; // wider for longer text that would wrap to 3+ lines
-                } else if (lines > 1) {
-                    textWidth = 220; // medium width for 2 lines
+                const description = stepDescriptions[toolIndex];
+                // Use different calculation approach based on actual text
+                const fontSize = 12; // font size in px
+                const avgCharWidth = fontSize * 0.6; // approximate character width in pixels
+                const maxCharsPerLine = 40; // want around 3 lines max
+                const totalChars = description.length;
+
+                // Calculate how many lines this text would take at different widths
+                const calculateLines = (width) => {
+                    const charsPerLine = Math.floor(width / avgCharWidth);
+                    return Math.ceil(totalChars / charsPerLine);
+                };
+
+                // Find the right width that gives us about 3 lines
+                for (let width = 120; width <= 300; width += 10) {
+                    const lines = calculateLines(width);
+                    if (lines <= 3) {
+                        textWidth = width;
+                        break;
+                    }
                 }
+
+                // If we couldn't find a good fit, use max width
+                if (textWidth === 0) {
+                    textWidth = 300;
+                }
+
+                console.log(`Calculated width for "${description.substring(0, 20)}...": ${textWidth}px, estimated lines: ${calculateLines(textWidth)}`);
+            } else {
+                textWidth = 150; // default width if no description
             }
+
+            // Set the button width
+            button.style.width = 'auto';
             button.style.maxWidth = `${textWidth + 120}px`; // add space for icon, divider, etc.
+
+            // Other styling
             button.style.border = '2px solid #26C9FF';
             button.style.boxShadow = '0 0 8px rgba(38, 201, 255, 0.6)';
             button.style.backgroundColor = '#e6f7ff';
@@ -1522,6 +1548,7 @@
             button.style.flexDirection = 'row';
             button.style.alignItems = 'center';
             button.style.justifyContent = 'flex-start';
+            button.style.transition = 'all 0.3s ease'; // Ensure smooth transitions for all properties
 
             // Get the button content (which contains icon and label)
             const buttonContent = button.querySelector('.button-content');
@@ -1562,6 +1589,7 @@
                 descriptionElement.style.width = `${textWidth}px`;
                 descriptionElement.style.padding = '5px';
                 descriptionElement.style.lineHeight = '1.4';
+                descriptionElement.style.transition = 'width 0.3s ease';
                 button.appendChild(descriptionElement);
             }
 
@@ -1587,50 +1615,66 @@
 
             container.appendChild(stepperContainer);
 
+            // First create the connector line that spans the entire width
+            const connectorLine = document.createElement('div');
+            connectorLine.className = 'step-connector main-connector';
+            connectorLine.style.position = 'absolute';
+            connectorLine.style.height = '2px';
+            connectorLine.style.backgroundColor = '#D9D9D9';
+            connectorLine.style.top = '18px'; // Center of circles
+            connectorLine.style.left = '20px'; // Start a bit indented
+            connectorLine.style.right = '20px'; // End a bit indented
+            stepperContainer.appendChild(connectorLine);
+
             // This function will be called after buttons are added to align step indicators with buttons
             return () => {
+                // Store old positions for animation reference
+                const stepPositions = new Map();
+                const existingSteps = stepperContainer.querySelectorAll('.step-indicator');
+                existingSteps.forEach(step => {
+                    const stepNum = parseInt(step.dataset.step);
+                    if (step.style.left) {
+                        stepPositions.set(stepNum, parseFloat(step.style.left));
+                    }
+                });
+
                 // Clear any previous step indicators
-                const existingSteps = stepperContainer.querySelectorAll('.step-indicator, .step-connector');
                 existingSteps.forEach(elem => elem.remove());
+                const existingConnectors = stepperContainer.querySelectorAll('.step-connector:not(.main-connector)');
+                existingConnectors.forEach(elem => elem.remove());
 
                 // Get button positions from the button container
                 const buttons = buttonContainer.querySelectorAll('[data-button-name]');
-                const primaryButtonsArray = Array.from(buttons).filter(button => {
+
+                // Create a mapping of tool index to button
+                const buttonsByToolIndex = new Map();
+                Array.from(buttons).forEach(button => {
                     const buttonName = button.getAttribute('data-button-name');
-                    return toolOrder.includes(buttonName);
+                    const toolIndex = toolOrder.indexOf(buttonName);
+                    if (toolIndex >= 0) {
+                        buttonsByToolIndex.set(toolIndex, button);
+                    }
                 });
 
-                // Sort buttons based on tool order
-                primaryButtonsArray.sort((a, b) => {
-                    const aName = a.getAttribute('data-button-name');
-                    const bName = b.getAttribute('data-button-name');
-                    return toolOrder.indexOf(aName) - toolOrder.indexOf(bName);
-                });
+                // Sort by tool index to ensure consistent left-to-right ordering
+                const sortedIndices = Array.from(buttonsByToolIndex.keys()).sort((a, b) => a - b);
 
-                // First create the connector line that spans the entire width
-                const connectorLine = document.createElement('div');
-                connectorLine.className = 'step-connector main-connector';
-                connectorLine.style.position = 'absolute';
-                connectorLine.style.height = '2px';
-                connectorLine.style.backgroundColor = '#D9D9D9';
-                connectorLine.style.top = '18px'; // Center of circles
-                connectorLine.style.left = '20px'; // Start a bit indented
-                connectorLine.style.right = '20px'; // End a bit indented
-                stepperContainer.appendChild(connectorLine);
+                // Now add step indicators directly attached to each button IN ORDER
+                sortedIndices.forEach((toolIndex, displayIndex) => {
+                    const button = buttonsByToolIndex.get(toolIndex);
+                    if (!button) return;
 
-                // Now add step indicators directly attached to each button
-                primaryButtonsArray.forEach((button, index) => {
-                    // Create step indicator that will be attached to the button
+                    // Create step indicator
                     const step = document.createElement('div');
                     step.className = 'step-indicator';
-                    step.dataset.step = index + 1;
-                    step.textContent = index + 1;
+                    step.dataset.step = toolIndex + 1; // 1-based for display
+                    step.textContent = toolIndex + 1;
 
                     // Style the step indicator
                     step.style.width = '36px';
                     step.style.height = '36px';
                     step.style.borderRadius = '50%';
-                    step.style.backgroundColor = index <= currentStepIndex ? '#14708E' : '#D9D9D9';
+                    step.style.backgroundColor = toolIndex <= currentStepIndex ? '#14708E' : '#D9D9D9';
                     step.style.color = 'white';
                     step.style.display = 'flex';
                     step.style.alignItems = 'center';
@@ -1640,7 +1684,6 @@
                     step.style.fontFamily = "'Inter', sans-serif";
                     step.style.position = 'absolute';
                     step.style.zIndex = '2';
-                    step.style.transition = 'left 0.5s ease, top 0.5s ease'; // Add transition for position changes
 
                     // Get button measurements for centering
                     const buttonRect = button.getBoundingClientRect();
@@ -1649,30 +1692,54 @@
                     // Calculate horizontal center position of the button relative to container
                     const buttonLeft = buttonRect.left - containerRect.left;
                     const buttonCenter = buttonLeft + (buttonRect.width / 2);
-                    step.style.left = `${buttonCenter - 18}px`; // 18px is half of the step width to center
-                    step.style.top = '0';
 
-                    stepperContainer.appendChild(step);
+                    // Setup for animation - if we have old position, animate from there to here
+                    if (stepPositions.has(toolIndex + 1)) {
+                        const oldLeft = stepPositions.get(toolIndex + 1);
 
-                    // Color the connector line segments for completed steps
-                    if (index > 0 && index <= currentStepIndex) {
-                        const prevButton = primaryButtonsArray[index - 1];
-                        const prevButtonRect = prevButton.getBoundingClientRect();
-                        const prevButtonLeft = prevButtonRect.left - containerRect.left;
-                        const prevButtonCenter = prevButtonLeft + (prevButtonRect.width / 2);
+                        // Set initial position off-screen (for animation)
+                        step.style.left = `${oldLeft}px`;
+                        step.style.top = '0';
+                        step.style.transition = 'left 0.4s ease-in-out';
 
-                        const completedLine = document.createElement('div');
-                        completedLine.className = 'step-connector completed';
-                        completedLine.style.position = 'absolute';
-                        completedLine.style.height = '2px';
-                        completedLine.style.backgroundColor = '#14708E';
-                        completedLine.style.top = '18px'; // Center of circles
-                        completedLine.style.left = `${prevButtonCenter}px`;
-                        completedLine.style.width = `${buttonCenter - prevButtonCenter}px`;
-                        completedLine.style.zIndex = '1';
-                        completedLine.style.transition = 'width 0.5s ease, left 0.5s ease'; // Add transitions
+                        // Append to DOM before animation
+                        stepperContainer.appendChild(step);
 
-                        stepperContainer.appendChild(completedLine);
+                        // Force reflow to ensure transition works
+                        step.offsetHeight;
+
+                        // Apply new position
+                        step.style.left = `${buttonCenter - 18}px`;
+                    } else {
+                        // No previous position, just place directly
+                        step.style.left = `${buttonCenter - 18}px`;
+                        step.style.top = '0';
+                        stepperContainer.appendChild(step);
+                    }
+
+                    // Add connecting lines for completed steps
+                    if (displayIndex > 0) {
+                        const prevToolIndex = sortedIndices[displayIndex - 1];
+                        const prevButton = buttonsByToolIndex.get(prevToolIndex);
+
+                        if (prevButton) {
+                            const prevButtonRect = prevButton.getBoundingClientRect();
+                            const prevButtonLeft = prevButtonRect.left - containerRect.left;
+                            const prevButtonCenter = prevButtonLeft + (prevButtonRect.width / 2);
+
+                            const completedLine = document.createElement('div');
+                            completedLine.className = 'step-connector completed';
+                            completedLine.style.position = 'absolute';
+                            completedLine.style.height = '2px';
+                            completedLine.style.backgroundColor = prevToolIndex <= currentStepIndex ? '#14708E' : '#D9D9D9';
+                            completedLine.style.top = '18px'; // Center of circles
+                            completedLine.style.left = `${prevButtonCenter}px`;
+                            completedLine.style.width = `${buttonCenter - prevButtonCenter}px`;
+                            completedLine.style.zIndex = '1';
+                            completedLine.style.transition = 'width 0.4s ease-in-out, left 0.4s ease-in-out';
+
+                            stepperContainer.appendChild(completedLine);
+                        }
                     }
                 });
             };
@@ -1734,6 +1801,7 @@
 
                         // Store the button name consistently for all buttons
                         clonedDropdownItem.setAttribute('data-button-name', buttonName);
+                        clonedDropdownItem.setAttribute('data-position', toolOrder.indexOf(buttonName)); // Store position for sorting
                         clonedDropdownItem.buttonName = buttonName;
                         console.log(`Added dropdown button: ${buttonName}`);
 
@@ -1770,7 +1838,7 @@
                             clonedDropdownItem.style.justifyContent = "center";
                             clonedDropdownItem.style.border = "1px solid #ddd";
                             clonedDropdownItem.style.backgroundColor = "#f9f9f9";
-                            clonedDropdownItem.style.padding = "4px 6px";
+                            clonedDropdownItem.style.padding = "4px 16px"; // Add more padding (10px+ on each side)
                             clonedDropdownItem.style.margin = "2px";
                             // Ensure consistent width with box-sizing
                             clonedDropdownItem.style.minWidth = "85px"; // Minimum width
@@ -1829,6 +1897,7 @@
                     clonedChild.style.boxSizing = "border-box"; // Include padding in width calculation
                     clonedChild.style.border = "1px solid #ddd";
                     clonedChild.style.backgroundColor = "#f9f9f9";
+                    clonedChild.style.padding = "4px 16px"; // Add more padding (10px+ on each side)
                     clonedChild.style.margin = "2px";
                     clonedChild.style.display = "flex";
                     clonedChild.style.flexDirection = "column";
@@ -1858,6 +1927,7 @@
 
                     // Store the button name consistently for all buttons
                     clonedChild.setAttribute('data-button-name', buttonName);
+                    clonedChild.setAttribute('data-position', toolOrder.indexOf(buttonName)); // Store position for sorting
                     clonedChild.buttonName = buttonName;
                     console.log(`Added regular button: ${buttonName}`);
 
@@ -1923,7 +1993,7 @@
                 }
             });
 
-            // MODIFIED: Direct sorting by exact tool name matching without normalization
+            // MODIFIED: Direct sorting by toolOrder array index to ensure consistent ordering
             if (toolOrder.length > 0) {
                 console.log("Sorting buttons based on tool order:", toolOrder);
 
@@ -1934,51 +2004,31 @@
                     console.log(`Priority ${index}: "${toolName}"`);
                 });
 
-                // Sort primary buttons based on priority
+                // Sort primary buttons STRICTLY based on toolOrder
                 primaryButtons.sort((a, b) => {
-                    // Get the exact data-button-name
-                    const aName = a.getAttribute('data-button-name');
-                    const bName = b.getAttribute('data-button-name');
+                    const aIndex = toolOrder.indexOf(a.getAttribute('data-button-name'));
+                    const bIndex = toolOrder.indexOf(b.getAttribute('data-button-name'));
 
-                    console.log(`Comparing button names: "${aName}" vs "${bName}"`);
-
-                    // Get priority values
-                    const aPriority = priorityMap.get(aName);
-                    const bPriority = priorityMap.get(bName);
-
-                    console.log(`Priorities: ${aPriority} vs ${bPriority}`);
-
-                    if (aPriority === undefined && bPriority === undefined) {
-                        return 0;
-                    } else if (aPriority === undefined) {
-                        return 1; // b comes before a
-                    } else if (bPriority === undefined) {
-                        return -1; // a comes before b
-                    }
-
-                    return aPriority - bPriority;
+                    // Always ensure the natural order from toolOrder is maintained
+                    return aIndex - bIndex;
                 });
 
                 console.log("Primary buttons after sorting:",
                     primaryButtons.map(b => `"${b.getAttribute('data-button-name')}"`));
-
-                // Verify matching between priority map and data-button-name attributes
-                console.log("Verifying priority map against button attributes:");
-                primaryButtons.forEach(button => {
-                    const buttonName = button.getAttribute('data-button-name');
-                    const priority = priorityMap.get(buttonName);
-                    console.log(`Button: "${buttonName}", Priority: ${priority !== undefined ? priority : "Not found in priority map"}`);
-                });
             }
 
             // Create stepper above the button container
             const updateStepperPositions = createStepper(toolbox, toolOrder, buttonContainer);
 
-            // Add primary buttons to the toolbox in correct order from left to right
+            // Add primary buttons to the toolbox in correct order from left to right (ENFORCED ORDER)
             primaryButtons.forEach((button, index) => {
+                // Set a data attribute to remember this button's absolute index in the workflow
+                const toolIndex = toolOrder.indexOf(button.getAttribute('data-button-name'));
+                button.setAttribute('data-step-index', toolIndex);
+
                 // If this button corresponds to the current step, expand it
-                if (index === currentStepIndex) {
-                    expandButton(button, index);
+                if (toolIndex === currentStepIndex) {
+                    expandButton(button, toolIndex);
                 } else {
                     resetButtonToDefault(button);
                 }
@@ -2074,7 +2124,7 @@
             // Call the verification function after everything is set up
             setTimeout(verifyToolNameMatching, 2000);
 
-            console.log("All buttons added to the smart toolbox in recommended order.");
+            console.log("All buttons added to the smart toolbox in enforced order.");
         };
 
         // Function to schedule a toolbox refresh with debouncing
@@ -2100,8 +2150,35 @@
             const leftSidebar = document.getElementById('left-sidebar');
             const rightWrapper = document.getElementById('wrapper-right');
 
-            // Get the exact height of the smart toolbox using getBoundingClientRect for more precision
-            const actualHeight = height || (smartToolbox ? smartToolbox.getBoundingClientRect().height : 0);
+            // More precise height calculation to avoid excess space
+            let actualHeight = 0;
+
+            if (smartToolbox) {
+                // Get the actual content height, not including any padding
+                const buttonContainer = smartToolbox.querySelector('.button-container');
+                const stepperContainer = smartToolbox.querySelector('.stepper-container');
+
+                if (buttonContainer && stepperContainer) {
+                    // Get the actual button height (usually 85px)
+                    const buttonHeight = buttonContainer.querySelector('[data-button-name]')?.offsetHeight || 85;
+                    // Get the actual stepper height (usually 36px)
+                    const stepperHeight = stepperContainer.querySelector('.step-indicator')?.offsetHeight || 36;
+
+                    // Calculate total height including minimal padding (approx 15px)
+                    actualHeight = buttonHeight + stepperHeight + 15;
+                } else {
+                    // Fallback to direct height minus some extra padding
+                    const rect = smartToolbox.getBoundingClientRect();
+                    actualHeight = rect.height - 10; // Reduce by 10px to account for extra padding
+                }
+
+                // Apply a minimum height to prevent it from being too small
+                actualHeight = Math.max(actualHeight, 120);
+
+                console.log(`Calculated precise sidebar adjustment height: ${actualHeight}px`);
+            } else if (height) {
+                actualHeight = height;
+            }
 
             if (leftSidebar) {
                 leftSidebar.style.marginTop = `${actualHeight}px`;
@@ -2112,8 +2189,6 @@
                 rightWrapper.style.marginTop = `${actualHeight}px`;
                 rightWrapper.style.transition = 'margin-top 0.3s ease';
             }
-
-            console.log(`Adjusted sidebars by exact height: ${actualHeight}px`);
         };
 
         // Function to observe app interactions and refresh toolbox

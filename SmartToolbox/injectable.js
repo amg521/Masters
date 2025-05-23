@@ -1463,7 +1463,7 @@
                     expandButton(primaryButtons[currentStepIndex], currentStepIndex);
                 }
 
-                populateSmartToolbox(smartToolbox, targetDiv); // Refresh toolbox
+                populateSmartToolbox(smartToolbox, targetDiv, true); // Pass true to indicate this is from a button click
             }
         };
 
@@ -1641,12 +1641,11 @@
             connectorLine.style.height = '2px';
             connectorLine.style.backgroundColor = '#D9D9D9';
             connectorLine.style.top = '15px'; // ADJUSTED from 18px to 15px (center of circles)
-            connectorLine.style.left = '20px'; // Start a bit indented
-            connectorLine.style.right = '20px'; // End a bit indented
+            connectorLine.style.display = 'none'; // Hide initially - will show after calculating position
             stepperContainer.appendChild(connectorLine);
 
             // This function will be called after buttons are added to align step indicators with buttons
-            return () => {
+            return (isFromButtonClick = false) => {
                 // Check if the step index has changed - only animate if it has
                 const stepIndexChanged = previousStepIndex !== currentStepIndex;
 
@@ -1696,6 +1695,15 @@
                     };
                 }).filter(Boolean);
 
+                // Position the main connector line between first and last step
+                if (positionData.length > 0) {
+                    const firstStepCenter = positionData[0].buttonCenter;
+                    const lastStepCenter = positionData[positionData.length - 1].buttonCenter;
+                    connectorLine.style.left = `${firstStepCenter}px`;
+                    connectorLine.style.width = `${lastStepCenter - firstStepCenter}px`;
+                    connectorLine.style.display = 'block'; // Show the line now that position is set
+                }
+
                 // Handle the connecting lines first (they go underneath the circles)
                 const existingConnectors = stepperContainer.querySelectorAll('.step-connector:not(.main-connector)');
                 existingConnectors.forEach(elem => {
@@ -1724,8 +1732,8 @@
                 positionData.forEach(data => {
                     const existingData = stepElements.get(data.toolIndex + 1);
 
-                    // Determine if this specific step should animate
-                    const shouldAnimate = stepIndexChanged &&
+                    // Only animate if step index changed AND this is from a button click
+                    const shouldAnimate = isFromButtonClick && stepIndexChanged &&
                                         (data.toolIndex === currentStepIndex ||
                                          data.toolIndex === previousStepIndex);
 
@@ -1738,6 +1746,13 @@
 
                         // Update color based on current status
                         step.style.backgroundColor = data.completed ? '#14708E' : '#D9D9D9';
+
+                        // Update content - check mark for completed steps
+                        if (data.completed && data.toolIndex < currentStepIndex) {
+                            step.innerHTML = '✓'; // Use check mark
+                        } else {
+                            step.textContent = data.toolIndex + 1; // Use number
+                        }
 
                         if (shouldAnimate) {
                             // Animated transition to new position
@@ -1753,7 +1768,13 @@
                         step = document.createElement('div');
                         step.className = 'step-indicator';
                         step.dataset.step = data.toolIndex + 1;
-                        step.textContent = data.toolIndex + 1;
+
+                        // Set content - check mark for completed steps
+                        if (data.completed && data.toolIndex < currentStepIndex) {
+                            step.innerHTML = '✓'; // Use check mark
+                        } else {
+                            step.textContent = data.toolIndex + 1; // Use number
+                        }
 
                         // Style
                         step.style.width = '30px';
@@ -1789,7 +1810,7 @@
         };
 
         // Extract the repeated code into a function for populating the toolbox
-        const populateSmartToolbox = (toolbox, sourceDiv) => {
+        const populateSmartToolbox = (toolbox, sourceDiv, isFromButtonClick = false) => {
             toolbox.innerHTML = ""; // clear previous content
 
             // Container for buttons
@@ -2160,7 +2181,7 @@
 
             // Now that all buttons are in place, update the stepper positions
             setTimeout(() => {
-                updateStepperPositions();
+                updateStepperPositions(isFromButtonClick);
             }, 50);
 
             // Measure the height of the toolbox for adjusting sidebar positions
@@ -2242,10 +2263,13 @@
         const setupInteractionObservers = () => {
             console.log("Setting up interaction observers...");
 
-            // 1. Observe clicks on the entire app
+            // 1. Observe clicks on the entire app - ONLY REFRESH FOR NON-SMART-TOOLBOX CLICKS
             document.addEventListener('click', (e) => {
-                // Only refresh if the click is not on the smart toolbox itself
-                if (smartToolbox && !smartToolbox.contains(e.target)) {
+                // Check if the click is on a smart toolbox button
+                const isSmartToolboxButton = e.target.closest('#smart-toolbox [data-button-name]');
+
+                // Only refresh if the click is not on the smart toolbox itself AND not on a smart toolbox button
+                if (smartToolbox && !smartToolbox.contains(e.target) && !isSmartToolboxButton) {
                     scheduleToolboxRefresh();
                 }
             });

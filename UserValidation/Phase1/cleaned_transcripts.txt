@@ -1,0 +1,1313 @@
+Interviewee1.txt:
+Unknown Speaker  0:00  
+Hi there. Okay, hi, Axelle, are you okay with me recording your last Yes, I give consent. Great. Thank you. Okay, perfect. So can I start off just by asking you about your experience with CAD software? Yeah, and so I've been using CAD software probably for about four or five years now, okay, probably more than that. Maybe five, six years.
+
+Unknown Speaker  0:25  
+I started at school just learning how to do basic stuff, and then properly got into the thick of it, like understanding a bit more complex geometries and shapes and things like that.
+
+Unknown Speaker  0:38  
+While I got to university to study design engineering,
+
+Unknown Speaker  0:42  
+I mostly use CAD software, where it's initially 2d so sketch dimensions and then extruded, or, you know, lofted or somehow turned into 3d Okay. And have you had any
+
+Unknown Speaker  0:59  
+negative experiences with CAD software. Oh, my God, so many. It's such a challenge. Like having to
+
+Unknown Speaker  1:06  
+do a 2d drawing and then make that 3d and then if you want to change anything about the 3d thing, you have to change the 2d thing. Most likely and often that doesn't echo forward,
+
+Unknown Speaker  1:20  
+yeah, yeah, loads of other stuff. Just, do you mind telling me about something? So other stuff being like, sometimes it's difficult to understand where everything is, or how to do something difficult to visualize as well visualize what, visualize the 3d shape you want to create, and how to kind of create it, because obviously there's like three main tools that you can do. So after you sketch, you can either extrude, we then, after you've extruded, you can cut, so you can remove things, so make a hole, or, you know, chamfer, or
+
+Unknown Speaker  1:54  
+have, like a rolling ball edge on the sides. Or there's also the option to, you know, try and extrude in a specific way. And then, obviously, if you're trying to make more organic shapes, sometimes it's difficult, because you've got to be doing more like modeling.
+
+Unknown Speaker  2:10  
+So that's more involved in the sense that you're, like, actively changing a mesh, almost okay. And I find that quite difficult because, because you have a they get mentioned what you want in your head, but actually getting there takes so many steps. Yeah, and then being able to execute those steps in the right order is difficult, and have any particular tools or resources helped you
+
+Unknown Speaker  2:40  
+solve any of these issues that you've mentioned.
+
+Unknown Speaker  2:44  
+Not really okay. I think you just had like the solution is just to get better at using the software most of the time.
+
+Unknown Speaker  2:54  
+Yeah, the and as soon as you get better at using the software and better at practicing then usually you get better at it, yeah, I would argue that I recently started using, like Rhino and Grasshopper, which is obviously a parametric, technically CAD tool, yeah, which has been a very different approach, which I think has solved some issues in terms of, like, how to build, like, repeating patterns and things like that, yeah. But other than that, no, not really. And what is your favorite CAD tool and why? Just the one I'm most experienced with, really, so fusion, okay, because it's simple, yeah,
+
+Unknown Speaker  3:34  
+I find it really logical, yeah, like everything is where I know it should be and where I want it kind of, yeah, although sometimes it can be a bit too simple. Like, there are things that I want to do, sometimes they can't do, yeah. Like, for example, I was trying to today make a repeating pattern of holes.
+
+Unknown Speaker  3:52  
+And turns out you can't really do that without having specific like, sketch points, yeah,
+
+Unknown Speaker  3:59  
+yeah. Or, like, there's certain limitations, where, without this sketch geometry, you can't do certain other actions,
+
+Unknown Speaker  4:08  
+any CAD tools that you don't like, and why
+
+Unknown Speaker  4:12  
+I found solid works, like, just difficult to learn, okay? And like, very complex, like, it looks really unappealing visually, which means that you can't really intuitively know where everything is. I think the same is the true for every software. It's a really steep learning curve. Once you're over the steep learning curve, it's kind of fine, but the problem was, I did that with Fusion, yeah, and so now it's just the easiest and best for me to use with solid works. What do you think makes it difficult to learn? I think just the fact that there's so many different complexities. So like looking at the homepage, for example, you've got about 50 options of like buttons to click, whereas on fusion, you might only have like 15, and then within those 15 you can have dropdowns, and then within those you can have more dropdowns, which means that like.
+
+Unknown Speaker  5:00  
+It's almost like a folder structure for things to do, yeah, whereas with SolidWorks, if you're like, it's just all out in the open, like, spray it across the whole front page, okay, which and icons, like, you don't know what any of those icons mean, yeah, until you've used them and you're like, Okay, I know what that icon means. Okay, they're not intuitive, yeah. Yeah. And when you've tried using SolidWorks, and let's say you're looking for a particular tool, how would you go about that, usually I would just Google that. Okay, immediately I just Google it. Be like, how do I do this? Right? And then once I Googled it, then, yeah, okay. And what's the cost of doing that,
+
+Unknown Speaker  5:42  
+the cost time? Yeah, yeah. So it just, like, takes time for me to have to Google it, then read about it, learn it, and then go and do it a lot of the time. I also like YouTube stuff, so it's like, visuals is a bit quicker, yeah? But even then, like, it takes time to find the right video, right? And so since you say you prefer fusion 360
+
+Unknown Speaker  6:03  
+because I guess it's less complex to use in terms of the tool set, do you feel like that has any negative trade offs? Yeah, of course, like just the fact that I can't do certain things, yeah? So for example, my friend Yoshi is currently doing like, CFD
+
+Unknown Speaker  6:20  
+analysis, which is like, obviously, the flow of water or air or gas or whatever, liquids, yeah, over a certain material. And, you know, you can't just do that in fusion, you know, you can't stay in the same software, yeah? Whereas with solid work, because you get a lot of options to do those kind of things within the same environment, yeah? So I guess the trade off is the fact that you just can't stay in the same environment with Fusion, like you would export to answers for modeling, you would export to SolidWorks for CFD, you would, you know, yeah, got it. Okay, cool. Thanks. And have you ever used self CAD before?
+
+Unknown Speaker  6:56  
+No, okay, so this is based on self CAD.
+
+Unknown Speaker  7:01  
+Yeah, it's it should look like your regular CAD interface, but I'm not testing your CAD ability. I'm just testing how you go about
+
+Unknown Speaker  7:14  
+your process of making something. So if you could also talk your thoughts aloud. So tell me what you're looking for, what you're trying to do.
+
+Unknown Speaker  7:26  
+If you struggle like that's part of the process that's interesting to me. So yeah, take your time. And could you make for me a coffee cup?
+
+Unknown Speaker  7:35  
+Okay, I'm gonna actually record my screen. I
+
+Unknown Speaker  7:48  
+I didn't you could do it, though, I just do Control Shift five. Oh, really, that's probably faster. No, I didn't even know how to get to it. I only know the shortcut
+
+Unknown Speaker  7:58  
+record. Okay,
+
+Unknown Speaker  8:00  
+cool.
+
+Unknown Speaker  8:02  
+Okay, so I'm in here, yes.
+
+Unknown Speaker  8:16  
+And if you can tell me, like, what you're trying to do, what you're thinking. So I mean, because I use Fusion mostly. I was originally just thinking of drawing, like a 3d sketch and then extruding that, but I see that the software offers shapes which I've never seen before. Like, well, not that I've never seen before, but, like, fusion doesn't really do that. So I just saw a cylinder, and then what I was gonna do is, now I'm just going to see if I can draw a profile on this and then, like, cut it.
+
+Unknown Speaker  8:41  
+So yeah,
+
+Unknown Speaker  8:44  
+should I get the sizes right and stuff like that? Up to you. I'm not picky. Okay, I think, like, that's about right. So I'm just gonna, like, press Enter or default values, so at the top there should be nice as a tick, cool. So yeah, and then I was gonna
+
+Unknown Speaker  9:02  
+draw a sketch. No, not 3d sketch. Cancel. Draw a free hand, I guess, on this face.
+
+Unknown Speaker  9:09  
+Oh, wow. Okay, so it doesn't show you the middle of the shape. Interesting. Maybe it does circle.
+
+Unknown Speaker  9:17  
+Circle, Hmm,
+
+Unknown Speaker  9:20  
+interesting. Okay, no one said because right now I'm just trying to, like, learn what the interface is. Yeah, don't worry. There's a cross. Oh, yeah, cross. Okay, you sure? Yes. Okay, so let me see if we can do that again, or stitch scoop. What does this mean?
+
+Unknown Speaker  9:38  
+Feel like that's about, right?
+
+Unknown Speaker  9:40  
+Oh, at least two objects, no,
+
+Unknown Speaker  9:42  
+modify, add
+
+Unknown Speaker  9:45  
+sickness, no, we basically want to cut with profile.
+
+Unknown Speaker  9:50  
+Okay, I'm gonna go back to my original plan
+
+Unknown Speaker  9:54  
+of free hand.
+
+Unknown Speaker  9:57  
+Okay, so I'm.
+
+Unknown Speaker  10:00  
+I want to mark the center of the circle.
+
+Unknown Speaker  10:03  
+Okay, let me pan down.
+
+Unknown Speaker  10:07  
+It's really hard to know what to do. Hang on, yes. Okay, right. Oh, here we go.
+
+Unknown Speaker  10:14  
+Right. I'm somewhat in the middle. Now I want to draw on top of this. What's 3d sketch? No.
+
+Unknown Speaker  10:23  
+Okay, yeah,
+
+Unknown Speaker  10:28  
+this is gonna be a wonky coffee cup. Don't worry about it.
+
+Unknown Speaker  10:33  
+Makes it artsy.
+
+Unknown Speaker  10:38  
+I don't know if it's the blue line. Wait, what? Oh, that was a line. Okay, right? Ellipses,
+
+Unknown Speaker  10:51  
+so hard to learn on yourself. Yeah, I know I haven't I'm still learning with this. I think just circle. Let's just start with
+
+Unknown Speaker  11:00  
+that. I really don't like how it doesn't mark the middle of the shape.
+
+Unknown Speaker  11:04  
+Okay, I'm guessing somewhere about the Okay,
+
+Unknown Speaker  11:07  
+it's not that wonky. Okay, it's quite wonky. Sorry, okay,
+
+Unknown Speaker  11:13  
+like 56 is good, nice.
+
+Unknown Speaker  11:20  
+That's cool. I'm gonna save that now. Wait, what? Where is this drawing gone?
+
+Unknown Speaker  11:25  
+This is such an unusual software.
+
+Unknown Speaker  11:28  
+What's happening? The drawing automatically extruded itself?
+
+Unknown Speaker  11:33  
+What?
+
+Unknown Speaker  11:37  
+I can't lie. I'm confused. So
+
+Unknown Speaker  11:43  
+Okay, let's try that again.
+
+Unknown Speaker  11:53  
+I'm just
+
+Unknown Speaker  11:56  
+experimenting. Have fun so like whoa. Wall,
+
+Unknown Speaker  12:07  
+right? Okay, let's try that one more time. Last time, I promise circle somewhere in the middle,
+
+Unknown Speaker  12:18  
+that's fine.
+
+Unknown Speaker  12:20  
+Now don't extrude. I don't want it to extrude. Don't extrude. I'm
+
+Unknown Speaker  12:25  
+just gonna press enter. Can you
+
+Unknown Speaker  12:29  
+tell me that's not extruded?
+
+Unknown Speaker  12:33  
+No, it hasn't.
+
+Unknown Speaker  12:35  
+Okay, great. I think.
+
+Unknown Speaker  12:38  
+No, it has.
+
+Unknown Speaker  12:40  
+It's made it another shape.
+
+Unknown Speaker  12:44  
+What
+
+Unknown Speaker  12:49  
+I want help do?
+
+Unknown Speaker  12:52  
+You know what we should do? Stop all over again.
+
+Unknown Speaker  12:56  
+Okay, we're gonna start all over again. You know what? Because this whole cylinder cutting idea was a bad idea.
+
+Unknown Speaker  13:02  
+No. Delete, yes. Drawings, free hand. Okay, top right. Here we go. Can't go wrong now.
+
+Unknown Speaker  13:14  
+Circle doesn't even give you a point to put your thing in. Snap
+
+Unknown Speaker  13:20  
+to Point anybody? Okay, let's make this 50.
+
+Unknown Speaker  13:26  
+And then we're gonna make another circle inside of it.
+
+Unknown Speaker  13:30  
+45
+
+Unknown Speaker  13:31  
+alright. Excuse me. Do
+
+Unknown Speaker  13:43  
+Oh, no, I should have put in the ethics form this might
+
+Unknown Speaker  13:47  
+affect people's mental
+
+Unknown Speaker  13:51  
+health. No, no, you're not, I find it really confusing as well. That's why I've chosen this software. So it's not
+
+Unknown Speaker  14:01  
+my fault I'm just not understanding it? No, no, okay, right?
+
+Unknown Speaker  14:10  
+I genuinely just have no idea what to do. Okay, we can. We can stop and move on to the next part. Do I
+
+Unknown Speaker  14:18  
+My? My aim is to see how you navigate it. It's not to see a finalized coffee cup. So well, we didn't even get that. We got cylinder.
+
+Unknown Speaker  14:28  
+I actually like, like, I want to see you do it because I, like, have no idea why none of this is working. Are you sure you want to delete drawing? Okay, no, let's keep that. What if I did a drawing on top of this face
+
+Unknown Speaker  14:42  
+plane set? But then some other people really
+
+Unknown Speaker  14:54  
+required, like, don't know how to draw in this face. Do you get me drawing on the ground?
+
+Unknown Speaker  14:59  
+Yeah.
+
+Unknown Speaker  15:01  
+You. I love fusion, 360 in comparison. Okay, what? But, like, how do I do this?
+
+Unknown Speaker  15:08  
+I don't know how to do it. What do you do? Okay,
+
+Unknown Speaker  15:13  
+you give up. That's what you do. Yeah. I mean, here is my coffee cup.
+
+Unknown Speaker  15:19  
+Beautiful. You know what? It's artsy. I didn't say it couldn't be art, but
+
+Unknown Speaker  15:24  
+this is really frustrating.
+
+Unknown Speaker  15:28  
+Okay, yeah, okay, I don't know what to do. Cool. So I'm now gonna ask you about that experience.
+
+Unknown Speaker  15:35  
+I think you can tell how that experience went next. Yeah, can you please do anything more complex so on. I felt restricted and an inability to do anything. Yeah, it's interesting. I know how different, like, different softwares obviously work really different, right? So if you're trained on one specific software that follows one specific process, like sketching and then extruding, yeah, it's difficult to, like, go away from that. Yeah, it takes ages to learn a software. Like it took, like, I could not learn that, okay, for sure. Yeah, don't think I could learn that. Like, at least in the amount of time you gave me to develop a coffee cup. Yeah, I wouldn't need someone to teach me. Or at least, like, watch a video to see how you could, you know, cut, how you can draw on specific faces, yeah, things like that. Like, I needed a guidance or some teacher, okay, and
+
+Unknown Speaker  16:28  
+what do you think for you was the most painful part of that process? I like having to start again, okay? Like having a theory of how to do something, yeah, trying to do it, hitting a dead end, and then having to delete everything and start again, yeah? And then, like, have a different plan. And obviously it's good to have, like, different plans and like different ways of doing the same thing. Because, like, if you have, if, I guess, if a software is good, there must, there will be three ways to do the same thing, yeah,
+
+Unknown Speaker  16:58  
+what's frustrating is, like someone going down a path and not finding any way to do the thing they wanted to do, yeah, okay. And in terms of navigation, finding the tools you needed, how was that?
+
+Unknown Speaker  17:11  
+Pretty awful, okay? Like, mostly because I didn't know where, like, I didn't know what a lot of stuff meant. Like, it was easy to draw a shape, for example, yeah, but then, and it was easy to understand what draw meant, yeah, but like, then the next step would like be pick a face to draw on, or pick somewhere to draw. Yeah, that was never existed.
+
+Unknown Speaker  17:33  
+And, like, for example, I wanted to maybe, like, cut the shape. It's not obvious, like, how I would cut, okay, you know? Or how I would, like,
+
+Unknown Speaker  17:43  
+delete parts and stuff, okay? And also, the other thing that was interesting was, like, whenever I enter a shape, it went into the bottom right corner, and, like, my list of shapes that created, which I get that's, like, really good, but I didn't really know what I could do with that, yeah, like I couldn't click, I feel like I couldn't click on it, apart from, like, the tick box. So, okay, got it. Thank you. So now I'm gonna give you an adapted interface, and
+
+Unknown Speaker  18:10  
+we're gonna do the same thing. So make a coffee cup. Okay, cool, sorry.
+
+Unknown Speaker  18:15  
+And again, it's really not about seeing a coffee cup. It's just me seeing like your thoughts, how you go about the process?
+
+Unknown Speaker  18:24  
+Yeah, apologies to the impact of mental health. That's okay, okay. Oh, that's not loaded up. And I
+
+Unknown Speaker  18:29  
+don't think like,
+
+Unknown Speaker  18:31  
+I've only like, read through properly first kind of setting.
+
+Unknown Speaker  18:42  
+Something first kind of setting. So,
+
+Unknown Speaker  18:50  
+like almost six. Okay,
+
+Unknown Speaker  18:54  
+six. What would I like to build today? Yes, I love this already.
+
+Unknown Speaker  19:00  
+What makes you think you like it? Because I can make you just tell it what I want, like with English, rather than, you know, having to extract what I want from it, yeah. How can we best help you? I'd like to be guided through every step.
+
+Unknown Speaker  19:14  
+Yes, please.
+
+Unknown Speaker  19:20  
+So if you'd use this the first time around, would you have changed the way you would have used this?
+
+Unknown Speaker  19:30  
+Maybe I wouldn't have said if I want to be guided through every step, I think I realized I want to be guided through every step, because I literally couldn't do it okay.
+
+Unknown Speaker  19:38  
+Maybe I had a bit more belief in my card skills before trying, okay,
+
+Unknown Speaker  19:48  
+cool,
+
+Unknown Speaker  19:51  
+yeah, oh, this is way better.
+
+Unknown Speaker  19:56  
+What makes you say that? Because it's like literally telling you what to do.
+
+Unknown Speaker  20:00  
+I can save it as like, my name. It's just like idiot proof.
+
+Unknown Speaker  20:05  
+Use the cylinder tool to create the main body of the coffee cups at your radius in height according to your desired dimensions. Okay, that's kind of how I started last time. So here I'm also just gonna direct your attention to that button, which is new, which one the show smart toolbox. Yeah. Oh, interesting. Okay, use the cylinder tool. Okay, luckily, I know where the cylinder is, so I don't need to use, I think, smart toolbox
+
+Unknown Speaker  20:32  
+yet. Use the Scale tool to adjust the size of the cylinder. Yeah, no. Don't need to use the inset tool to create the inner wall of the coffee cup is
+
+Unknown Speaker  20:43  
+there? Insert tool here? No, okay, let me press yes, okay.
+
+Unknown Speaker  20:49  
+Easy
+
+Unknown Speaker  20:51  
+found. Insert.
+
+Unknown Speaker  20:56  
+Use the insert tool to create the inner wall of the coffee cup. Click on the top face
+
+Unknown Speaker  21:02  
+and insert it to create a smaller face inside.
+
+Unknown Speaker  21:07  
+Please select the face
+
+Unknown Speaker  21:10  
+like I am
+
+Unknown Speaker  21:14  
+trying to select this face
+
+Unknown Speaker  21:17  
+10,000
+
+Unknown Speaker  21:23  
+Step Three needs to get on my way right now. Oh yeah, sorry,
+
+Unknown Speaker  21:33  
+yeah, that's a bug. Maybe, if you change the size of the tag, yeah, it might
+
+Unknown Speaker  21:41  
+No, oh, no.
+
+Unknown Speaker  21:43  
+It's like, yeah, I can get rid of it. I'll just inspect element and delete it. Yeah, that's nice.
+
+Unknown Speaker  21:57  
+Again, three.
+
+Unknown Speaker  22:07  
+Okay? Because obviously, during my are you still doing your thing? Yeah, but don't worry.
+
+Unknown Speaker  22:12  
+Why didn't you sketch and revolt?
+
+Unknown Speaker  22:15  
+That felt like the number one goal here. Thanks, babe. I was like, I was like, I'm gonna
+
+Unknown Speaker  22:23  
+bring her a sketch. In
+
+Unknown Speaker  22:27  
+fact, my little ahead of change, pretty
+
+Unknown Speaker  22:31  
+good.
+
+Unknown Speaker  22:34  
+Is it yours for your
+
+Unknown Speaker  22:37  
+bike? Sorry, it's come back. Oh,
+
+Unknown Speaker  22:41  
+it comes back. So, okay, well, that is a good thing that I need to fix in.
+
+Unknown Speaker  22:51  
+Okay, wait, it's gonna come back. So wait presents up.
+
+Unknown Speaker  22:58  
+Oh, why
+
+Unknown Speaker  23:01  
+is that good? It happens. Okay,
+
+Unknown Speaker  23:09  
+so
+
+Unknown Speaker  23:11  
+for some reason, it's not letting
+
+Unknown Speaker  23:15  
+Oh,
+
+Unknown Speaker  23:19  
+yeah, sorry. I might have to fix this later.
+
+Unknown Speaker  23:25  
+That's
+
+Unknown Speaker  23:29  
+okay.
+
+Unknown Speaker  23:41  
+And then,
+
+Unknown Speaker  23:48  
+okay, so
+
+Unknown Speaker  23:50  
+I know I need to select the face to use insert tool. Click on the top face of the cylinder.
+
+Unknown Speaker  23:56  
+Every time I try and click on top face, I think you might have to do Save Changes.
+
+Unknown Speaker  24:02  
+I mean, it. I mean, operation completed. Excuse me,
+
+Unknown Speaker  24:07  
+I
+
+Unknown Speaker  24:08  
+think it's that, right, oh,
+
+Unknown Speaker  24:18  
+I see what is done. It's okay
+
+Unknown Speaker  24:40  
+to see details time or I was gonna add
+
+Unknown Speaker  24:49  
+pages from what we did
+
+Unknown Speaker  24:54  
+this year.
+
+Unknown Speaker  24:57  
+Okay, can you get rid of that thing? Yeah.
+
+Unknown Speaker  25:03  
+I don't know why. Won't let me select the please.
+
+Unknown Speaker  25:12  
+I think, I think it's because the cylinder has made it like geometric. Do you see these are all like different faces, but
+
+Unknown Speaker  25:19  
+I just want to select the top one. Yeah, I know you do a good
+
+Unknown Speaker  25:36  
+job like
+
+Unknown Speaker  25:39  
+suggesting
+
+Unknown Speaker  25:42  
+stuff. Yeah, we're gonna watch the tooltip. Probably
+
+Unknown Speaker  25:51  
+depends what work, but I'm assuming they have some work going on if they're offering it,
+
+Unknown Speaker  26:00  
+because it's kind
+
+Unknown Speaker  26:01  
+of like can't hear
+
+Unknown Speaker  26:07  
+it.
+
+Unknown Speaker  26:10  
+Insert
+
+Unknown Speaker  26:13  
+amount,
+
+Unknown Speaker  26:17  
+yes, no, again, it cuts the faces at once, modified, oh, like, drag selects,
+
+Unknown Speaker  26:26  
+okay, maybe that was it, okay. And
+
+Unknown Speaker  26:37  
+then I press Okay, and then
+
+Unknown Speaker  26:42  
+set. Box. And then,
+
+Unknown Speaker  26:45  
+okay, I think I get
+
+Unknown Speaker  26:47  
+it. Escape this.
+
+Unknown Speaker  26:50  
+I think I get it. So I need to drag, select,
+
+Unknown Speaker  27:02  
+discard, changes. Okay, let's go back
+
+Unknown Speaker  27:08  
+to Yeah, sorry. So yeah, I had a timeout element on this. I don't know why it's not working to
+
+Unknown Speaker  27:17  
+have it so it's like floating, yeah.
+
+Unknown Speaker  27:21  
+Okay. So insert.
+
+Unknown Speaker  27:24  
+Now I'm gonna try and drag select this top face. No.
+
+Unknown Speaker  27:33  
+Now I don't know how to do it. Let me know when you're ready to move on. Yeah, I don't know how to do it. Yeah, I can't, I can't click the top face, okay. Should be simplified. It's not like, okay, at least, I don't know if it is overall. How was this experience? It was definitely better from the start, okay. I think sometimes when you try and follow
+
+Unknown Speaker  27:57  
+instructions, like, all of the stress goes, yeah, like you literally can follow the instructions, yeah, the stress immediately comes back as soon as the instruction, like, kind of doesn't work, yes. So I think that's the main thing. So it would be nice if I could, like, talk to the AI maybe, and be like, I can't select the top face. Yeah. Can you help me figure out why? Okay?
+
+Unknown Speaker  28:17  
+Because otherwise it feels like quite one way, almost, right.
+
+Unknown Speaker  28:22  
+So every time I come across a road bump, I kind of have to solve it myself, yeah, whereas it feels like it's smart enough just to tell me, yeah,
+
+Unknown Speaker  28:29  
+that was the main thing, yeah. But apart from that, way better apart, and I especially liked that there's literally, like videos that will tell me how to do something, literally right there, yeah, don't have to go find it nothing. I literally just have to, like, press play, yeah,
+
+Unknown Speaker  28:47  
+which is so much better, yeah. And I know, like as a beginner, learning to use a new CAD software, this is exactly what I want, okay? And what were the,
+
+Unknown Speaker  28:59  
+what were the different features that you found the most helpful and why?
+
+Unknown Speaker  29:05  
+So I would say, first of all, I liked how it literally gave me a chronological order of things to do. Like, instead of just start a new project, it was like, you wanna start a new project. Would you wanna call it? Yeah, you know, I really liked that. I really liked the step by steps like breaking debt, breaking it down, that was super helpful.
+
+Unknown Speaker  29:25  
+I like how, like it would highlight the step when I'd done one like it could tell when I done something, okay,
+
+Unknown Speaker  29:33  
+I think something, and I really, really like the videos being embedded. Okay, that's pretty much it, yeah, yeah.
+
+Unknown Speaker  29:40  
+And had you noticed the smart toolbox button at the start? No, I didn't. Okay. I didn't. I didn't notice that it was like different to why it was before. But I think also
+
+Unknown Speaker  29:53  
+I would have eventually, probably, okay, yeah. I think what would have been good is if,
+
+Unknown Speaker  29:59  
+if the AI.
+
+Unknown Speaker  30:00  
+Action Plan, which you said it was like, note, use the Smart toolbox. Or when it said, like, use the inset tool, tell me where I can find it. Like, use the inset tool by clicking smart toolbox. Okay? Or, because then I would have, like, looked on the screen, I would have said smart toolbox that really popped down at me. Or, like, the first thing it says is, like, you can find all of the tools in the smart toolbox kind of thing, yeah.
+
+Transcribed by https://otter.ai
+
+---
+
+Interviewee2.txt:
+Speaker 1  0:00  
+Okay, do you consent to having all this recorded? Yes, okay, great, thanks. So this is a study that I'm doing based on usability of CAD platforms. So I'm going to start off just by asking a couple of questions about your experience with CAD. Then give you an interface, give you, like a short task to do, and then we'll discuss do another task and then survey. Okay, so none of this is like judging your ability to CAD. I'm more judging like the interface, okay, and how it responds to you. Sounds good. Okay. Have you used self CAD before?
+
+Speaker 2  0:39  
+Just CAD in general, self, CAD, self, CAD, what?
+
+Unknown Speaker  0:44  
+What's your experience with CAD? So
+
+Speaker 2  0:46  
+I started off with Fusion in high school, and then continued that mostly for uni. Did a bit of solid works, but I didn't like it, okay? And then during placement, I didn't want to shake exclusively. So there's the main packages of used I think. Okay.
+
+Speaker 1  0:59  
+And do you have any particularly negative experiences? Yeah,
+
+Speaker 2  1:04  
+SolidWorks is not intuitive. I don't think it's I don't think it works as well as the newer ones. On shape has been a particularly positive experience in contrast, and that's because it's intuitive. There's loads of keyboard shortcuts. They're displayed when you need them, and everything builds on everything else, and it's just really nice. Yeah, you can stay in one workflow and not change anything. SolidWorks. You have to switch between different workflows to do different things. Okay? So, yeah, yeah. I mean, the negative experiences are mostly based on things not being intuitive and not being in the same place, okay, not becoming apparent.
+
+Speaker 1  1:38  
+Okay? And what do you mean when you say things, what
+
+Speaker 2  1:41  
+specifically? So if it's, for example, just the ability to put a thread in a hole or something, that's not really easy to find
+
+Unknown Speaker  1:49  
+what's not easy to find the tool itself, yeah,
+
+Speaker 2  1:52  
+so you'd have to search on Google. You have to leave the application, and there's multiple ways to do it. So if it's like, yeah, and it's basically a case of things are not obvious and can't be found easily. And also, once you start using them, it's still not that obvious. Each of the parameters, I guess, put in a pitch length or whatever. Sometimes that's not labeled correctly, or that's not clear, or it's a diagram that means nothing. Yeah,
+
+Unknown Speaker  2:15  
+and what's the cost of this?
+
+Speaker 2  2:20  
+Cost? Just time. And then I'll just leave the package. Can't be us today, okay, I'll come back tomorrow. Day. Wasted.
+
+Speaker 1  2:26  
+Yeah, have, have you tried any solutions on how they worked?
+
+Speaker 2  2:32  
+Yeah, switching to onshape or fusion, okay, other solutions, yeah,
+
+Unknown Speaker  2:36  
+yeah. And what makes them better?
+
+Speaker 2  2:39  
+They're very intuitive. The toolbar actually has diagrams that mean something for each of the tools. You can search for what you want and it'll show up, even if it's not. It may not be AI, but just keyword links like type in thread, and something will show up. Okay, so finding things is easy, and then actually using those also quite easy, because the diagrams mean
+
+Speaker 1  2:58  
+something. Okay, yeah, cool. Makes sense, great. So I'm gonna screen record, if that's okay. Yeah,
+
+Unknown Speaker  3:09  
+I've never had any months, so this will
+
+Unknown Speaker  3:11  
+be, no, that's fine. It's um,
+
+Speaker 1  3:15  
+you're not gonna spend, like, too much time. I just want to see how self care.
+
+Unknown Speaker  3:21  
+So do you self care?
+
+Speaker 1  3:25  
+I personally do, okay, but I'm using it. It's a good basis for my project, and I'll explain why after all. Right, okay, so
+
+Speaker 1  3:38  
+I saw nothing. Okay, it's okay. So what you're going to be doing is making a making a coffee cup. Okay, yeah, so again, doesn't matter if you finish, doesn't have to be like perfect. I just want to see your process, and also if you can speak your thoughts aloud. So tell me what you're looking for, what you're trying to do. Okay, so now
+
+Speaker 2  4:08  
+let's see this. I can't tell if that's millimeters. I'll assume it is. Just use that. Use Default. Cool, that's that paddy pan cool whatever. So I need a let's see. I would usually loft, but this actually has 3d shapes built in, so I might just take a cylinder. Yeah. Top radius 50 millimeters. How much does it run with 5050? To 60 is probably about right. Bottom radius is less, oh, that's nice. 40, height 100 about half is segments. I don't need segments, or I don't know what to do with them. Vertical segment, if I change. Is what happens. Okay, okay,
+
+Unknown Speaker  5:12  
+fine, that's a bit too intensive. What's
+
+Unknown Speaker  5:19  
+that dude that might be,
+
+Speaker 2  5:25  
+oh, no, I told you yesterday, what if I command Z that nothing cool. I
+
+Speaker 2  5:41  
+don't want that. Can I just move on? Yes, yes,
+
+Speaker 1  5:47  
+there should be a few. Scroll up, yeah, should be a tech. Why is it at the top?
+
+Speaker 2  5:52  
+If I filled everything in, it should be at the bottom. Okay, let's see. What else is useful about coffee cup? Usually there's like a rim on the top and I need to
+
+Unknown Speaker  6:05  
+cut my sketch,
+
+Unknown Speaker  6:07  
+or if I just make another cylinder.
+
+Unknown Speaker  6:12  
+What tools are there?
+
+Speaker 2  6:21  
+So is there a split tool? Oh, the
+
+Unknown Speaker  6:27  
+master split.
+
+Unknown Speaker  6:35  
+So what if I just duplicate that? And
+
+Unknown Speaker  6:42  
+then scale,
+
+Speaker 2  6:50  
+percentage, make it about 90% is
+
+Unknown Speaker  6:59  
+this gonna? Okay,
+
+Unknown Speaker  7:03  
+I may have made a mistake. Take this move. Where's move?
+
+Unknown Speaker  7:15  
+Yes, please, just so I can see what I'm doing too. Move it by
+
+Unknown Speaker  7:26  
+scale to about 90% size.
+
+Unknown Speaker  7:41  
+Oh, I could have set a different
+
+Unknown Speaker  7:45  
+like start point.
+
+Speaker 2  7:49  
+Most fine, I should move it, and that should do the job. Start point for what, for where the scaling is, relativity. Okay,
+
+Unknown Speaker  8:02  
+cool, that's done. And then let's move this again. I don't
+
+Unknown Speaker  8:08  
+want to scale, fine. Zero.
+
+Speaker 2  8:22  
+Yeah. Yeah, raise it by like eight No,
+
+Unknown Speaker  8:29  
+and then should be a
+
+Unknown Speaker  8:36  
+cut No, no cut split so
+
+Unknown Speaker  8:43  
+okay, that is not good.
+
+Speaker 2  8:47  
+Was not good. So I'm trying to remove the profile of the smaller, smaller, like cup, from the bigger cup. I'm not sure how to do that using, I mean, if I just look at the names deform, looks like it could be a shout, but it's definitely not. Tools is probably the next place to look. Still doesn't have it. Utilities split, so I don't think that does
+
+Unknown Speaker  9:11  
+restricted, okay, all
+
+Speaker 2  9:16  
+sculpting, render projections, projections also restricted. What is this? No, I don't want to cheat hard. So, yeah, that's a problem. That means that method just won't work right now. Oh, I could have just done that. Okay, I could just remove, let's do mesh 15.
+
+Unknown Speaker  9:42  
+Give it a thickness.
+
+Unknown Speaker  9:49  
+Three, oh yeah, two, two points
+
+Unknown Speaker  9:52  
+preview, get rid of first console. Afterwards.
+
+Unknown Speaker  10:02  
+Okay, so we're gonna stop for now. Okay,
+
+Speaker 1  10:06  
+yeah, okay, yeah, thanks for trying that. How was your experience? Pretty
+
+Speaker 2  10:11  
+terrible, to be honest, yeah? Why it was not enjoyable. So I kind of had an idea of what to do at the beginning, yeah. And then I kind of I knew what the tours are called in other programs search for them and then attempted to implement them here. Yeah, but because movement was done a completely different way to other programs, splitting was different and not accessible. Cutting was not accessible. It sort of meant the feature set was just not good enough to do what I wanted to do, which meant an alternative approach, which could have worked, is setting a thickness for the cup and then extruding that down. But there's no extruding the top panel, yeah, which is kind of a basic tool to have, yeah. And there's also no sketch in the top panel, which is how most CAD programs work. So it's a bit it's just an unusual experience, I think.
+
+Speaker 1  10:53  
+Okay, and what did you spend most of your time doing, making
+
+Speaker 2  10:58  
+the second cup, moving it to the side, scaling it, rescaling it, moving it back, shifting up, putting it in position, yeah, and then finding out the tool doesn't exist, yeah, that's probably what I spent most of my time doing. Okay, yeah, okay,
+
+Speaker 1  11:14  
+cool. Let's move on to the second interface, all right, and then I'm just gonna give you,
+
+Speaker 2  11:19  
+Oh, also, using a trackpad was a bit unintuitive, but I don't know if that's something you want to consider. Okay, yeah, thank you.
+
+Speaker 1  11:25  
+So now I'm gonna give you a similar interface, and I want you to make a wine bottle. Okay, yeah.
+
+Speaker 2  11:41  
+Ah, so let's AI personalize your toolbar. What would I like to build? Let's tell it. I'm making a wine bottle. If I can type. I'd like to be guided. I'd like to choose. I'd like to choose, yeah, that would be nice.
+
+Speaker 2  11:59  
+Use cylinder cone for next, fear for court. Yeah, that's pretty good. What's a capsule taper for next? Yeah, so I would usually do the revolve one. So that's, let's go
+
+Speaker 1  12:10  
+with that. What made you choose this option over the other two?
+
+Speaker 2  12:13  
+So option one is, I'd like to be guided through every step, but that means it's going to choose what I'm what I'm doing, and then just teach me. And I want to be able to choose what approach I go for next is I'd like to choose my own approach entirely, which, I mean, I'm here to learn, so I may as well see what it can offer. And then, I mean, we ended up in this situation, I chose, I'd like to choose from a set of approaches. Of the three options I chose the one I would have gone for anyway. But it was nice to see that there are two other ways to do it. So it's good to see the options, but I did just go for whatever we've done anyway. Okay,
+
+Unknown Speaker  12:47  
+so it's generating a smart toolbar.
+
+Unknown Speaker  12:56  
+Okay, same thing.
+
+Speaker 2  12:59  
+Yeah, use default. I don't know if that's good or not, but let's go for it. Use the 3d schedule to draw the outline of bottom body,
+
+Unknown Speaker  13:14  
+pretty nice, so don't include the neck.
+
+Speaker 2  13:18  
+So Okay, fine. So that means there is a sketch tool.
+
+Unknown Speaker  13:23  
+Do you notice anything different in the
+
+Speaker 2  13:26  
+in the top? Yeah, well, let's see there's Firstly, there's more there, then there's a generators thing.
+
+Unknown Speaker  13:33  
+There's drawing 3d sketches. Now here
+
+Speaker 2  13:37  
+it does look different image to 3d is different 3d print wasn't there before these have moved around. Sculpting needs to be further to the left. Projections. I feel like these are things that have become more relevant based on what I've chosen. So I said I'd make a bottle. I think it's chosen. You might want to 3d print it so it's right there. Did you notice that new button Show smart toolbox? Honestly, no, I didn't. And that is pretty cool. That is very cool. I think what would be nice is if where it says 3d sketch, sketch that's clickable, that would be nice, cool. So if I select this tool, does it work?
+
+Speaker 1  14:13  
+I think it might be a premium feature. That's fine. I'll find it here if
+
+Speaker 2  14:23  
+What if I go back to the normal toolbox drawee sketch? Okay, that's fine. I'll just do a normal sketch and then revolve it the other way, top player, and then, does it want me to make a mirror? No, a curve from the top, bottom to top, but not, but not the neck. Okay,
+
+Unknown Speaker  14:50  
+so does that mean the cone as well? Let's see. I'll just do that.
+
+Unknown Speaker  14:56  
+Oh, there's a, there's an arc tool. I.
+
+Unknown Speaker  15:11  
+Yeah, that's quite nice water.
+
+Unknown Speaker  15:14  
+Switch to that very busy. Yeah, right,
+
+Unknown Speaker  15:19  
+yes, good stuff.
+
+Unknown Speaker  15:22  
+I should snap. Is there? Snap?
+
+Unknown Speaker  15:26  
+I'll just go over then
+
+Speaker 2  15:30  
+so I know for sure it's touching that line. Use revolve. Oh, hurry
+
+Unknown Speaker  15:42  
+up. Cannot finish the sketch, please. Let
+
+Speaker 2  15:55  
+me revolve. Thank you. Why can it not be used? Deselect it, revolve. What does smart toolbox Tell me right now? So what do I have to select to be able to evolve it? Select your sketch, revolve. It rather I should be able to do
+
+Unknown Speaker  16:16  
+it the sketch is selected.
+
+Speaker 2  16:20  
+Maybe it doesn't like something about, not sure.
+
+Unknown Speaker  16:30  
+It was debug order,
+
+Unknown Speaker  16:33  
+not for me, cool. There's a lot there.
+
+Speaker 2  16:40  
+So is this something that would have only worked with 3d sketch, maybe, and not with normal sketch? Yeah. Can I search up, like on the internet, how to involve a normal sketch?
+
+Speaker 2  17:02  
+I We're gonna stop soon. Yeah, that's all good.
+
+Unknown Speaker  17:12  
+They're doing the exact same thing as we
+
+Speaker 2  17:14  
+but this is a 3d sketch, okay, yeah, I don't think it works for two sketches. Cool. So that's the position. What I would like now is considering the approach, it's suggest, or the approach I chose is not possible with the features I have. I'd like to be able to see the options I had at the beginning and then pick one that works with three features, yeah, or maybe not even be suggested as in the first place, because I can't do it with these features that about,
+
+Speaker 1  17:42  
+thanks for going through that. Can you compare for me this interface
+
+Speaker 2  17:48  
+with the last one? Yeah, yeah, definitely. There's a lot I can talk about. First of all, I like the action plan on the bottom. I like that. It's split up into four sets, four steps, yeah, one of them is selected and does not move on to the next one. I don't know if there's a point at which that should move on, maybe not even automatically, just press next, yeah, and it should be able to do that. I like the smart toolbox, which wasn't there in the previous one. And I think that's something that could be, that could have more than one link to it so that could be linked in the action plan. It's fine where it is right now. It just needs to be in more places as well. In terms of other comparisons, there are some tools that have moved around and are in different places. Image to 3d. Is it wasn't there before. I'm not sure why D print as well. I'm not sure if these were chosen because of the project I chose. Were they by any chance? They were there before? They were there before? Yeah, okay, maybe I just ignored them at the time, then otherwise, yeah. I think the smart toolbox is the main change. In that case, smart toolbox in terms of what I've noticed, what did you like about the smart toolbox? I liked that it's in the action plan itself. Needs to use four tools, and then they're right there underneath search for them. That's, that's really good. And I think it's just right in that if I'd clicked on them and they'd already done the work for me, I don't, I don't think I'd like that. Yeah, so it's good that the four tools, and that pretty much all, I need to be honest. Why
+
+Speaker 1  19:18  
+wouldn't you like them to automatically do my work because, because it doesn't
+
+Speaker 2  19:21  
+know what kind of wine bottle I want to make, I think some sort of design creativity should be left to me, and it's quite simple to use the tool. So I think if you want to completely generate the product by yourself, that's different if you want to do CAD and I mean, this a wine bottle, but say I want to do something a bit more complex, which required a lot more thought, or I wanted to create something that fits a phone case, if it fits my phone, yeah, then I'd need to make my own measurements. Do something based on what I want to see, what features I want, that kind of thing. So, yeah, I think having the ability to do your own design is still quite important.
+
+Unknown Speaker  19:57  
+And what's the most useful?
+
+Unknown Speaker  20:00  
+Um, part about the smart toolbox, I
+
+Speaker 2  20:03  
+think, I mean, the main thing is that it's got everything that you need. But on top of that, there's also the extra tools, which I didn't use, which is, if I chose to, like, switch up my approach a bit, then I could just put those there, and then I could access them. Okay, I think the smart toolbox is a bit more like a, like, a backpack of your favorite things, and they've already given you, like, a starter pack of what you might need, but you can add to it. I think that's nice.
+
+Speaker 1  20:25  
+Do you think the tools that were shown, what were they expected? Is that,
+
+Speaker 2  20:31  
+yeah, yeah, these are exactly the tools I would have expected. Okay, the code, because I thought I'd just make the whole bottle and then revolve it, and that would be,
+
+Speaker 1  20:40  
+what do you think the extra tools does? I
+
+Speaker 2  20:44  
+think it, I don't. Okay. I mean, there's two things it could do. The first of those is give me other tools that might be useful for this specific project. And the alternative is it could just show me all of the tools available, and I could just pick which ones go there. I don't know what it does. I can check now, actually extra. Okay, that is good. So this is relevant, things, right? Things that are relevant to them, they should be, yeah, that's pretty nice, yeah, and that's, that's the thing it should do. That's nice. And
+
+Speaker 1  21:15  
+when you say that the cone wasn't expected, yeah, how do you feel about that? The fact that wasn't unexpected,
+
+Speaker 2  21:22  
+I don't mind. It's not it's not cluttered the workspace. There's only four or five things on there anyway, so the fact that it's there doesn't make a huge difference. Okay, yeah, it just gives another way to do the task. That's fine. Cool.
+
+Speaker 1  21:35  
+Is there anything you don't like about this? About the changed interface? I'm
+
+Speaker 2  21:39  
+actually a fan, to be honest, I'm just wondering how well it would work. Oh, I just found the next step button. That's what I don't like. I could just, I had to go there. I wouldn't have scrolled down there until I'd done all the tasks. Same thing. I mean, I think that's self CAD problem, which is I chose all the settings for I was making and then scroll to the top to accept it. Yeah, that could just be here, or, yeah, or you could just click on this, or something like that. Click to get maybe click number two would get me onto number two. Okay, to be honest, the fact that it's highlighted doesn't make a huge difference. Like, if I press next step, nothing about my experience has changed. Yeah, yeah. This is just a UI. Oh, nice. That highlighted code. I like that. Why do you like that? So that's even that's saved even more time. It's literally just highlighted what I want. And then, yeah, that's perfect. That's really good. What about previous step? Previous step should be a thing. Yeah, if I want to go back, previous steps should be a thing. And then that's quite nice. I like that. That's good functionality. Yeah, I don't like the next steps at the bottom. Okay, yeah, that's my that's really the only negative I have for it.
+
+Unknown Speaker  22:51  
+Okay, cool.
+
+Speaker 1  22:54  
+Thanks for that. No problem. So final part is making you feel out of suburbs. Yeah, where is it? I get it.
+
+Speaker 1  23:21  
+Okay, let's go for it. Take your time.
+
+Speaker 2  23:34  
+For the first user interface before anything had changed. Okay, it was easy to find. No, it wasn't. I
+
+Speaker 1  23:49  
+I'm not looking so feel free to be as soon as you want. Just want, I think
+
+Unknown Speaker  23:53  
+that'll be useful as well. Yeah, exactly.
+
+Speaker 3  24:02  
+I project.
+
+Unknown Speaker  24:13  
+I
+
+Transcribed by https://otter.ai
+
+---
+
+interviewee6.txt:
+Speaker 1  0:01  
+UI, Do I have your consent to voice record you? Thank you. Okay, so I'm gonna start off by asking you some questions about your CAD experience, and then give you CAD software to do a quick task on. Then ask you some more questions, give you another task, and then do a survey. Is that okay? Provision b2, okay, cool. Mind telling me about your CAD experience.
+
+Speaker 2  0:32  
+I started cading When I was like 12. I started on Tinkercad, the simple kids thing, yeah, school. Use that to make my first project cool. And then I went from that to SketchUp, the one that's used mostly in architecture, used SketchUp for like, a year after that, I tried to learn Rhino because the friend I was doing all these 3d designs with was trying to be an architect, so he was teaching me all these architecture apps. But after that, I learned fusion 360 from like a guest teacher, university student typing at our high school, and that's been my goal to ever since been using Fusion for years. Haven't been improving yet for the last maybe four or five years. But do have 10 year experience with the software, I guess? Yeah, I'd say I'm like an intermediate together. Okay, maybe better than intermediate, but it depends on software.
+
+Unknown Speaker  1:48  
+What's your favorite software to use and why? Yeah,
+
+Unknown Speaker  1:51  
+I think right now it's fusion 360
+
+Speaker 2  1:55  
+but that's just because that's that was the first one that clicked for a long time, and I didn't really experiment much after finding fusion,
+
+Unknown Speaker  2:06  
+but now that I'm gonna graduate, and I'm gonna
+
+Speaker 2  2:11  
+not gonna have the student license, I'm probably gonna switch to something like own shape, okay, which is gonna be a cheaper one time purchase. And it's, I hear it's still as good as the industry standard program, so try that one out. But
+
+Unknown Speaker  2:30  
+yeah, what was the question for it? And
+
+Unknown Speaker  2:33  
+just like, Why did fusion 360 I think
+
+Speaker 2  2:39  
+the fact that it's online is kind of good. It has pros and cons. Yeah, you can both save it locally, of course, but then everything is online in your account, you can go to your school computer. That's not a bad thing. Sometimes it's bad that it's always online, but you can always make edits as well as maybe it's not that bad. I think it's just user interface is modern in a
+
+Unknown Speaker  3:07  
+industry where
+
+Speaker 2  3:11  
+software that's years old, maybe decades old, is still prevailed, like SolidWorks, which I don't like the UI that much. Find a bit less intuitive, even to just look around, just drag around. That's like the most important part. It has to feel smooth, to look and play around with the material. I wouldn't say fusion is perfect. I would try to make it flow better, but it's like, like, maybe the objects flow better with each other, but yeah, but then it would become less technical. So there's always a balance and trade off with these. Like, I also use Blender, which is more fluid, like I said, smoother, but it's not technical at all.
+
+Unknown Speaker  4:00  
+There is no like
+
+Unknown Speaker  4:02  
+maths, you can do functions. You can do,
+
+Speaker 2  4:06  
+I guess there's plugins, but it's like the premise is not there. And I guess the wide of it, and, yeah, I think fusion was ice cream blender. It depends on what you're doing. If I choose between those, have
+
+Speaker 1  4:22  
+you had any particularly negative experiences with CAD
+
+Unknown Speaker  4:27  
+software? So many, so many crashes? Obviously, yeah,
+
+Speaker 2  4:33  
+you just get to save a lot. And that's maybe the nice thing about the online sometimes auto saves. That's something bad about Blender, where the saving is weird, where there's no safe history, you just have to save new files on top of each other. And I did get lost in my blender workflow last time I did it, it's like I forgot to save some the. Steps that I would use later or so, I would just have, like, the first one step and then last step, and then maybe the fifth is fourth. But I tried something different than the third one. I want to see, but I can't, or something with Fusion, there's all a hole. You can enable the history. For example, that's pretty good. It's like, you enable the history and everything you do after that, you can go back. You can change the numbers. For example, you made a circle, or a ready a circle of a radius of, like, five millimeters. And then you finish the project. It's too small. You go back. You can change the specific millimeter. It can cause issues with your other things, if it's like, if you didn't design it very well, like, not very well, but working together, interconnected, but sometimes it works. And it's like a cool feature to go back. But what was the biggest problem? You said, Yeah, I guess saves crashing. Other than that is, I tried to use that's not something for you. I tried to use CAD on my iPad, which is, there's not many good software for it. Yeah, maybe there's a, what's it called shaper, but I think it's paid and there's also on shape as some kind of stuff, but it's not the full fledged version, yeah, I guess that's another thing for me, but that's specific to maybe iPad users, and then, generally, I want it to be more fluid always, yeah, it's like, I always even how long doesn't matter how long I've spent In the software, even in fusion, I feel like sometimes I just can't put the camera where I want it. I can't look at what I want to look at. I can't, yeah, and also maybe, right now, I know most where those options are, and I know where the I and if I don't, I just ask GPT. But if you're making new software, it could be nice to have the drop down menus or, like, all the options. Yeah, more. Better UX selection better. Like, I like having sketching and creating in a different section, yeah, but maybe all the other stuff about the camera, which is one of those important things, in my opinion, is could be more intuitive, have like,
+
+Unknown Speaker  7:31  
+yeah? Like sometimes,
+
+Speaker 2  7:35  
+infusion, I spend lots of time trying to find the best way of, for example, looking like at the camera halfway. You know, what's it called,
+
+Unknown Speaker  7:45  
+yeah, like a
+
+Unknown Speaker  7:46  
+section, yeah,
+
+Speaker 2  7:49  
+and like, you have to to see that section. You have to put that into a point. You have to put that like, you have to align it to a point. You have to select one of those selections, drop downs. It could be more intuitive. Could be like, Oh, this is just a Section Plane. Just put it wherever you want. Yeah, it's a free drag it around whatever you want. With it, you don't have to have it constrained to any other line or point. Yeah, I guess that makes it more of a like blender when it comes like that, because the reason, I guess, the points and constraints fusion has is because it's mostly engineering and has to be very precise. But maybe there could be fine found a sweet spot where it's still technical enough, but it's still it's not it doesn't give you the headache that all every technical and engineering software gives you could be more fluent like in the design software. Okay, I think that's what
+
+Speaker 1  8:50  
+generally cool. Thanks a lot.
+
+Unknown Speaker  8:54  
+I don't actually say, Yeah,
+
+Speaker 2  8:58  
+I feel like sometimes there's also a big glowing gap in fusions, there's modeling, and then there's like, do you know what's called sculpting? Yeah, maybe they could be more interconnected. Maybe it's like, I was always, I would always model, because I would do something more technical
+
+Unknown Speaker  9:21  
+shapes and like, few things that would fit.
+
+Speaker 2  9:25  
+But I never played around with sculpting, and when I did, it was a bit confusing. The videos also, maybe that could be, I don't know, be a new, revolutionary way to sculpt that's easy to understand, but Oh, when you do stuff like sculpting infusion, it really causes issues. Like the bodies are different. So the sculpting body is different from it has like these faces. The other one has Yeah, like, yeah, and then, sorry, the sculpt has like polygons. Yeah, and the polygons increase. It again, crashes you you can't merge the polygon within model shape, like the connectivity between imported models, sculpted models, and the models you make on inherently on fusion. The difference between them is a and the way that you can't connect them? Well, yeah, is big problem. The thing I hated most of fusion when I was in high school was the lack of help I get. Tried to import models into it. Like I tried to download something, I just want to edit something, yeah, and I remember I just for an hour I do nothing, but like, play around with the polygon things, just because, just so it works without crashing or something like that. Yeah,
+
+Speaker 1  10:48  
+got it. Okay. Thanks. Thanks for talking me through that. Yeah, that was, that was you went into a lot of detail, which is cool. So now I'm going to give you a task, and I'd like you to make a coffee cup. Yeah, oh, wait, I'm just gonna screen. Maybe.
+
+Unknown Speaker  11:13  
+Are you still recording? I'm going to now.
+
+Unknown Speaker  11:20  
+Oh, yeah. So
+
+Speaker 1  11:23  
+if you could tell me, like, what you're looking at, what you're thinking, speak your thoughts aloud, that'd be useful, yeah, and I'm gonna, I'm gonna give you, like, a couple of minutes.
+
+Unknown Speaker  11:41  
+So go ahead, yeah, when I
+
+Unknown Speaker  11:43  
+look at this, this is
+
+Speaker 2  11:48  
+I haven't used any of the, I don't know if the other ones are the similar to this. So I haven't used any of the AI to CAD prompt to CAD software. But like as a concept, it's very promising. I'm sure other people are trying it, and I've seen, like, a few demos that look very well, but maybe those are just, like fake demos. So I don't know if it's that possible right now, but it's if they do make that happen, or you make that happen, that would be really good, like making a 3d model out of just like, ask me something. Oh, are you generating a toolbar from you're not generating
+
+Unknown Speaker  12:33  
+to be untouched.
+
+Unknown Speaker  12:36  
+So making a coffee cup.
+
+Unknown Speaker  12:37  
+So I'm making a coffee cup.
+
+Speaker 2  12:41  
+And then so is this gonna so it's not gonna generate it for me. It's gonna generate for me. Oh, create a toolbar. Yeah, I'd like to be guided.
+
+Unknown Speaker  12:56  
+How can we best happy?
+
+Unknown Speaker  13:01  
+Do I have to choose anything?
+
+Unknown Speaker  13:04  
+Choose what you'd love. So
+
+Speaker 2  13:07  
+well is the problem is, I don't really know what you mean by these. So okay, if I had feedback, it'd be like, I guess when now this comes up, I can see some of the options, but when I first see that, like,
+
+Unknown Speaker  13:23  
+how can we best help you? Is like,
+
+Speaker 2  13:27  
+maybe it could be, I don't know, what are you trying to engage with this question. Are you trying to engage my level? So it could be asking me more plainly,
+
+Unknown Speaker  13:35  
+I'd like to choose your set of approaches. Like choosing, I
+
+Unknown Speaker  13:39  
+just want to see all of it. So this is nothing.
+
+Unknown Speaker  13:46  
+Oh, I can just write it
+
+Speaker 2  14:00  
+again. So you cylinder for body, Taurus for handle, and cone for lid, lid, capsule for body. I think this makes the most sense. Wait, yeah, no, but then I I'll use my own coffee cup.
+
+Unknown Speaker  14:26  
+Can I say, does it really understand?
+
+Unknown Speaker  14:31  
+Yeah, would it be good?
+
+Speaker 2  14:33  
+Yeah, just do it if you'd rather do it that way. So, like, because my workflow would be to make coffee cup sketch cross section of cross section i.
+
+[Unrelated conversation about patents and NDAs has been removed]
+
+Unknown Speaker  17:42  
+Time it. I think I'll crash if you change it now, I'm just gonna copy it. Okay. This
+
+Speaker 2  18:27  
+this. Oh, he's gonna help me. Oh, okay,
+
+Unknown Speaker  18:37  
+what did you think it was gonna do? I
+
+Unknown Speaker  18:41  
+was gonna explain it,
+
+Unknown Speaker  18:44  
+and he was gonna do the do the whole thing.
+
+Unknown Speaker  18:48  
+I wish that might be a PhD. I
+
+Unknown Speaker  18:50  
+didn't think it would do a good job, like I said.
+
+Unknown Speaker  18:55  
+So it's just helping you.
+
+Unknown Speaker  18:58  
+Next, okay, use should I do it? Yeah, cheese.
+
+Speaker 2  19:06  
+Also, is this my toolbar specifically made for me show smart tools.
+
+Speaker 1  19:15  
+Yeah? So unfortunately, yeah. So that's the smart toolbar made for you.
+
+Speaker 2  19:19  
+Good. This is exactly what I was gonna use,
+
+Speaker 1  19:23  
+okay? And why? Why is that useful to you?
+
+Speaker 2  19:26  
+I mean, I guess I could put more tools, having it custom toolbar, even if it wasn't. AI is, I think, a good idea, which I haven't seen. I don't know why I haven't seen maybe some people are doing it, but definitely not an industry starting standard, or maybe it's very deep in settings, but having this as a selling point is a good idea. I think the fact that it's given me these five options from what I want to do is also makes. Is because if it was working, I could just three sketch, wait a studio, I would probably need 2d sketch here. I could just sketch, then evolve, then extrude, yeah, then sketch again, and then extrude, combine, and then lay all and that's finished, yeah, six steps, which is like, here, so it's like,
+
+Unknown Speaker  20:28  
+yeah, that's useful in that way you
+
+Unknown Speaker  20:32  
+want me to go to the other one,
+
+Speaker 1  20:33  
+yeah. So they were grayed out just because they're premium features. But okay,
+
+Speaker 2  20:41  
+okay, I didn't want three sketches. I wanted this one, so it's okay, so
+
+Unknown Speaker  20:48  
+I'm gonna use this.
+
+Unknown Speaker  20:51  
+This is like a simple
+
+Unknown Speaker  20:57  
+I could just do, like a cylinder instead of doing.
+
+Speaker 2  21:02  
+How do I do? How to use this and I draw on the front. Oh, wait, this is premium as well, so I gotta do it a different way. Yeah, I can't revolve. Okay,
+
+Unknown Speaker  21:15  
+yeah, sorry. We
+
+Unknown Speaker  21:28  
+I mean, this is more intuitive.
+
+Unknown Speaker  21:40  
+The slightest, isn't
+
+Speaker 2  22:01  
+like what I mean by it could be smoother with, like, generally, old software, yeah, like, imagine if it was like figma, where I could just copy paste and then move in. Yeah, right now I can't even, I gotta press this to move to copy and paste. I don't even know what I have to do, yeah, I'll probably have to use one of the how do I copy paste? I
+
+Unknown Speaker  22:34  
+had so I guess I'll Just kind of Understand how are
+
+Unknown Speaker  23:42  
+Get on the
+
+Unknown Speaker  23:50  
+I think that's good. Why,
+
+Speaker 2  23:59  
+like I said, it's very confusing and unintuitive. If I could have my own workflow, it could be A productivity advantage.
+
+Unknown Speaker  24:15  
+Subtract traditions. I what they produce,
+
+Unknown Speaker  24:27  
+maybe, guys, yeah, I don't even know where they can find them.
+
+Unknown Speaker  24:55  
+Maybe that's paid as well. Let
+
+Unknown Speaker  24:59  
+me check to. Subtract something.
+
+Unknown Speaker  25:13  
+You That's actually can you tell me what you're trying out? China,
+
+Unknown Speaker  25:48  
+I couldn't find
+
+Unknown Speaker  25:51  
+maybe it's too I can use your wall.
+
+Unknown Speaker  25:56  
+Why is it doesn't let me here.
+
+Unknown Speaker  26:01  
+No, I think it's gray.on.
+
+Unknown Speaker  26:03  
+The other one as well, here as well, yeah, oh,
+
+Speaker 2  26:07  
+I can't use any of these. All of these are gray. Oh, no. I have to select an object. No. Now
+
+Unknown Speaker  26:17  
+that I can't do revolve, I want to try to do,
+
+Speaker 2  26:22  
+just make cup shape, make the thickness and then subtract this from this, yeah, but I can't find the subtract.
+
+Speaker 2  26:37  
+Yeah, I don't know what subtracting, if there's one, oh,
+
+Unknown Speaker  26:48  
+this is gonna be, maybe have to.
+
+Speaker 1  26:51  
+Let's move on to the second part. Yeah, just for time reasons. But thanks, thanks for going through the first part. How did you find that overall, like in what way the experience
+
+Unknown Speaker  27:08  
+of making that coffee cup,
+
+Unknown Speaker  27:11  
+the software you're using is a bit
+
+Speaker 2  27:17  
+less advanced to what I'm used to, so I was a bit confused. But if we're looking at like a AI helper and an AI, not just an AI, but like a personalized toolbox, yeah, just taking those specifically, I think those are very good ideas, yeah, as as in, even the last cat project I did, I used a similar workflow where I would have a chat GPT in one monitor. I would ask like if I had a like. In high school, I used to watch YouTube videos for every option I want to learn. Now it's like asking chat GPT four. How can I do this to this model in fusion? 316, it gives me all the options, yeah. And so this would like combine those two in one tool. It would probably be specialized as well. Yeah, know the software best, because chat, GPT, sometimes it's just waffling about things. Go to this option from here, it's either an option that's already been like, maybe discontinued, or it was never there, just like, so integrating that could be good idea.
+
+Speaker 1  28:34  
+What was the most useful part of that interface and least useful, I think,
+
+Speaker 2  28:44  
+is there any you probably know from your research? Is there any personalized toolbars in any other program? If not, I think that's a stupid thing, like it should be. It's so
+
+Unknown Speaker  28:58  
+that makes the most sense to me. Like you
+
+Speaker 2  29:02  
+had, like it could, it could change for every project. It could just whatever you use the most would be, because you've used fusion, you've used all these other they're all buried somewhere. And sometimes they're like, under one of the most most used things in future, for example, like a spline tool for me, is I gotta go to Sketch, yeah, and I gotta go to Line, and then I gotta go to, like, spline, yeah. And then that's three interactions right there where it could have just been in my custom tools. And, yeah, I think that's the that's like a I just, I didn't say much because I I told you to already be something that's widespread, or at least, like someone that's not industry standard, like something that's maybe more open or easier to use. Would be using that, but yeah, if no one is using that, then it's like, why not?
+
+Transcribed by https://otter.ai

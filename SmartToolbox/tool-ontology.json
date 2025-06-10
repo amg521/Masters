@@ -1,0 +1,57 @@
+const TOOL_ONTOLOGY = {
+    "tools": [
+        {"name": "Cube", "id": "btn_cube", "function": "Create a 3D cube primitive shape"},
+        {"name": "Sphere", "id": "btn_sphere", "function": "Create a 3D sphere primitive shape"},
+        {"name": "Cylinder", "id": "btn_cylinder", "function": "Create a 3D cylinder primitive shape"},
+        {"name": "Cone", "id": "btn_cone", "function": "Create a 3D cone primitive shape"},
+        {"name": "Torus", "id": "btn_torus", "function": "Create a 3D torus (donut shape) primitive"},
+        {"name": "Plane", "id": "btn_plane", "function": "Create a 2D plane for sketching"},
+        
+        {"name": "Move", "id": "btn_move", "function": "Move selected objects in 3D space"},
+        {"name": "Rotate", "id": "btn_rotate", "function": "Rotate selected objects around axes"},
+        {"name": "Scale", "id": "btn_scale", "function": "Resize selected objects uniformly or non-uniformly"},
+        {"name": "Mirror", "id": "btn_mirror", "function": "Create a mirrored copy of selected objects"},
+        
+        {"name": "Extrude", "id": "btn_extrude", "function": "Extrude 2D shapes into 3D objects"},
+        {"name": "Revolve", "id": "btn_revolve", "function": "Revolve 2D shapes around an axis"},
+        {"name": "Loft", "id": "btn_loft", "function": "Create 3D shape between multiple cross-sections"},
+        {"name": "Sweep", "id": "btn_sweep", "function": "Sweep a profile along a path"},
+        
+        {"name": "Fillet", "id": "btn_fillet", "function": "Round sharp edges with curved surfaces"},
+        {"name": "Chamfer", "id": "btn_chamfer", "function": "Cut corners with angled surfaces"},
+        {"name": "Shell", "id": "btn_shell", "function": "Hollow out solid objects"},
+        {"name": "Split", "id": "btn_split", "function": "Split objects along defined planes"},
+        
+        {"name": "Union", "id": "btn_union", "function": "Combine multiple objects into one"},
+        {"name": "Subtract", "id": "btn_subtract", "function": "Remove one object from another"},
+        {"name": "Intersect", "id": "btn_intersect", "function": "Keep only overlapping portions of objects"},
+        {"name": "Combine", "id": "btn_combine", "function": "Boolean operations on multiple objects"},
+        
+        {"name": "Array", "id": "btn_array", "function": "Create patterns and arrays of objects"},
+        {"name": "Pattern", "id": "btn_pattern", "function": "Create geometric patterns from objects"},
+        {"name": "Copy", "id": "btn_copy", "function": "Duplicate selected objects"},
+        {"name": "Delete", "id": "btn_delete", "function": "Remove selected objects"},
+        
+        {"name": "Group", "id": "btn_group", "function": "Group multiple objects together"},
+        {"name": "Ungroup", "id": "btn_ungroup", "function": "Separate grouped objects"},
+        {"name": "Hide", "id": "btn_hide", "function": "Hide selected objects from view"},
+        {"name": "Show", "id": "btn_show", "function": "Show hidden objects"},
+        
+        {"name": "Line", "id": "btn_line", "function": "Draw straight lines"},
+        {"name": "Circle", "id": "btn_circle", "function": "Draw circles and arcs"},
+        {"name": "Rectangle", "id": "btn_rectangle", "function": "Draw rectangles and squares"},
+        {"name": "Polygon", "id": "btn_polygon", "function": "Draw polygons with multiple sides"},
+        {"name": "Spline", "id": "btn_spline", "function": "Draw smooth curved lines"},
+        
+        {"name": "Measure", "id": "btn_measure", "function": "Measure distances, angles, and areas"},
+        {"name": "Align", "id": "btn_align", "function": "Align objects relative to each other"},
+        {"name": "Snap", "id": "btn_snap", "function": "Enable snapping to grid points and objects"},
+        
+        {"name": "Undo", "id": "btn_undo", "function": "Undo the last action"},
+        {"name": "Redo", "id": "btn_redo", "function": "Redo the last undone action"},
+        {"name": "Select", "id": "btn_select", "function": "Select objects for manipulation"}
+    ]
+};
+
+// Make available globally
+window.TOOL_ONTOLOGY = TOOL_ONTOLOGY;

@@ -1,5 +1,5 @@
 {
-"tools": [
+    "tools": [
         {"name": "Cube", "id": "btn_cube", "function": "Create a 3D cube primitive shape"},
         {"name": "Sphere", "id": "btn_sphere", "function": "Create a 3D sphere primitive shape"},
         {"name": "Cylinder", "id": "btn_cylinder", "function": "Create a 3D cylinder primitive shape"},

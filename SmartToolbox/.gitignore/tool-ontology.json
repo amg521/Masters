@@ -1,3 +1,4 @@
+{
 "tools": [
         {"name": "Cube", "id": "btn_cube", "function": "Create a 3D cube primitive shape"},
         {"name": "Sphere", "id": "btn_sphere", "function": "Create a 3D sphere primitive shape"},
@@ -50,3 +51,4 @@
         {"name": "Redo", "id": "btn_redo", "function": "Redo the last undone action"},
         {"name": "Select", "id": "btn_select", "function": "Select objects for manipulation"}
     ]
+}
